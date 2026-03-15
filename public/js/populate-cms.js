@@ -2402,7 +2402,7 @@
                     class="w-commerce-commerceaddtocartform"
                     action="javascript:void(0);"
                     onsubmit="return false;">
-                <a position-id="e19d87a7-4ff0-df81-23a1-e1aec52e1551" data-node-type="commerce-buy-now-button" data-default-text="Buy now" data-subscription-text="Subscribe now" aria-busy="false" aria-haspopup="false" style="display:none" class="w-commerce-commercebuynowbutton w-dyn-hide" href="/checkout">Buy now</a>
+                <a position-id="e19d87a7-4ff0-df81-23a1-e1aec52e1551" data-node-type="commerce-buy-now-button" data-default-text="Buy now" data-subscription-text="Subscribe now" aria-busy="false" aria-haspopup="false" style="display:none" class="w-commerce-commercebuynowbutton w-dyn-hide" href="/quotation">Buy now</a>
                 <div bind="ec356d63-f585-bba1-47c8-b5a2a0763874" position-id="ec356d63-f585-bba1-47c8-b5a2a0763874" class="addtocart_container" style="background-color: ${nameColor}; width: 50px; height: 50px;">
                   <img src="/images/Large-Arrow-White-Selection.svg" loading="lazy" width="36" alt="" class="image-131">
                   <input type="submit" 

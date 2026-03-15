@@ -229,6 +229,7 @@ export default async function LocalizedLayout({
         <script src="/js/cart-manager.js" type="text/javascript"></script>
         <script src="/js/populate-cms.js" type="text/javascript"></script>
         <script src="/js/add-to-cart-handler.js" type="text/javascript"></script>
+        <script src="/js/cart-page-handler.js" type="text/javascript"></script>
         <script src="/js/button-click-fix.js" type="text/javascript"></script>
         <script src="/js/i18n-client.js" type="text/javascript"></script>
         <script src="/js/scroll-animations.js" type="text/javascript" defer></script>

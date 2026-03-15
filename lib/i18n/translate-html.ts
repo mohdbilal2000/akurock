@@ -330,6 +330,7 @@ export function translateHTML(html: string, locale: Locale): string {
 // Map German slugs to localized slugs for EN/ES
 const SLUG_LOCALIZATION: Record<string, Record<string, string>> = {
   'akurock-muster': { en: 'sample-box', es: 'caja-de-muestras' },
+  'cart': { en: 'shopping-cart', es: 'carrito' },
   'akustik': { en: 'acoustics', es: 'acustica' },
   'allgemeine-geschaeftsbedingungen': { en: 'terms-and-conditions', es: 'terminos-y-condiciones' },
   'cookie-und-datschenschutzerklaerung': { en: 'privacy-policy', es: 'politica-de-privacidad' },

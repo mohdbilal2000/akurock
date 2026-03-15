@@ -10,6 +10,17 @@
   const CART_STORAGE_KEY = 'stonearts-cart';
   let cmsData = null;
 
+  // i18n strings for cart drawer
+  const cartI18n = {
+    de: { yourCart: 'Dein Warenkorb', total: 'Gesamt', checkout: 'Angebot anfordern', viewCart: 'Zum Einkaufswagen', empty: 'Der Warenkorb ist leer.', delete: 'L\u00f6schen' },
+    en: { yourCart: 'Your Cart', total: 'Total', checkout: 'Request Quote', viewCart: 'View Cart', empty: 'Your cart is empty.', delete: 'Delete' },
+    es: { yourCart: 'Tu carrito', total: 'Total', checkout: 'Solicitar presupuesto', viewCart: 'Ver carrito', empty: 'Tu carrito est\u00e1 vac\u00ed\o.', delete: 'Eliminar' },
+  };
+  function cartT(key) {
+    const locale = window.__LOCALE__ || 'de';
+    return (cartI18n[locale] && cartI18n[locale][key]) || cartI18n.de[key] || key;
+  }
+
   // Cart Manager Object
   const CartManager = {
     // Initialize cart system
@@ -241,6 +252,37 @@
             console.error('❌ Error updating cart total:', error);
           }
         }
+
+        // i18n: Translate cart drawer UI labels
+        try {
+          const locale = window.__LOCALE__ || 'de';
+          // Cart heading
+          document.querySelectorAll('.w-commerce-commercecartheading').forEach(el => {
+            el.textContent = cartT('yourCart');
+          });
+          // Total label
+          document.querySelectorAll('.text-block-107, .text-block-108').forEach(el => {
+            el.textContent = cartT('total');
+          });
+          // Empty state text
+          document.querySelectorAll('.w-commerce-commercecartemptystate div[aria-label], .text-block-110, .text-block-111').forEach(el => {
+            el.textContent = cartT('empty');
+          });
+          // Checkout button
+          document.querySelectorAll('[data-node-type="cart-checkout-button"]').forEach(el => {
+            el.textContent = cartT('checkout');
+            // Fix href to include locale
+            el.setAttribute('href', '/' + locale + '/quotation');
+          });
+          // View cart button
+          document.querySelectorAll('.einkaufswagen-button').forEach(el => {
+            el.textContent = cartT('viewCart');
+            // Fix href to include locale
+            el.setAttribute('href', '/' + locale + '/cart');
+          });
+        } catch (i18nError) {
+          console.warn('Cart i18n error:', i18nError);
+        }
       } catch (error) {
         console.error('❌ Cart Manager: Error in renderCart:', error);
       }
@@ -299,7 +341,7 @@
                   </svg>
                 </button>
               </div>
-              <a href="#" class="cart-delete-link" data-action="delete" data-product-id="${item.productId}" data-variant-id="${item.variantId}">Delete</a>
+              <a href="#" class="cart-delete-link" data-action="delete" data-product-id="${item.productId}" data-variant-id="${item.variantId}">${cartT('delete')}</a>
             </div>
           </div>
         </div>
@@ -471,33 +513,41 @@
       }
     },
 
-    // Close cart sidebar
+    // Close cart sidebar — searches all possible selectors
     closeCart: function() {
       console.log('CartManager.closeCart: Starting...');
-      
-      const cartContainers = document.querySelectorAll('[data-node-type="commerce-cart-container-wrapper"]');
-      const cartWrappers = document.querySelectorAll('[data-node-type="commerce-cart-wrapper"]');
 
-      cartContainers.forEach(container => {
-        const cartBox = container.querySelector('[data-node-type="commerce-cart-container"]');
+      // Collect all possible cart containers
+      const selectors = [
+        '[data-node-type="commerce-cart-container-wrapper"]',
+        '.w-commerce-commercecartcontainerwrapper',
+        '[class*="commercecartcontainerwrapper"]'
+      ];
+      const containers = new Set();
+      selectors.forEach(sel => {
+        document.querySelectorAll(sel).forEach(el => containers.add(el));
+      });
+
+      containers.forEach(container => {
+        const cartBox = container.querySelector('[data-node-type="commerce-cart-container"]') ||
+                       container.querySelector('.w-commerce-commercecartcontainer') ||
+                       container.querySelector('.cart-container-2') ||
+                       container.querySelector('.cart-container-3');
         if (cartBox) {
-          // Slide out to the right
-          cartBox.style.transform = 'translateX(100%)';
+          cartBox.style.setProperty('transform', 'translateX(100%)', 'important');
         }
-        
+
         // Hide after animation
         setTimeout(() => {
-          container.style.display = 'none';
-          container.style.visibility = 'hidden';
-          container.style.opacity = '0';
+          container.style.cssText = 'display:none !important; visibility:hidden !important; opacity:0 !important;';
           container.classList.remove('w-commerce-commercecartopen');
-        }, 400); // Match animation duration
+        }, 400);
       });
 
-      cartWrappers.forEach(wrapper => {
+      document.querySelectorAll('[data-node-type="commerce-cart-wrapper"], .w-commerce-commercecartwrapper').forEach(wrapper => {
         wrapper.classList.remove('w-commerce-commercecartopen');
       });
-      
+
       console.log('CartManager.closeCart: Cart closed');
     },
 

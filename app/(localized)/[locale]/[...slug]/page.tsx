@@ -13,6 +13,7 @@ const SLUG_TO_FILE: Record<string, string> = {
   'akustik': 'akustik.html',
   'allgemeine-geschaeftsbedingungen': 'allgemeine-geschaeftsbedingungen.html',
   'blog-news': 'blog-news.html',
+  'cart': 'cart.html',
   'cookie-und-datschenschutzerklaerung': 'cookie-und-datschenschutzerklaerung.html',
   'faq': 'faq.html',
   'galerie': 'galerie.html',
@@ -27,6 +28,7 @@ const SLUG_TO_FILE: Record<string, string> = {
   'zahlung-und-versand': 'zahlung-und-versand.html',
   'zubehoer': 'zubehoer.html',
   // English slug aliases
+  'shopping-cart': 'cart.html',
   'sample-box': 'akurock-muster.html',
   'acoustics': 'akustik.html',
   'terms-and-conditions': 'allgemeine-geschaeftsbedingungen.html',
@@ -40,6 +42,7 @@ const SLUG_TO_FILE: Record<string, string> = {
   'payment-and-shipping': 'zahlung-und-versand.html',
   'accessories': 'zubehoer.html',
   // Spanish slug aliases
+  'carrito': 'cart.html',
   'caja-de-muestras': 'akurock-muster.html',
   'acustica': 'akustik.html',
   'terminos-y-condiciones': 'allgemeine-geschaeftsbedingungen.html',
@@ -61,6 +64,7 @@ const SLUG_TO_FILE: Record<string, string> = {
 // Map localized slugs back to their canonical (German) slug for SEO/titles
 const SLUG_CANONICAL: Record<string, string> = {
   // English aliases → canonical
+  'shopping-cart': 'cart',
   'sample-box': 'akurock-muster',
   'acoustics': 'akustik',
   'terms-and-conditions': 'allgemeine-geschaeftsbedingungen',
@@ -74,6 +78,7 @@ const SLUG_CANONICAL: Record<string, string> = {
   'payment-and-shipping': 'zahlung-und-versand',
   'accessories': 'zubehoer',
   // Spanish aliases → canonical
+  'carrito': 'cart',
   'caja-de-muestras': 'akurock-muster',
   'acustica': 'akustik',
   'terminos-y-condiciones': 'allgemeine-geschaeftsbedingungen',
@@ -95,6 +100,7 @@ const SLUG_CANONICAL: Record<string, string> = {
 // Map canonical slugs to their localized versions for link generation
 const CANONICAL_TO_LOCALIZED: Record<string, Record<string, string>> = {
   'akurock-muster': { en: 'sample-box', es: 'caja-de-muestras' },
+  'cart': { en: 'shopping-cart', es: 'carrito' },
   'akustik': { en: 'acoustics', es: 'acustica' },
   'allgemeine-geschaeftsbedingungen': { en: 'terms-and-conditions', es: 'terminos-y-condiciones' },
   'cookie-und-datschenschutzerklaerung': { en: 'privacy-policy', es: 'politica-de-privacidad' },
@@ -116,6 +122,7 @@ const CANONICAL_TO_LOCALIZED: Record<string, Record<string, string>> = {
 // Human-readable page titles for SEO
 const SLUG_TO_TITLE: Record<string, Record<string, string>> = {
   'akurock-muster': { de: 'Musterbox bestellen', en: 'Order Sample Box', es: 'Pedir caja de muestras' },
+  'cart': { de: 'Einkaufswagen', en: 'Shopping Cart', es: 'Carrito de compras' },
   'akustik': { de: 'Wie funktioniert ein Akustikpaneel?', en: 'How Do Acoustic Panels Work?', es: '¿Cómo funcionan los paneles acústicos?' },
   'faq': { de: 'Häufig gestellte Fragen', en: 'Frequently Asked Questions', es: 'Preguntas frecuentes' },
   'galerie': { de: 'Galerie & Inspiration', en: 'Gallery & Inspiration', es: 'Galería e Inspiración' },

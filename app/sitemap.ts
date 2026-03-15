@@ -7,6 +7,7 @@ const locales = ['de', 'en', 'es'] as const;
 const CONTENT_PAGES = [
   'akurock-muster',
   'akustik',
+  'cart',
   'allgemeine-geschaeftsbedingungen',
   'blog-news',
   'cookie-und-datschenschutzerklaerung',
@@ -27,6 +28,7 @@ const CONTENT_PAGES = [
 // Localized slug aliases (matches [...slug]/page.tsx CANONICAL_TO_LOCALIZED)
 const CANONICAL_TO_LOCALIZED: Record<string, Record<string, string>> = {
   'akurock-muster': { en: 'sample-box', es: 'caja-de-muestras' },
+  'cart': { en: 'shopping-cart', es: 'carrito' },
   'akustik': { en: 'acoustics', es: 'acustica' },
   'allgemeine-geschaeftsbedingungen': { en: 'terms-and-conditions', es: 'terminos-y-condiciones' },
   'cookie-und-datschenschutzerklaerung': { en: 'privacy-policy', es: 'politica-de-privacidad' },
