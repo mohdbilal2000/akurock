@@ -13,7 +13,7 @@
       "alt_text": "240 x 60 x 2.3 cm",
       "category": "AKUROCK Akustikpaneele",
       "price": "€220.00",
-      "priceValue": 220.00,
+      "priceValue": 220.0,
       "currency": "EUR",
       "mainImage": "/images/667530dfb4d435589f6b7508_Brush.webp",
       "special_image": "/images/6672c45aa4067e84ea2efbae_Brush_Paneele.webp",
@@ -84,7 +84,7 @@
       "alt_text": "240 x 60 x 2.3 cm",
       "category": "AKUROCK Akustikpaneele",
       "price": "€220.00",
-      "priceValue": 220.00,
+      "priceValue": 220.0,
       "currency": "EUR",
       "mainImage": "/images/6672b83a8bd67b5b72bbd5fb_Whisper_Paneel.webp",
       "special_image": "/images/6672b83a8bd67b5b72bbd5fb_Whisper_Paneel.webp",
@@ -155,7 +155,7 @@
       "alt_text": "240 x 60 x 2.3 cm",
       "category": "AKUROCK Akustikpaneele",
       "price": "€220.00",
-      "priceValue": 220.00,
+      "priceValue": 220.0,
       "currency": "EUR",
       "mainImage": "/images/6675865105eb9b089b31d729_Ligia_Paneel.jpg",
       "special_image": "/images/6672c5cccadaf188f323804b_Ligia_Paneel.webp",
@@ -226,7 +226,7 @@
       "alt_text": "240 x 60 x 2.3 cm",
       "category": "AKUROCK Akustikpaneele",
       "price": "€220.00",
-      "priceValue": 220.00,
+      "priceValue": 220.0,
       "currency": "EUR",
       "mainImage": "/images/667530ff3fb596c83de661fc_Gaia.png",
       "special_image": "/images/667530ff3fb596c83de661fc_Gaia.png",
@@ -297,7 +297,7 @@
       "alt_text": "240 x 60 x 2.3 cm",
       "category": "AKUROCK Akustikpaneele",
       "price": "€220.00",
-      "priceValue": 220.00,
+      "priceValue": 220.0,
       "currency": "EUR",
       "mainImage": "/images/667530f03d356da1743e6c58_Yami.webp",
       "special_image": "/images/6672c4a3cc07e459748b16a8_Yami_Paneel.webp",
@@ -368,7 +368,7 @@
       "alt_text": "240 x 60 x 2.3 cm",
       "category": "AKUROCK Akustikpaneele",
       "price": "€220.00",
-      "priceValue": 220.00,
+      "priceValue": 220.0,
       "currency": "EUR",
       "mainImage": "/images/6675865fe02421482b8a18a9_Yuki_Paneel.jpg",
       "special_image": "/images/6672c643b9abe5d94880a355_Yuki_Paneel.webp",
@@ -441,7 +441,7 @@
       "alt_text": "Sample",
       "category": "AKUROCK Muster",
       "price": "€5.00",
-      "priceValue": 5.00,
+      "priceValue": 5.0,
       "currency": "EUR",
       "mainImage": "/images/667c1f140eafb7d8093365fb_Brush.webp",
       "selection_slider_image": "/images/667c1f140eafb7d8093365fb_Brush.webp",
@@ -451,7 +451,8 @@
       "requiresShipping": true,
       "createdOn": "Thu May 23 2024 16:06:35 GMT+0000",
       "updatedOn": "Thu Jul 11 2024 11:00:03 GMT+0000",
-      "publishedOn": "Thu Jul 11 2024 11:00:12 GMT+0000"
+      "publishedOn": "Thu Jul 11 2024 11:00:12 GMT+0000",
+      "sample_card_color": "#dbad90"
     },
     {
       "id": "whisper-sample",
@@ -468,17 +469,18 @@
       "alt_text": "Sample",
       "category": "AKUROCK Muster",
       "price": "€5.00",
-      "priceValue": 5.00,
+      "priceValue": 5.0,
       "currency": "EUR",
       "mainImage": "/images/667c20dd7152fc475d1bc7d0_Whisper.webp",
       "selection_slider_image": "/images/667c20dd7152fc475d1bc7d0_Whisper.webp",
       "special_field_slogan": "Whisper",
-      "button_header_color": "hsla(0, 0%, 95%, 1.00)",
+      "button_header_color": "hsla(30, 10%, 60%, 1.00)",
       "sorting": 2,
       "requiresShipping": true,
       "createdOn": "Wed Oct 04 2023 14:56:38 GMT+0000",
       "updatedOn": "Thu Jul 11 2024 10:57:29 GMT+0000",
-      "publishedOn": "Thu Jul 11 2024 11:00:12 GMT+0000"
+      "publishedOn": "Thu Jul 11 2024 11:00:12 GMT+0000",
+      "sample_card_color": "#9e958d"
     },
     {
       "id": "ligia-sample",
@@ -495,7 +497,7 @@
       "alt_text": "Sample",
       "category": "AKUROCK Muster",
       "price": "€5.00",
-      "priceValue": 5.00,
+      "priceValue": 5.0,
       "currency": "EUR",
       "mainImage": "/images/667c2041f4e2eba0fd36cf2d_Ligia.webp",
       "selection_slider_image": "/images/667c2041f4e2eba0fd36cf2d_Ligia.webp",
@@ -522,7 +524,7 @@
       "alt_text": "Sample",
       "category": "AKUROCK Muster",
       "price": "€5.00",
-      "priceValue": 5.00,
+      "priceValue": 5.0,
       "currency": "EUR",
       "mainImage": "/images/667c2088bd82c372eef65d67_Gaia.webp",
       "selection_slider_image": "/images/667c2088bd82c372eef65d67_Gaia.webp",
@@ -549,7 +551,7 @@
       "alt_text": "Sample",
       "category": "AKUROCK Muster",
       "price": "€5.00",
-      "priceValue": 5.00,
+      "priceValue": 5.0,
       "currency": "EUR",
       "mainImage": "/images/667c20bbb56251a312a45982_Yami.webp",
       "selection_slider_image": "/images/667c20bbb56251a312a45982_Yami.webp",
@@ -576,17 +578,18 @@
       "alt_text": "Sample",
       "category": "AKUROCK Muster",
       "price": "€5.00",
-      "priceValue": 5.00,
+      "priceValue": 5.0,
       "currency": "EUR",
       "mainImage": "/images/667c1ffd8fed90ea07c961d6_Yuki.webp",
       "selection_slider_image": "/images/667c1ffd8fed90ea07c961d6_Yuki.webp",
       "special_field_slogan": "Yuki",
-      "button_header_color": "hsla(0, 0%, 98%, 1.00)",
+      "button_header_color": "hsla(10, 7%, 68%, 1.00)",
       "sorting": 6,
       "requiresShipping": true,
       "createdOn": "Wed Oct 04 2023 15:06:19 GMT+0000",
       "updatedOn": "Thu Jul 11 2024 10:58:16 GMT+0000",
-      "publishedOn": "Thu Jul 11 2024 11:00:12 GMT+0000"
+      "publishedOn": "Thu Jul 11 2024 11:00:12 GMT+0000",
+      "sample_card_color": "#b8a9a6"
     },
     {
       "id": "brush-sample-premium",
@@ -603,7 +606,7 @@
       "alt_text": "Sample",
       "category": "AKUROCK Muster",
       "price": "€5.00",
-      "priceValue": 5.00,
+      "priceValue": 5.0,
       "currency": "EUR",
       "mainImage": "/images/Sample-0123421_12.webp",
       "selection_slider_image": "/images/Sample-0123421_12.webp",
@@ -631,7 +634,7 @@
       "alt_text": "Sample",
       "category": "AKUROCK Muster",
       "price": "€5.00",
-      "priceValue": 5.00,
+      "priceValue": 5.0,
       "currency": "EUR",
       "mainImage": "/images/Sample-0240316_small.webp",
       "selection_slider_image": "/images/Sample-0240316_small.webp",
@@ -659,7 +662,7 @@
       "alt_text": "Sample",
       "category": "AKUROCK Muster",
       "price": "€5.00",
-      "priceValue": 5.00,
+      "priceValue": 5.0,
       "currency": "EUR",
       "mainImage": "/images/Sample-0123421_12.webp",
       "selection_slider_image": "/images/Sample-0123421_12.webp",
@@ -671,6 +674,18 @@
       "createdOn": "Thu Jan 11 2024 10:00:00 GMT+0000",
       "updatedOn": "Thu Jan 11 2024 10:00:00 GMT+0000",
       "publishedOn": "Thu Jan 11 2024 10:00:00 GMT+0000"
+    },
+    {
+      "id": "musterbox",
+      "name": "Musterbox Collection",
+      "slug": "musterbox",
+      "category": "AKUROCK Musterbox",
+      "productId": "64b1118ceecb5e93f7a6d764",
+      "variantId": "64b1118d8fc14decf60ad547",
+      "price": "€25.00",
+      "description": "Complete sample collection - all stones",
+      "mainImage": "/images/Sample-0240316_small.webp",
+      "sorting": 1
     }
   ],
   "accessories": [
@@ -685,7 +700,7 @@
       "description": "60% Upcycled Pet Polyester",
       "category": "AKUROCK Zubehör",
       "price": "€40.00",
-      "priceValue": 40.00,
+      "priceValue": 40.0,
       "currency": "EUR",
       "mainImage": "/images/64b7ebdad523d6a9c1e37e0b_Black%20Acoustic-felt.jpg",
       "selection_slider_image": "/images/64b7ec4d856eed9e41a944a9_Pet-Acoustic-felt-black.png",
@@ -771,7 +786,7 @@
       "description": "",
       "category": "AKUROCK Zubehör",
       "price": "€8.90",
-      "priceValue": 8.90,
+      "priceValue": 8.9,
       "currency": "EUR",
       "mainImage": "/images/66730dd87c90d422429ead6e_Holzschrauben.webp",
       "requiresShipping": false,
@@ -788,7 +803,7 @@
       "description": "",
       "category": "AKUROCK Zubehör",
       "price": "€24.90",
-      "priceValue": 24.90,
+      "priceValue": 24.9,
       "currency": "EUR",
       "mainImage": "/images/66730e45eb22f5a346bacf17_Nano.webp",
       "requiresShipping": true,
@@ -805,7 +820,7 @@
       "description": "Musterbox",
       "category": "AKUROCK Musterbox",
       "price": "€25.00",
-      "priceValue": 25.00,
+      "priceValue": 25.0,
       "currency": "EUR",
       "mainImage": "/images/666732faa18c8ada2931f674_20240314_153732-2mob.webp",
       "special_field_slogan": "Trouble Deciding?",
@@ -821,32 +836,86 @@
       "handle": "akurock-akustikpaneele",
       "title": "AKUROCK Akustikpaneele",
       "template_suffix": "akurock-akustikpaneele",
-      "products": ["brush", "whisper", "yami", "gaia", "ligia", "yuki"],
-      "sort_order": [1, 2, 3, 4, 5, 6]
+      "products": [
+        "brush",
+        "whisper",
+        "yami",
+        "gaia",
+        "ligia",
+        "yuki"
+      ],
+      "sort_order": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ]
     },
     {
       "id": "muster",
       "handle": "muster",
       "title": "AKUROCK Muster",
       "template_suffix": "muster",
-      "products": ["brush-sample", "whisper-sample", "yami-sample", "gaia-sample", "ligia-sample", "yuki-sample", "brush-sample-premium", "whisper-sample-deluxe", "gaia-sample-classic"],
-      "sort_order": [1, 2, 3, 4, 5, 6, 7, 8, 9]
+      "products": [
+        "brush-sample",
+        "whisper-sample",
+        "yami-sample",
+        "gaia-sample",
+        "ligia-sample",
+        "yuki-sample",
+        "brush-sample-premium",
+        "whisper-sample-deluxe",
+        "gaia-sample-classic"
+      ],
+      "sort_order": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ]
     },
     {
       "id": "zubehor",
       "handle": "zubehor",
       "title": "AKUROCK Zubehör",
       "template_suffix": "zubehor",
-      "products": ["schrauben-weiss", "wandschrauben-schwarz", "wandkleber", "kartuschenpresse", "lattenschrauben", "nano-versiegelung", "acoustic-felt"],
-      "sort_order": [2, 3, 4, 5, 6, 7, 1]
+      "products": [
+        "schrauben-weiss",
+        "wandschrauben-schwarz",
+        "wandkleber",
+        "kartuschenpresse",
+        "lattenschrauben",
+        "nano-versiegelung",
+        "acoustic-felt"
+      ],
+      "sort_order": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        1
+      ]
     },
     {
       "id": "musterbox",
       "handle": "musterbox",
       "title": "AKUROCK Musterbox",
       "template_suffix": "musterbox",
-      "products": ["musterbox"],
-      "sort_order": [1]
+      "products": [
+        "musterbox"
+      ],
+      "sort_order": [
+        1
+      ]
     }
   ],
   "categories": [

@@ -2378,20 +2378,23 @@
     gridContainer.style.opacity = '';
     console.log('✅ populate-cms.js: Ensured container is visible');
 
-    // Filter sample boxes - use products with "AKUROCK Muster" category (priced at €5.00)
-    // ALSO check cmsData.samples if it exists (backward compatibility)
+    // Filter sample boxes - only show the 6 main samples (not premium/deluxe/classic variants)
     const allProducts = [
       ...(cmsData.products || []),
-      ...(cmsData.samples || []) // Include samples array if it exists
+      ...(cmsData.samples || [])
     ];
-    
+
     const sampleBoxes = allProducts
       .filter(p => {
         if (!p) return false;
-        const isSample = p.category === 'AKUROCK Muster' || 
-                        (p.id && p.id.includes('-sample')) || 
+        const isSample = p.category === 'AKUROCK Muster' ||
+                        (p.id && p.id.includes('-sample')) ||
                         (p.name && p.name.toLowerCase().includes('sample'));
-        return isSample;
+        if (!isSample) return false;
+        // Exclude premium/deluxe/classic variants - only show base samples
+        if (p.id && (p.id.includes('-premium') || p.id.includes('-deluxe') || p.id.includes('-classic'))) return false;
+        if (p.name && /(premium|deluxe|classic)/i.test(p.name)) return false;
+        return true;
       })
       .sort((a, b) => (a.sorting || 999) - (b.sorting || 999));
 
@@ -2495,10 +2498,20 @@
       // Clean display name - remove "-Sample" suffix if present
       const displayName = (product.name || '').replace(/-Sample$/i, '').trim() || product.special_field_slogan || 'Sample';
 
-      const nameColor = product.button_header_color || 'hsla(0, 0%, 0%, 1.00)';
-      const cardBgColor = product.color || 'hsla(0, 0%, 95%, 0.30)';
-      const priceValue = product.priceValue || parseFloat((product.price || '0').replace(/[^\d.]/g, '')) || 5.00;
-      const priceDisplay = product.price || `€${priceValue.toFixed(2)}`;
+      // Use sample_card_color if available, otherwise button_header_color with visibility check
+      var rawColor = product.sample_card_color || product.button_header_color || '';
+      // If color is too light (near white), use a visible fallback
+      var nameColor = rawColor;
+      if (rawColor) {
+        var lightMatch = rawColor.match(/hsla?\([^,]*,\s*[\d.]+%?,\s*([\d.]+)%/);
+        if (lightMatch && parseFloat(lightMatch[1]) > 85) {
+          nameColor = '#8a8278'; // warm grey fallback for very light colors
+        }
+      }
+      if (!nameColor) nameColor = '#3c3c3c';
+      var cardBgColor = '#f2f1f0'; // Uniform background matching reference
+      var priceValue = parseFloat((product.price || '0').replace(/[^\d.]/g, '')) || 5;
+      var priceDisplay = Math.round(priceValue) + '€';
       const description = t(product.stone || product.description || '');
       
       // Create sample box card
@@ -2509,59 +2522,48 @@
       card.setAttribute('data-variant-id', product.variantId || '');
       card.style.cursor = 'pointer';
       
-      card.innerHTML = `
-        <div class="item-wrap_samples" style="background-color: ${cardBgColor};">
-          <div class="top_titel-wrap">
-            <div class="header-wrap_samples">
-              <div class="text-block-65" style="color: ${nameColor}; font-size: 2.6rem; font-weight: 600; line-height: 3.3rem; letter-spacing: -0.05em;">${displayName}</div>
-              <div class="description-wrap_samples">
-                <div class="text-block-70" style="color: ${nameColor}; opacity: 0.8; font-size: 15px; font-weight: 500;">${description}</div>
-              </div>
-            </div>
-            <div class="price-wrap_samples">
-              <div class="text-block-68" style="color: ${nameColor}; font-size: 1.7rem; font-weight: 600; line-height: 1.8rem; padding-top: 0.6rem;">${priceDisplay}</div>
-            </div>
-          </div>
-          <div class="img_wrap" style="transform: translate3d(0px, -10%, 0px) scale3d(1, 1, 1) rotateX(0deg) rotateY(0deg) rotateZ(0deg) skew(0deg); transform-style: preserve-3d;">
-            <img alt="${displayName}" loading="lazy" width="171" bind="b1269c68-109a-dc80-393a-178e0ae89112" src="${displayImage}" class="image-132" 
-                 onerror="this.onerror=null; this.src='${product.mainImage || product.selection_slider_image || ''}';">
-          </div>
-          <div class="bottom_addtocart-wrap">
-            <div id="item-1" bind="e19d87a7-4ff0-df81-23a1-e1aec52e1544" class="add-to-cart">
-              <form bind="e19d87a7-4ff0-df81-23a1-e1aec52e1545" template-bind="e19d87a7-4ff0-df81-23a1-e1aec52e1545" position-bind-position="prepend" 
-                    data-node-type="commerce-add-to-cart-form" 
-                    data-commerce-product-id="${product.productId || ''}"
-                    data-commerce-sku-id="${product.variantId || ''}"
-                    data-wf-product-id="${product.productId || ''}"
-                    data-wf-variant-id="${product.variantId || ''}"
-                    data-loading-text="Adding to cart..."
-                    class="w-commerce-commerceaddtocartform"
-                    action="javascript:void(0);"
-                    onsubmit="return false;">
-                <a position-id="e19d87a7-4ff0-df81-23a1-e1aec52e1551" data-node-type="commerce-buy-now-button" data-default-text="Buy now" data-subscription-text="Subscribe now" aria-busy="false" aria-haspopup="false" style="display:none" class="w-commerce-commercebuynowbutton w-dyn-hide" href="/quotation">Buy now</a>
-                <div bind="ec356d63-f585-bba1-47c8-b5a2a0763874" position-id="ec356d63-f585-bba1-47c8-b5a2a0763874" class="addtocart_container" style="background-color: ${nameColor};">
-                  <img src="/images/Large-Arrow-White-Selection.svg" loading="lazy" width="36" alt="" class="image-131">
-                  <input type="submit"
-                         bind="e19d87a7-4ff0-df81-23a1-e1aec52e1550"
-                         data-node-type="commerce-add-to-cart-button"
-                         data-loading-text="${t('Hinzufügen..')}"
-                         aria-busy="false"
-                         aria-haspopup="dialog"
-                         class="w-commerce-commerceaddtocartbutton add-to-cart-button-2"
-                         value="${t('In den Warenkorb')}">
-                </div>
-              </form>
-              <div bind="e19d87a7-4ff0-df81-23a1-e1aec52e1552" style="display:none" class="w-commerce-commerceaddtocartoutofstock" tabindex="0">
-                <div>This product is out of stock.</div>
-              </div>
-              <div aria-live="assertive" bind="e19d87a7-4ff0-df81-23a1-e1aec52e1555" data-node-type="commerce-add-to-cart-error" style="display:none" class="w-commerce-commerceaddtocarterror">
-                <div data-node-type="commerce-add-to-cart-error" data-w-add-to-cart-quantity-error="Product is not available in this quantity." data-w-add-to-cart-general-error="Something went wrong when adding this item to the cart." data-w-add-to-cart-mixed-cart-error="You can't purchase another product with a subscription." data-w-add-to-cart-buy-now-error="Something went wrong when trying to purchase this item." data-w-add-to-cart-checkout-disabled-error="Checkout is disabled on this site." data-w-add-to-cart-select-all-options-error="Please select an option in each set.">Product is not available in this quantity.</div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="darken-animation-layer"></div>
-      `;
+      card.innerHTML = '<div class="item-wrap_samples" style="background-color:' + cardBgColor + ';">' +
+          '<div class="top_titel-wrap">' +
+            '<div class="header-wrap_samples">' +
+              '<div class="text-block-65" style="color:' + nameColor + '">' + displayName + '</div>' +
+              '<div class="description-wrap_samples">' +
+                '<div class="text-block-70" style="color:' + nameColor + '">' + description + '</div>' +
+              '</div>' +
+            '</div>' +
+            '<div class="price-wrap_samples">' +
+              '<div class="text-block-68" style="color:' + nameColor + '">' + priceDisplay + '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="img_wrap">' +
+            '<img alt="' + displayName + '" loading="lazy" width="171" src="' + displayImage + '" class="image-132"' +
+            ' onerror="this.onerror=null; this.src=\'' + (product.mainImage || '') + '\';">' +
+          '</div>' +
+          '<div class="bottom_addtocart-wrap">' +
+            '<div id="item-' + (index + 1) + '" class="add-to-cart">' +
+              '<form data-node-type="commerce-add-to-cart-form"' +
+                    ' data-commerce-product-id="' + (product.productId || '') + '"' +
+                    ' data-commerce-sku-id="' + (product.variantId || '') + '"' +
+                    ' data-wf-product-id="' + (product.productId || '') + '"' +
+                    ' data-wf-variant-id="' + (product.variantId || '') + '"' +
+                    ' data-loading-text="Adding to cart..."' +
+                    ' class="w-commerce-commerceaddtocartform"' +
+                    ' action="javascript:void(0);" onsubmit="return false;">' +
+                '<div class="addtocart_container" style="background-color:' + nameColor + ';">' +
+                  '<img src="/images/Large-Arrow-White-Selection.svg" loading="lazy" width="36" alt="" class="image-131">' +
+                  '<input type="submit" data-node-type="commerce-add-to-cart-button"' +
+                         ' data-loading-text="' + t('Hinzufügen..') + '"' +
+                         ' aria-busy="false" aria-haspopup="dialog"' +
+                         ' class="w-commerce-commerceaddtocartbutton add-to-cart-button-2"' +
+                         ' value="' + t('Warenkorb') + '">' +
+                '</div>' +
+              '</form>' +
+              '<div style="display:none" class="w-commerce-commerceaddtocartoutofstock" tabindex="0">' +
+                '<div>This product is out of stock.</div>' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="darken-animation-layer"></div>';
 
       gridContainer.appendChild(card);
       console.log(`✅ populate-cms.js: Card ${index + 1} appended to DOM for:`, product.name);
