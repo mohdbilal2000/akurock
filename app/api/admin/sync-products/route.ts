@@ -1,18 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { rateLimit, getClientIP } from '@/lib/rate-limiter';
 
-// Try to import prisma, but handle gracefully if database unavailable
-let prisma: any = null;
-try {
-  // Check if DATABASE_URL is set (database configured)
-  if (process.env.DATABASE_URL) {
-    const prismaModule = require('@/lib/prisma');
-    prisma = prismaModule.prisma;
-  } else {
-    console.log('DATABASE_URL not set - database sync disabled');
-  }
-} catch (error) {
-  console.warn('Prisma not available - database sync disabled:', error);
+// Database not configured — sync operates in stub mode
+const prisma: any = null;
+if (!process.env.DATABASE_URL) {
+  console.log('DATABASE_URL not set - database sync disabled');
 }
 
 export async function POST(request: NextRequest) {
