@@ -1,192 +1,78 @@
-# 🚀 Production Deployment Checklist
+# Production Deployment Checklist — akurock.com
 
-## ✅ Pre-Deployment Steps Completed
+## Pre-Deployment
 
-- [x] All changes committed to git
-- [x] Code pushed to GitHub: `https://github.com/txlcodes/stone-arts-vfinal.git`
+- [x] Next.js build passes (`npx next build` — zero errors)
+- [x] Standalone output mode configured (`output: 'standalone'`)
+- [x] Image optimization disabled for shared hosting (`unoptimized: true`)
+- [x] Domain set to `akurock.com` in sitemap, robots, metadata, canonical URLs
+- [x] Security headers configured (CSP, HSTS, X-Frame-Options)
+- [x] Admin panel protected (HTTP Basic Auth via `ADMIN_PASSWORD`)
+- [x] API rate limiting active (quotation: 5/min, admin: 20/min, newsletter: 3/min)
+- [x] Input sanitization on all form endpoints
+- [x] GDPR cookie consent banner (blocks GA4 until accepted)
+- [x] EU ODR link in footer (all 3 languages)
+- [x] Custom 404 pages (root + locale-aware)
+- [x] XML sitemap with ~72 URLs and hreflang alternates
+- [x] robots.txt disallows /admin, /api/, /_next/
+- [x] JSON-LD structured data (LocalBusiness, Product, BreadcrumbList, FAQPage)
+- [x] GA4 with Consent Mode v2 (denied by default)
+- [x] WhatsApp widget, social share, newsletter handler
+- [x] Deploy script created (`bash deploy.sh`)
+- [x] `.env.example` documents all environment variables
 
-## 📋 Render Deployment Steps
+## DNS (Hostinger)
 
-### Step 1: Create PostgreSQL Database on Render
+- [x] A record: `@` → `2.57.91.91`
+- [x] CNAME: `www` → `akurock.com`
+- [ ] SSL certificate enabled (hPanel → SSL)
 
-1. Go to [Render Dashboard](https://dashboard.render.com)
-2. Click **"New +"** → **"PostgreSQL"**
-3. Configure:
-   - **Name**: `stonearts-db` (or your preferred name)
-   - **Database**: `stonearts`
-   - **User**: `stonearts_user` (or auto-generated)
-   - **Plan**: Free (or upgrade if needed)
-4. Click **"Create Database"**
-5. **IMPORTANT**: Copy both URLs:
-   - **Internal Database URL** (for production app)
-   - **External Database URL** (for migrations)
+## Environment Variables to Set on Hostinger
 
-### Step 2: Create Web Service on Render
+| Variable | Purpose | Required |
+|----------|---------|----------|
+| `NODE_ENV` | Must be `production` | Yes |
+| `ADMIN_PASSWORD` | Protects /admin and /api/admin/* | Yes |
+| `NEXT_PUBLIC_GA_MEASUREMENT_ID` | Google Analytics 4 tracking | When ready |
+| `DATABASE_URL` | PostgreSQL connection string | When adding DB |
+| `NEXTAUTH_SECRET` | Session encryption key | When adding auth |
 
-1. In Render Dashboard, click **"New +"** → **"Web Service"**
-2. Connect your GitHub repository:
-   - Select **"Public Git repository"**
-   - Repository URL: `https://github.com/txlcodes/stone-arts-vfinal.git`
-   - Or connect via GitHub OAuth
-3. Configure the service:
+## Deployment Steps
 
-   **Basic Settings:**
-   - **Name**: `stonearts-nextjs` (or your preferred name)
-   - **Region**: Choose closest to your users
-   - **Branch**: `main`
-   - **Root Directory**: Leave empty (or `stonearts-nextjs` if repo has subfolder)
-   - **Environment**: `Node`
-   - **Build Command**: 
-     ```bash
-     npm install && npm run prisma:generate && npm run build
-     ```
-   - **Start Command**: 
-     ```bash
-     npm start
-     ```
+See **QUICK-DEPLOY.md** for step-by-step instructions.
 
-### Step 3: Set Environment Variables
+```bash
+# Build & package
+bash deploy.sh
 
-Add these environment variables in Render's dashboard:
+# Upload deploy-ready/ contents to Hostinger public_html/
+# Set env vars in hPanel
+# Restart Node.js application
+```
 
-#### Required Variables:
+## Post-Deployment Verification
 
-1. **DATABASE_URL**
-   - Use the **Internal Database URL** from Step 1
-   - Format: `postgresql://user:password@host:port/database?schema=public`
+- [ ] Homepage loads at `https://www.akurock.com`
+- [ ] Language switcher works (DE/EN/ES)
+- [ ] Product pages load with images
+- [ ] Add-to-cart works (cart drawer opens)
+- [ ] Quotation form submits successfully
+- [ ] `/admin` prompts for HTTP Basic Auth
+- [ ] `/sitemap.xml` returns valid XML
+- [ ] `/robots.txt` returns correct content
+- [ ] Non-existent page shows branded 404
+- [ ] Cookie consent banner appears on first visit
+- [ ] WhatsApp widget visible bottom-left
+- [ ] Response headers include CSP, HSTS, X-Frame-Options
+- [ ] Mobile layout renders correctly
+- [ ] All 3 locales work (de/en/es URLs)
+- [ ] SSL certificate active (padlock in browser)
 
-2. **NODE_ENV**
-   - Value: `production`
+## Post-Launch
 
-3. **NEXTAUTH_URL**
-   - Initially: `https://your-app-name.onrender.com` (update after first deploy)
-   - **Important**: Update this after you get your app URL
-
-4. **NEXTAUTH_SECRET**
-   - Generate locally: `openssl rand -base64 32`
-   - Or use any secure random 32+ character string
-   - Example: `your-super-secret-key-here-minimum-32-chars`
-
-#### Optional (Add when ready):
-
-5. **NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY**
-   - From Stripe Dashboard → API Keys
-   - Test: `pk_test_...` or Live: `pk_live_...`
-
-6. **STRIPE_SECRET_KEY**
-   - From Stripe Dashboard → API Keys
-   - Test: `sk_test_...` or Live: `sk_live_...`
-
-7. **STRIPE_WEBHOOK_SECRET**
-   - From Stripe Dashboard → Webhooks
-   - Format: `whsec_...`
-
-### Step 4: Deploy
-
-1. Click **"Create Web Service"**
-2. Render will:
-   - Clone your repository
-   - Install dependencies
-   - Generate Prisma Client
-   - Build the Next.js app
-   - Start the service
-
-3. **Wait for deployment** (usually 5-10 minutes)
-
-### Step 5: Update NEXTAUTH_URL
-
-After first deployment:
-
-1. Copy your app URL from Render dashboard (e.g., `https://stonearts-nextjs.onrender.com`)
-2. Go to **Environment** tab
-3. Update **NEXTAUTH_URL** to match your app URL exactly
-4. Click **"Save Changes"** (this will trigger a redeploy)
-
-### Step 6: Run Database Migrations
-
-After deployment, run Prisma migrations:
-
-**Option A: Using Render Shell**
-1. In Render dashboard, click **"Shell"** tab
-2. Run:
-   ```bash
-   npx prisma migrate deploy
-   ```
-
-**Option B: Using External Database URL (Local)**
-1. Temporarily set `DATABASE_URL` in your local `.env` to the **External Database URL**
-2. Run:
-   ```bash
-   npx prisma migrate deploy
-   ```
-3. Remove the external URL from `.env` after migration
-
-### Step 7: Verify Deployment
-
-1. Visit your app URL: `https://your-app-name.onrender.com`
-2. Check homepage loads correctly
-3. Test product pages
-4. Verify admin panel: `/admin`
-5. Check database connection (products should load)
-
-## 🔧 Troubleshooting
-
-### Build Fails
-
-- Check build logs in Render dashboard
-- Verify all environment variables are set
-- Ensure `DATABASE_URL` uses Internal URL format
-
-### Database Connection Errors
-
-- Verify `DATABASE_URL` is correct
-- Check database is running in Render dashboard
-- Ensure migrations ran successfully
-
-### App Crashes on Start
-
-- Check logs in Render dashboard
-- Verify `NEXTAUTH_URL` matches your app URL exactly
-- Ensure Prisma Client was generated (`npm run prisma:generate`)
-
-### Products Not Loading
-
-- Verify database migrations ran
-- Check if products exist in database
-- Verify API routes are working
-
-## 📝 Post-Deployment
-
-- [ ] Update domain/DNS if using custom domain
-- [ ] Set up Stripe webhooks (if using Stripe)
-- [ ] Configure SSL certificate (auto-handled by Render)
-- [ ] Set up monitoring/alerts
-- [ ] Test checkout flow (if implemented)
-- [ ] Verify admin panel access
-
-## 🔗 Useful Links
-
-- [Render Dashboard](https://dashboard.render.com)
-- [Render Documentation](https://render.com/docs)
-- [Prisma Migrations](https://www.prisma.io/docs/concepts/components/prisma-migrate)
-- [Next.js Deployment](https://nextjs.org/docs/deployment)
-
-## ⚠️ Important Notes
-
-1. **Free Tier Limitations**:
-   - 512 MB RAM
-   - 0.1 CPU
-   - Spins down after 15 minutes of inactivity
-   - First request after spin-down may be slow
-
-2. **Database URLs**:
-   - Use **Internal URL** for production app
-   - Use **External URL** only for migrations from local machine
-
-3. **Environment Variables**:
-   - Never commit `.env` files
-   - All secrets should be in Render dashboard only
-
-4. **Auto-Deploy**:
-   - Render auto-deploys on push to `main` branch
-   - You can disable this in settings if needed
+- [ ] Submit sitemap to Google Search Console (`https://www.akurock.com/sitemap.xml`)
+- [ ] Set up Google Analytics 4 property and add Measurement ID
+- [ ] Test GA4 events: page views, add_to_cart, generate_lead, newsletter_signup
+- [ ] Monitor error logs (hPanel → Error Logs)
+- [ ] Set up uptime monitoring (e.g., UptimeRobot)
+- [ ] Verify Google indexes pages (Search Console → Coverage)

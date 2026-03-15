@@ -2,12 +2,20 @@ import { NextRequest, NextResponse } from 'next/server';
 import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
+import { rateLimit, getClientIP } from '@/lib/rate-limiter';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/svg+xml'];
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limit: 20 uploads per minute per IP
+    const ip = getClientIP(request.headers);
+    const { success } = rateLimit(`admin-upload:${ip}`, { maxRequests: 20, windowMs: 60_000 });
+    if (!success) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+
     const formData = await request.formData();
     const file = formData.get('file') as File;
 

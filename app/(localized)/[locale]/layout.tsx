@@ -1,30 +1,96 @@
 import type { Metadata } from "next";
-import "../styles/normalize.css";
-import "../styles/webflow.css";
-import "../styles/stonearts-r-webshop.webflow.css";
+import { locales, defaultLocale, type Locale } from "@/lib/i18n/config";
+import { getDictionary } from "@/lib/i18n/get-dictionary";
+import "../../../styles/normalize.css";
+import "../../../styles/webflow.css";
+import "../../../styles/stonearts-r-webshop.webflow.css";
 
-export const metadata: Metadata = {
-  title: "stonearts® Naturstein Akustikpaneele, Lamellenwand & Wandpaneele",
-  description: "Entdecke die Vielfalt von handgefertigten Naturstein Akustikpaneelen, die Lärm reduzieren und eine gesunde Raumakustik mit Stil schaffen.",
-  openGraph: {
-    title: "stonearts® Naturstein Akustikpaneele, Lamellenwand & Wandpaneele",
-    description: "Entdecke die Vielfalt von handgefertigten Naturstein Akustikpaneelen, die Lärm reduzieren und eine gesunde Raumakustik mit Stil schaffen.",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "stonearts® Naturstein Akustikpaneele, Lamellenwand & Wandpaneele",
-    description: "Entdecke die Vielfalt von handgefertigten Naturstein Akustikpaneelen, die Lärm reduzieren und eine gesunde Raumakustik mit Stil schaffen.",
-  },
-};
+export function generateStaticParams() {
+  return locales.map((locale) => ({ locale }));
+}
 
-export default function RootLayout({
+export async function generateMetadata({
+  params,
+}: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  const dict = getDictionary(locale as Locale);
+  const ogLocale = locale === 'de' ? 'de_AT' : locale === 'en' ? 'en_US' : 'es_ES';
+  const canonicalUrl = `https://www.akurock.com/${locale}`;
+
+  return {
+    title: {
+      default: dict['meta.title'],
+      template: `%s | stonearts®`,
+    },
+    description: dict['meta.description'],
+    metadataBase: new URL('https://www.akurock.com'),
+    alternates: {
+      canonical: canonicalUrl,
+      languages: Object.fromEntries(
+        locales.map(l => [l, `/${l}`])
+      ),
+    },
+    openGraph: {
+      title: dict['meta.title'],
+      description: dict['meta.description'],
+      type: 'website',
+      url: canonicalUrl,
+      siteName: 'stonearts®',
+      locale: ogLocale,
+      alternateLocale: locales.filter(l => l !== locale).map(l =>
+        l === 'de' ? 'de_AT' : l === 'en' ? 'en_US' : 'es_ES'
+      ),
+      images: [
+        {
+          url: '/images/stonearts-og-image.webp',
+          width: 1200,
+          height: 630,
+          alt: 'stonearts® Akurock Acoustic Panels',
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: dict['meta.title'],
+      description: dict['meta.description'],
+      images: ['/images/stonearts-og-image.webp'],
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
+    },
+    verification: {
+      // Add your verification codes here when ready
+      // google: 'your-google-verification-code',
+    },
+    other: {
+      // GEO meta tags for local SEO
+      'geo.region': 'AT',
+      'geo.placename': 'Wien',
+      'geo.position': '48.1765;16.2845',
+      'ICBM': '48.1765, 16.2845',
+    },
+  };
+}
+
+export default async function LocalizedLayout({
   children,
+  params,
 }: Readonly<{
   children: React.ReactNode;
+  params: Promise<{ locale: string }>;
 }>) {
+  const { locale } = await params;
+
   return (
-    <html lang="de" data-wf-page="64ad4116e38ed7d405f77d2f" data-wf-site="64ad4116e38ed7d405f77d26">
+    <html lang={locale} data-wf-page="64ad4116e38ed7d405f77d2f" data-wf-site="64ad4116e38ed7d405f77d26">
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -78,22 +144,85 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               "@context": "https://schema.org",
-              "@type": "Product",
-              name: "stonearts® GmbH-Münchendorf",
+              "@type": "LocalBusiness",
+              "@id": "https://www.akurock.com",
+              name: "stonearts® GmbH",
+              description: "Handcrafted natural stone acoustic panels, slat walls & wall panels",
+              url: "https://www.akurock.com",
+              logo: "https://www.akurock.com/images/stonearts%C2%AE-logo-black-long.svg",
+              image: "https://www.akurock.com/images/stonearts-og-image.webp",
+              telephone: "+43 660 855 10 01",
+              email: "office@stonearts.at",
+              address: {
+                "@type": "PostalAddress",
+                streetAddress: "Spohrstraße 29/23/1",
+                addressLocality: "Wien",
+                addressRegion: "Wien",
+                postalCode: "1130",
+                addressCountry: "AT",
+              },
+              geo: {
+                "@type": "GeoCoordinates",
+                latitude: 48.1765,
+                longitude: 16.2845,
+              },
               aggregateRating: {
                 "@type": "AggregateRating",
                 ratingValue: 5.0,
-                reviewCount: 13,
+                reviewCount: 30,
+                bestRating: 5,
               },
+              sameAs: [
+                "https://www.instagram.com/stonearts_official/",
+                "https://www.youtube.com/@stonearts",
+                "https://www.tiktok.com/@stonearts",
+                "https://www.pinterest.com/stonearts/",
+                "https://www.facebook.com/stonearts/",
+              ],
+              priceRange: "€€",
             }),
           }}
         />
         <script src="https://embedsocial.com/cdn/rsh2.js"></script>
+        {/* Google Analytics 4 — Consent Mode v2 (denied by default, unlocked by cookie-consent.js) */}
+        {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
+          <>
+            <script async src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}`} />
+            <script
+              dangerouslySetInnerHTML={{
+                __html: `
+                  window.dataLayer = window.dataLayer || [];
+                  function gtag(){dataLayer.push(arguments);}
+                  gtag('js', new Date());
+                  gtag('consent', 'default', {
+                    analytics_storage: 'denied',
+                    ad_storage: 'denied',
+                    wait_for_update: 500,
+                  });
+                  gtag('config', '${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}', {
+                    anonymize_ip: true,
+                  });
+                `,
+              }}
+            />
+          </>
+        )}
         <script src="https://code.jquery.com/jquery-3.6.0.min.js" defer></script>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css" />
         <script async src="https://cdn.jsdelivr.net/npm/@finsweet/attributes-cmsload@1/cmsload.js"></script>
+        {/* Hreflang tags for SEO - per-locale alternate links */}
+        {locales.map((l) => (
+          <link key={l} rel="alternate" hrefLang={l === 'de' ? 'de-AT' : l === 'en' ? 'en' : 'es'} href={`https://www.akurock.com/${l}`} />
+        ))}
+        <link rel="alternate" hrefLang="x-default" href={`https://www.akurock.com/${defaultLocale}`} />
       </head>
       <body>
+        {/* Pass locale to client-side JS */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.__LOCALE__ = "${locale}";`,
+          }}
+        />
         {children}
         <script src="https://d3e54v103j8qbb.cloudfront.net/js/jquery-3.5.1.min.dc5e7f18c8.js?site=64ad4116e38ed7d405f77d26" type="text/javascript" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossOrigin="anonymous"></script>
         <script src="/js/webflow.js" type="text/javascript"></script>
@@ -101,6 +230,12 @@ export default function RootLayout({
         <script src="/js/populate-cms.js" type="text/javascript"></script>
         <script src="/js/add-to-cart-handler.js" type="text/javascript"></script>
         <script src="/js/button-click-fix.js" type="text/javascript"></script>
+        <script src="/js/i18n-client.js" type="text/javascript"></script>
+        <script src="/js/scroll-animations.js" type="text/javascript" defer></script>
+        <script src="/js/cookie-consent.js" type="text/javascript" defer></script>
+        <script src="/js/whatsapp-widget.js" type="text/javascript" defer></script>
+        <script src="/js/social-share.js" type="text/javascript" defer></script>
+        <script src="/js/newsletter-handler.js" type="text/javascript" defer></script>
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -200,7 +335,6 @@ export default function RootLayout({
                 spaceBetween: "4%",
                 rewind: false,
                 watchOverflow: true,
-                // Touch/Swipe settings for mobile
                 touchEventsTarget: 'container',
                 touchStartPreventDefault: false,
                 touchMoveStopPropagation: false,

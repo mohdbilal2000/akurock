@@ -42,3 +42,10 @@ next-env.d.ts
 
 # prisma
 /prisma/migrations
+
+# deploy artifacts
+/deploy-ready
+akurock-deploy.zip
+akurock-deploy.tar.gz
+NUL
+.claude/

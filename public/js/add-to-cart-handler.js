@@ -96,6 +96,30 @@
           const success = window.CartManager.addToCart(productId, variantId, quantity);
           if (success) {
             console.log('✅ Add-to-Cart: Item added successfully (cart will open automatically)');
+
+            // GA4: track add_to_cart conversion
+            if (typeof gtag === 'function') {
+              try {
+                var productName = '';
+                var priceText = '';
+                var pageEl = document.querySelector('.product-detail_name, h1');
+                if (pageEl) productName = pageEl.textContent || '';
+                var priceEl = document.querySelector('.product-detail_price, .price');
+                if (priceEl) priceText = (priceEl.textContent || '').replace(/[^\d.,]/g, '');
+                gtag('event', 'add_to_cart', {
+                  currency: 'EUR',
+                  value: parseFloat(priceText.replace(',', '.')) || 0,
+                  items: [{
+                    item_id: productId,
+                    item_name: productName,
+                    item_variant: variantId,
+                    quantity: quantity
+                  }]
+                });
+              } catch (gaErr) {
+                console.warn('GA4 add_to_cart event error:', gaErr);
+              }
+            }
           } else {
             console.error('❌ Add-to-Cart: addToCart returned false');
           }

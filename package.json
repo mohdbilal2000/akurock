@@ -7,29 +7,20 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev",
-    "prisma:studio": "prisma studio",
-    "postinstall": "prisma generate"
+    "analyze": "ANALYZE=true next build"
   },
   "dependencies": {
     "next": "16.1.6",
     "react": "19.2.3",
-    "react-dom": "19.2.3",
-    "@prisma/client": "^5.20.0",
-    "next-auth": "^4.24.10",
-    "stripe": "^17.3.1",
-    "@stripe/stripe-js": "^4.7.0",
-    "bcryptjs": "^2.4.3"
+    "react-dom": "19.2.3"
   },
   "devDependencies": {
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@types/bcryptjs": "^2.4.6",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "typescript": "^5",
-    "prisma": "^5.20.0"
+    "@next/bundle-analyzer": "^16.1.6"
   }
 }

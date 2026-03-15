@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { rateLimit, getClientIP } from '@/lib/rate-limiter';
 
 // Try to import prisma, but handle gracefully if database unavailable
 let prisma: any = null;
@@ -16,6 +17,13 @@ try {
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limit: 20 requests per minute per IP
+    const ip = getClientIP(request.headers);
+    const { success } = rateLimit(`admin-sync:${ip}`, { maxRequests: 20, windowMs: 60_000 });
+    if (!success) {
+      return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+    }
+
     // Check if database is available
     if (!prisma) {
       return NextResponse.json(

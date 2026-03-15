@@ -1,12 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { rateLimit, getClientIP } from '@/lib/rate-limiter';
+import { sanitizeFormData } from '@/lib/sanitize';
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limit: 5 quotation submissions per minute per IP
+    const ip = getClientIP(request.headers);
+    const { success } = rateLimit(`quotation:${ip}`, { maxRequests: 5, windowMs: 60_000 });
+    if (!success) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { status: 429 }
+      );
+    }
+
     const data = await request.json();
-    
+
     const {
       firstName,
       lastName,
@@ -30,33 +39,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Save quotation to database (you can create a Quotation model in Prisma)
-    // For now, we'll save it as a JSON in a text field or create a simple storage
-    
-    // Option 1: Save to a Quotations table (requires Prisma schema update)
+    // Sanitize all text inputs to prevent XSS
+    const sanitized = sanitizeFormData({
+      firstName, lastName, email, phone,
+      company: company || '', address, city, postalCode, country,
+      message: message || '',
+    });
+
+    // TODO: Save to database when Prisma schema includes Quotation model
     // const quotation = await prisma.quotation.create({
-    //   data: {
-    //     firstName,
-    //     lastName,
-    //     email,
-    //     phone,
-    //     company,
-    //     address,
-    //     city,
-    //     postalCode,
-    //     country,
-    //     message,
-    //     cartItems: cartItems as any,
-    //     total,
-    //     status: 'PENDING'
-    //   }
+    //   data: { ...sanitized, cartItems, total, status: 'PENDING' }
     // });
 
-    // Option 2: For now, just return success (data is saved in localStorage on client)
-    // You can add email notification here or save to database later
-    
     // TODO: Send email notification
-    // await sendQuotationEmail({ ...data });
+    // await sendQuotationEmail({ ...sanitized, cartItems, total });
 
     return NextResponse.json({
       success: true,

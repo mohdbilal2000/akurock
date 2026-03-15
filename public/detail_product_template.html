@@ -65,6 +65,13 @@
   .js-accordion-body {
     display: none;
   }
+  /* Force hidden product sections visible (overrides Webflow interaction hiding) */
+  .section.details,
+  .section-bento-main.large_img.product {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
 </style>
   <!--  [Attributes by Finsweet] CMS Load  -->
   <script async="" src="https://cdn.jsdelivr.net/npm/@finsweet/attributes-cmsload@1/cmsload.js"></script>
@@ -85,6 +92,25 @@
     .swiper-button-next, .swiper-button-prev {
       opacity: 1;
       transition: 0.5s ease-in-out;
+    }
+    /* Force product hero section visible on desktop */
+    @media screen and (min-width: 992px) {
+      .section.product.top .mobile-selection-grid {
+        display: block !important;
+      }
+      /* Hide mobile-only components on desktop */
+      .section.product.top .slider-selector_component.is-slider-product.mobile {
+        display: none !important;
+      }
+      .section.product.top > .container-products > .mobile-selection-grid > .product_text_wrapper {
+        display: none !important;
+      }
+      /* Show the desktop product layout grid */
+      .section.product.top .product-selection-grid {
+        display: grid !important;
+        grid-template-columns: 55% 45%;
+        gap: 0;
+      }
     }
   </style>
       <style>
@@ -120,63 +146,63 @@
                       <div class="w-layout-grid mega-menu-grid">
                         <div id="w-node-_4bc36725-f958-4612-d2cb-e90fd749ba79-d749ba6b" class="mega-menu-block links">
                           <div class="link-wrapper">
-                            <a product-link="Yami" href="https://stonearts-r-webshop.webflow.io/product/whisper" class="mega-menu-linkblock w-inline-block">
+                            <a product-link="Yami" href="/product/whisper" class="mega-menu-linkblock w-inline-block">
                               <h5 class="heading-206 inspiration">Akurock Akustikpaneele</h5>
                             </a>
-                            <a href="akurock-muster.html" class="mega-menu-linkblock w-inline-block">
+                            <a href="/akurock-muster" class="mega-menu-linkblock w-inline-block">
                               <h5 class="heading-206 inspiration">Musterbox</h5>
                             </a>
-                            <a href="zubehoer.html" class="mega-menu-linkblock w-inline-block">
+                            <a href="/zubehoer" class="mega-menu-linkblock w-inline-block">
                               <h5 class="heading-206 inspiration">Zubehör</h5>
                             </a>
-                            <a href="visualizer.html" class="mega-menu-linkblock w-inline-block">
+                            <a href="/visualizer" class="mega-menu-linkblock w-inline-block">
                               <h5 class="heading-206 inspiration">Visualizer</h5>
                             </a>
-                            <a href="installation-and-guide.html" class="mega-menu-linkblock w-inline-block">
+                            <a href="/installation-and-guide" class="mega-menu-linkblock w-inline-block">
                               <h5 class="heading-206 inspiration">Installationsguide</h5>
                             </a>
-                            <a href="akustik.html" class="mega-menu-linkblock w-inline-block">
+                            <a href="/akustik" class="mega-menu-linkblock w-inline-block">
                               <h5 class="heading-206 inspiration">Wie funktioniert ein Akustikpaneel?</h5>
                             </a>
                           </div>
                         </div>
                         <div id="w-node-_4bc36725-f958-4612-d2cb-e90fd749ba87-d749ba6b" class="mega-menu-block img-large">
-                          <a product-link="Ligia" data-w-id="4bc36725-f958-4612-d2cb-e90fd749ba88" href="https://stonearts-r-webshop.webflow.io/product/whisper" class="img-container-menu w-inline-block">
+                          <a product-link="Ligia" data-w-id="4bc36725-f958-4612-d2cb-e90fd749ba88" href="/product/whisper" class="img-container-menu w-inline-block">
                             <div class="heade-wrapper-mega-menu">
                               <h4 class="heading-207 img">Highlight</h4>
                             </div>
                             <div class="img-wrapper-menu div-block-666 div-block-667 div-block-668"></div>
                             <div class="text-wrapper-menu">
                               <div class="bottom-mega-text-wrapper">
-                                <div class="text-block-57">Akurock Paneele</div><img src="images/Arrow-Right-Black---Mega--Menu.svg" loading="lazy" width="12" alt="" class="image-117">
+                                <div class="text-block-57">Akurock Paneele</div><img src="/images/Arrow-Right-Black---Mega--Menu.svg" loading="lazy" width="12" alt="" class="image-117">
                               </div>
                               <h4 class="heading-208">Erschaffen mühelos eine moderne Oase.</h4>
                             </div>
                           </a>
                         </div>
                         <div id="w-node-_4bc36725-f958-4612-d2cb-e90fd749ba94-d749ba6b" class="mega-menu-block img-large _2">
-                          <a data-w-id="4bc36725-f958-4612-d2cb-e90fd749ba95" href="akurock-muster.html" class="img-container-menu w-inline-block">
+                          <a data-w-id="4bc36725-f958-4612-d2cb-e90fd749ba95" href="/akurock-muster" class="img-container-menu w-inline-block">
                             <div class="heade-wrapper-mega-menu">
                               <h4 class="heading-207 img">Nimm es in die Hand!</h4>
                             </div>
                             <div class="img-wrapper-menu div-block-666 div-block-667 div-block-668 _2"></div>
                             <div class="text-wrapper-menu">
                               <div class="bottom-mega-text-wrapper">
-                                <div class="text-block-57">Musterbox</div><img src="images/Arrow-Right-Black---Mega--Menu.svg" loading="lazy" width="12" alt="" class="image-117">
+                                <div class="text-block-57">Musterbox</div><img src="/images/Arrow-Right-Black---Mega--Menu.svg" loading="lazy" width="12" alt="" class="image-117">
                               </div>
                               <h4 class="heading-208">Fühle und sehe es selbst.</h4>
                             </div>
                           </a>
                         </div>
                         <div id="w-node-_4bc36725-f958-4612-d2cb-e90fd749baa1-d749ba6b" class="mega-menu-block img-large">
-                          <a data-w-id="4bc36725-f958-4612-d2cb-e90fd749baa2" href="visualizer.html" class="img-container-menu w-inline-block">
+                          <a data-w-id="4bc36725-f958-4612-d2cb-e90fd749baa2" href="/visualizer" class="img-container-menu w-inline-block">
                             <div class="heade-wrapper-mega-menu">
                               <h4 class="heading-207 img">Probiere es an deiner Wand!</h4>
                             </div>
                             <div class="img-wrapper-menu div-block-666 div-block-667 div-block-668 _3"></div>
                             <div class="text-wrapper-menu">
                               <div class="bottom-mega-text-wrapper">
-                                <div class="text-block-57">Visualizer</div><img src="images/Arrow-Right-Black---Mega--Menu.svg" loading="lazy" width="12" alt="" class="image-117">
+                                <div class="text-block-57">Visualizer</div><img src="/images/Arrow-Right-Black---Mega--Menu.svg" loading="lazy" width="12" alt="" class="image-117">
                               </div>
                               <h4 class="heading-208">Schau dir AKUROCK vorab an deiner Wand an.</h4>
                             </div>
@@ -201,46 +227,46 @@
                       <div class="w-layout-grid mega-menu-grid inspiration">
                         <div id="w-node-_4bc36725-f958-4612-d2cb-e90fd749baba-d749ba6b" class="mega-menu-block links">
                           <div class="link-wrapper">
-                            <a href="galerie.html" class="mega-menu-linkblock w-inline-block">
+                            <a href="/galerie" class="mega-menu-linkblock w-inline-block">
                               <h5 class="heading-206 inspiration">Galerie</h5>
                             </a>
-                            <a href="stein-selektion.html" class="mega-menu-linkblock w-inline-block">
+                            <a href="/stein-selektion" class="mega-menu-linkblock w-inline-block">
                               <h5 class="heading-206 inspiration">Unsere Steine</h5>
                             </a>
-                            <a href="stoneskin.html" class="mega-menu-linkblock w-inline-block">
+                            <a href="/stoneskin" class="mega-menu-linkblock w-inline-block">
                               <h5 class="heading-206 inspiration">Stoneskin</h5>
                             </a>
-                            <a href="blog-news.html" class="mega-menu-linkblock w-inline-block">
+                            <a href="/blog-news" class="mega-menu-linkblock w-inline-block">
                               <h5 class="heading-206 inspiration">Unser Journal</h5>
                             </a>
-                            <a href="visualizer.html" class="mega-menu-linkblock w-inline-block">
+                            <a href="/visualizer" class="mega-menu-linkblock w-inline-block">
                               <h5 class="heading-206 inspiration">Visualizer</h5>
                             </a>
                           </div>
                         </div>
                         <div id="w-node-_4bc36725-f958-4612-d2cb-e90fd749bac5-d749ba6b" class="mega-menu-block img-large">
-                          <a data-w-id="4bc36725-f958-4612-d2cb-e90fd749bac6" href="stein-selektion.html" class="img-container-menu w-inline-block">
+                          <a data-w-id="4bc36725-f958-4612-d2cb-e90fd749bac6" href="/stein-selektion" class="img-container-menu w-inline-block">
                             <div class="heade-wrapper-mega-menu">
                               <h4 class="heading-207 img">Lass dich inspirieren!</h4>
                             </div>
                             <div class="img-wrapper-menu div-block-666 div-block-667 div-block-668 inspiration"></div>
                             <div class="text-wrapper-menu">
                               <div class="bottom-mega-text-wrapper">
-                                <div class="text-block-57">Die Seele der Natur</div><img src="images/Arrow-Right-Black---Mega--Menu.svg" loading="lazy" width="12" alt="" class="image-117">
+                                <div class="text-block-57">Die Seele der Natur</div><img src="/images/Arrow-Right-Black---Mega--Menu.svg" loading="lazy" width="12" alt="" class="image-117">
                               </div>
                               <h4 class="heading-208">Berührt von den Elementen durch Jahrtausende.</h4>
                             </div>
                           </a>
                         </div>
                         <div id="w-node-_4bc36725-f958-4612-d2cb-e90fd749bad2-d749ba6b" class="mega-menu-block img-large _2">
-                          <a data-w-id="4bc36725-f958-4612-d2cb-e90fd749bad3" href="stoneskin.html" class="img-container-menu w-inline-block">
+                          <a data-w-id="4bc36725-f958-4612-d2cb-e90fd749bad3" href="/stoneskin" class="img-container-menu w-inline-block">
                             <div class="heade-wrapper-mega-menu">
                               <h4 class="heading-207 img">Naturstein</h4>
                             </div>
                             <div class="img-wrapper-menu div-block-666 div-block-667 div-block-668 _2 inspiration second"></div>
                             <div class="text-wrapper-menu">
                               <div class="bottom-mega-text-wrapper">
-                                <div class="text-block-57">Stoneskin</div><img src="images/Arrow-Right-Black---Mega--Menu.svg" loading="lazy" width="12" alt="" class="image-117">
+                                <div class="text-block-57">Stoneskin</div><img src="/images/Arrow-Right-Black---Mega--Menu.svg" loading="lazy" width="12" alt="" class="image-117">
                               </div>
                               <h4 class="heading-208">Millionen Jahre auf einem dünnen Blatt.</h4>
                             </div>
@@ -265,40 +291,40 @@
                       <div class="w-layout-grid mega-menu-grid support">
                         <div id="w-node-_4bc36725-f958-4612-d2cb-e90fd749baeb-d749ba6b" class="mega-menu-block links">
                           <div class="link-wrapper">
-                            <a href="faq.html" class="mega-menu-linkblock w-inline-block">
+                            <a href="/faq" class="mega-menu-linkblock w-inline-block">
                               <h5 class="heading-206 inspiration">Brauchst du Hilfe?</h5>
                             </a>
-                            <a href="faq.html" class="mega-menu-linkblock w-inline-block">
+                            <a href="/faq" class="mega-menu-linkblock w-inline-block">
                               <h5 class="heading-206 inspiration">FAQs</h5>
                             </a>
-                            <a href="kontaktier-uns.html" class="mega-menu-linkblock w-inline-block">
+                            <a href="/kontaktier-uns" class="mega-menu-linkblock w-inline-block">
                               <h5 class="heading-206 inspiration">Kontaktiere uns</h5>
                             </a>
                           </div>
                         </div>
                         <div id="w-node-_4bc36725-f958-4612-d2cb-e90fd749baf6-d749ba6b" class="mega-menu-block img-large">
-                          <a data-w-id="4bc36725-f958-4612-d2cb-e90fd749baf7" href="installation-and-guide.html" class="img-container-menu w-inline-block">
+                          <a data-w-id="4bc36725-f958-4612-d2cb-e90fd749baf7" href="/installation-and-guide" class="img-container-menu w-inline-block">
                             <div class="heade-wrapper-mega-menu">
                               <h4 class="heading-207 img">Wie installiere ich AKUROCK?</h4>
                             </div>
                             <div class="img-wrapper-menu div-block-666 div-block-667 div-block-668 installation"></div>
                             <div class="text-wrapper-menu">
                               <div class="bottom-mega-text-wrapper">
-                                <div class="text-block-57">Installationsguide</div><img src="images/Arrow-Right-Black---Mega--Menu.svg" loading="lazy" width="12" alt="" class="image-117">
+                                <div class="text-block-57">Installationsguide</div><img src="/images/Arrow-Right-Black---Mega--Menu.svg" loading="lazy" width="12" alt="" class="image-117">
                               </div>
                               <h4 class="heading-208">Schritt-für-Schritt-Anleitung für die mühelose Umgestaltung deines Raumes.</h4>
                             </div>
                           </a>
                         </div>
                         <div id="w-node-_4bc36725-f958-4612-d2cb-e90fd749bb03-d749ba6b" class="mega-menu-block img-large _2">
-                          <a data-w-id="4bc36725-f958-4612-d2cb-e90fd749bb04" href="kontaktier-uns.html" class="img-container-menu w-inline-block">
+                          <a data-w-id="4bc36725-f958-4612-d2cb-e90fd749bb04" href="/kontaktier-uns" class="img-container-menu w-inline-block">
                             <div class="heade-wrapper-mega-menu">
                               <h4 class="heading-207 img">Hast du Fragen?</h4>
                             </div>
                             <div class="img-wrapper-menu div-block-666 div-block-667 div-block-668 _2 support"></div>
                             <div class="text-wrapper-menu">
                               <div class="bottom-mega-text-wrapper">
-                                <div class="text-block-57">Wir sind für dich da</div><img src="images/Arrow-Right-Black---Mega--Menu.svg" loading="lazy" width="12" alt="" class="image-117">
+                                <div class="text-block-57">Wir sind für dich da</div><img src="/images/Arrow-Right-Black---Mega--Menu.svg" loading="lazy" width="12" alt="" class="image-117">
                               </div>
                               <h4 class="heading-208">Bereit, deinen Raum in ein Meisterwerk zu verwandeln? Teile deine Vision mit uns und lasse uns diese gemeinsam verwirklichen!</h4>
                             </div>
@@ -319,10 +345,10 @@
           </div>
           <div class="nav-right">
             <nav role="navigation" class="nav-menu _2 w-nav-menu">
-              <a href="uber-uns.html" class="link-block-17 w-inline-block">
+              <a href="/uber-uns" class="link-block-17 w-inline-block">
                 <div class="text-block-59">Über uns</div>
               </a>
-              <a href="verantwortung.html" class="link-block-17 w-inline-block">
+              <a href="/verantwortung" class="link-block-17 w-inline-block">
                 <div class="text-block-59">Verantwortung</div>
               </a>
               <a href="#" class="link-block-17 contact-us w-inline-block">
@@ -330,7 +356,7 @@
               </a>
             </nav>
             <div class="button-wrapper-menu div-block-663 div-block-664 div-block-665">
-              <div class="account-wrapper"><img src="images/person-outline-2.svg" loading="lazy" alt="" class="image-121"></div>
+              <div class="account-wrapper"><img src="/images/person-outline-2.svg" loading="lazy" alt="" class="image-121"></div>
               <div bind="4bc36725-f958-4612-d2cb-e90fd749bb24" data-open-product="" data-wf-cart-type="rightSidebar" data-wf-cart-query="" data-wf-page-link-href-prefix="" class="w-commerce-commercecartwrapper cart" data-node-type="commerce-cart-wrapper">
                 <a bind="4bc36725-f958-4612-d2cb-e90fd749bb25" class="w-commerce-commercecartopenlink cart-button-3 w-inline-block" role="button" aria-haspopup="dialog" aria-label="Open cart" data-node-type="commerce-cart-open-link" href="#">
                   <div bind="4bc36725-f958-4612-d2cb-e90fd749bb26" class="w-commerce-commercecartopenlinkcount cart-quantity-3">0</div><img src="/images/bag-outline.svg" loading="lazy" alt="" class="image-122">
@@ -392,7 +418,7 @@
                               </a>
                             </div>
                             <a href="/quotation" value="Continue to Checkout" bind="4bc36725-f958-4612-d2cb-e90fd749bb4f" class="w-commerce-commercecartcheckoutbutton checkout-button-2" data-loading-text="Einen Augenblick..." data-node-type="cart-checkout-button">To the checkout</a>
-                            <a bind="22afc99a-d9af-463e-59bf-fb110f1b56f3" href="cart.html" class="einkaufswagen-button w-button">Zum Einkaufswagen</a>
+                            <a bind="22afc99a-d9af-463e-59bf-fb110f1b56f3" href="#" class="einkaufswagen-button w-button">Zum Einkaufswagen</a>
                           </div>
                         </div>
                       </form>
@@ -430,7 +456,7 @@
             </div>
             <div class="nav-right">
               <div class="button-wrapper-menu div-block-663 div-block-664 div-block-665">
-                <div class="account-wrapper"><img src="images/person-outline-2.svg" loading="lazy" alt="" class="image-121"></div>
+                <div class="account-wrapper"><img src="/images/person-outline-2.svg" loading="lazy" alt="" class="image-121"></div>
                 <div bind="4bc36725-f958-4612-d2cb-e90fd749bb61" data-open-product="" data-wf-cart-type="rightSidebar" data-wf-cart-query="" data-wf-page-link-href-prefix="" data-wf-cart-easing="ease-out-quart" data-wf-cart-duration="500" class="w-commerce-commercecartwrapper" data-node-type="commerce-cart-wrapper">
                   <a bind="4bc36725-f958-4612-d2cb-e90fd749bb62" class="w-commerce-commercecartopenlink cart-button-3 w-inline-block" role="button" aria-haspopup="dialog" aria-label="Open cart" data-node-type="commerce-cart-open-link" href="#">
                     <div bind="4bc36725-f958-4612-d2cb-e90fd749bb63" class="w-commerce-commercecartopenlinkcount cart-quantity-3">0</div><img src="/images/bag-outline.svg" loading="lazy" alt="" class="image-122">
@@ -492,7 +518,7 @@
                                 </a>
                               </div>
                               <a href="/quotation" value="Continue to Checkout" bind="4bc36725-f958-4612-d2cb-e90fd749bb8c" class="w-commerce-commercecartcheckoutbutton checkout-button-3" data-loading-text="Einen Augenblick..." data-node-type="cart-checkout-button">To the checkout</a>
-                              <a bind="228b8eef-42c0-792b-692e-59e3ee23df8e" href="cart.html" class="einkaufswagen-button w-button">Zum Einkaufswagen</a>
+                              <a bind="228b8eef-42c0-792b-692e-59e3ee23df8e" href="#" class="einkaufswagen-button w-button">Zum Einkaufswagen</a>
                             </div>
                           </div>
                         </form>
@@ -526,26 +552,26 @@
                 <div class="accordion js-accordion">
                   <div id="w-node-_4bc36725-f958-4612-d2cb-e90fd749bb97-d749ba6b" class="accordion-item js-accordion-item">
                     <div class="accordion-header js-accordion-header">
-                      <h3 class="mobile-nav-header">Shop</h3><img src="images/plus-add-outline.svg" loading="lazy" width="32" alt="" class="js-accordion-icon">
+                      <h3 class="mobile-nav-header">Shop</h3><img src="/images/plus-add-outline.svg" loading="lazy" width="32" alt="" class="js-accordion-icon">
                     </div>
                     <div id="w-node-_4bc36725-f958-4612-d2cb-e90fd749bb9c-d749ba6b" class="accordion-body js-accordion-body">
                       <div class="accordion-body_contents">
-                        <a product-link="whisper" href="https://stonearts-r-webshop.webflow.io/product/whisper" class="accordion-body-link w-inline-block">
+                        <a product-link="whisper" href="/product/whisper" class="accordion-body-link w-inline-block">
                           <h3 class="link-heading">Akurock Akustikpaneele</h3>
                         </a>
-                        <a href="akurock-muster.html" class="accordion-body-link w-inline-block">
+                        <a href="/akurock-muster" class="accordion-body-link w-inline-block">
                           <h3 class="link-heading">Muster bestellen</h3>
                         </a>
-                        <a href="zubehoer.html" class="accordion-body-link w-inline-block">
+                        <a href="/zubehoer" class="accordion-body-link w-inline-block">
                           <h3 class="link-heading">Zubehör</h3>
                         </a>
-                        <a href="visualizer.html" class="accordion-body-link w-inline-block">
+                        <a href="/visualizer" class="accordion-body-link w-inline-block">
                           <h3 class="link-heading">Visualizer</h3>
                         </a>
-                        <a href="akustik.html" class="accordion-body-link w-inline-block">
+                        <a href="/akustik" class="accordion-body-link w-inline-block">
                           <h3 class="link-heading">Wie funktioniert ein Akustikpaneel?</h3>
                         </a>
-                        <a href="installation-and-guide.html" class="accordion-body-link w-inline-block">
+                        <a href="/installation-and-guide" class="accordion-body-link w-inline-block">
                           <h3 class="link-heading">Installationsanleitung</h3>
                         </a>
                       </div>
@@ -553,20 +579,20 @@
                   </div>
                   <div id="w-node-_4bc36725-f958-4612-d2cb-e90fd749bbaa-d749ba6b" class="accordion-item js-accordion-item">
                     <div class="accordion-header js-accordion-header">
-                      <h3 class="mobile-nav-header">Inspiration</h3><img src="images/plus-add-outline.svg" loading="lazy" width="32" alt="" class="js-accordion-icon">
+                      <h3 class="mobile-nav-header">Inspiration</h3><img src="/images/plus-add-outline.svg" loading="lazy" width="32" alt="" class="js-accordion-icon">
                     </div>
                     <div id="w-node-_4bc36725-f958-4612-d2cb-e90fd749bbaf-d749ba6b" class="accordion-body js-accordion-body">
                       <div class="accordion-body_contents">
-                        <a href="galerie.html" class="accordion-body-link w-inline-block">
+                        <a href="/galerie" class="accordion-body-link w-inline-block">
                           <h3 class="link-heading">Galerie</h3>
                         </a>
-                        <a href="stein-selektion.html" class="accordion-body-link w-inline-block">
+                        <a href="/stein-selektion" class="accordion-body-link w-inline-block">
                           <h3 class="link-heading">Unsere Steine</h3>
                         </a>
-                        <a href="stoneskin.html" class="accordion-body-link w-inline-block">
+                        <a href="/stoneskin" class="accordion-body-link w-inline-block">
                           <h3 class="link-heading">Stoneskin</h3>
                         </a>
-                        <a href="blog-news.html" class="accordion-body-link w-inline-block">
+                        <a href="/blog-news" class="accordion-body-link w-inline-block">
                           <h3 class="link-heading">Unser Journal</h3>
                         </a>
                         <a href="#" class="accordion-body-link w-inline-block">
@@ -577,17 +603,17 @@
                   </div>
                   <div id="w-node-_4bc36725-f958-4612-d2cb-e90fd749bbba-d749ba6b" class="accordion-item js-accordion-item">
                     <div class="accordion-header js-accordion-header">
-                      <h3 class="mobile-nav-header">Kundenservice</h3><img src="images/plus-add-outline.svg" loading="lazy" width="32" alt="" class="js-accordion-icon">
+                      <h3 class="mobile-nav-header">Kundenservice</h3><img src="/images/plus-add-outline.svg" loading="lazy" width="32" alt="" class="js-accordion-icon">
                     </div>
                     <div id="w-node-_4bc36725-f958-4612-d2cb-e90fd749bbbf-d749ba6b" class="accordion-body js-accordion-body">
                       <div class="accordion-body_contents">
-                        <a href="faq.html" class="accordion-body-link w-inline-block">
+                        <a href="/faq" class="accordion-body-link w-inline-block">
                           <h3 class="link-heading">Hilfe benötigt?</h3>
                         </a>
-                        <a href="faq.html" class="accordion-body-link w-inline-block">
+                        <a href="/faq" class="accordion-body-link w-inline-block">
                           <h3 class="link-heading">FAQs</h3>
                         </a>
-                        <a href="kontaktier-uns.html" class="accordion-body-link w-inline-block">
+                        <a href="/kontaktier-uns" class="accordion-body-link w-inline-block">
                           <h3 class="link-heading">Kontaktiere uns</h3>
                         </a>
                       </div>
@@ -597,14 +623,14 @@
                 <div class="mobile-menu-link-wrap">
                   <div class="menu-mobile-block-wrap">
                     <div class="menu-mobile-block">
-                      <a href="uber-uns.html" class="link-block-18 w-inline-block">
+                      <a href="/uber-uns" class="link-block-18 w-inline-block">
                         <h3 class="header-menu-mobile">Über uns</h3>
                       </a>
                     </div>
                   </div>
                   <div class="menu-mobile-block-wrap">
                     <div class="menu-mobile-block">
-                      <a href="verantwortung.html" class="link-block-18 w-inline-block">
+                      <a href="/verantwortung" class="link-block-18 w-inline-block">
                         <h3 class="header-menu-mobile">Verantwortung</h3>
                       </a>
                     </div>
@@ -616,11 +642,11 @@
                   <h3 class="heading-209">#wemovemountains</h3>
                 </div>
                 <div class="social-wrap-mobile">
-                  <a href="https://www.youtube.com/channel/UCpdPxE-_gXMg9hG_p3hvrkw" class="mobile-social-link w-inline-block"><img src="images/Youtube-Circle-Black.svg" loading="lazy" width="30" alt="" class="social-icon"></a>
-                  <a href="https://at.pinterest.com/17qo2x7ctqzuy3hlhny50ia1rfuphi/" class="mobile-social-link w-inline-block"><img src="images/Pinterest-Circle-Black.svg" loading="lazy" width="30" alt="" class="social-icon"></a>
-                  <a href="https://www.instagram.com/stonearts_official/" class="mobile-social-link w-inline-block"><img src="images/Instagram-Circle-Black.svg" loading="lazy" width="30" alt="" class="social-icon"></a>
-                  <a href="https://www.facebook.com/stoneartsglobal?_rdr" class="mobile-social-link w-inline-block"><img src="images/facebook-circle-Black.svg" loading="lazy" width="30" alt="" class="social-icon"></a>
-                  <a href="https://www.tiktok.com/@stonearts_official?is_from_webapp=1&amp;sender_device=pc" class="mobile-social-link w-inline-block"><img src="images/tiktok-Circle-Black.svg" loading="lazy" width="30" alt="" class="social-icon"></a>
+                  <a href="https://www.youtube.com/channel/UCpdPxE-_gXMg9hG_p3hvrkw" class="mobile-social-link w-inline-block"><img src="/images/Youtube-Circle-Black.svg" loading="lazy" width="30" alt="" class="social-icon"></a>
+                  <a href="https://at.pinterest.com/17qo2x7ctqzuy3hlhny50ia1rfuphi/" class="mobile-social-link w-inline-block"><img src="/images/Pinterest-Circle-Black.svg" loading="lazy" width="30" alt="" class="social-icon"></a>
+                  <a href="https://www.instagram.com/stonearts_official/" class="mobile-social-link w-inline-block"><img src="/images/Instagram-Circle-Black.svg" loading="lazy" width="30" alt="" class="social-icon"></a>
+                  <a href="https://www.facebook.com/stoneartsglobal?_rdr" class="mobile-social-link w-inline-block"><img src="/images/facebook-circle-Black.svg" loading="lazy" width="30" alt="" class="social-icon"></a>
+                  <a href="https://www.tiktok.com/@stonearts_official?is_from_webapp=1&amp;sender_device=pc" class="mobile-social-link w-inline-block"><img src="/images/tiktok-Circle-Black.svg" loading="lazy" width="30" alt="" class="social-icon"></a>
                 </div>
               </div>
             </div>
@@ -636,14 +662,6 @@
               <div class="slider-selector_overflow">
                 <div class="slider-selector_wrapper is-slider-product">
                   <div bind="2fb8e092-727e-f3ca-475b-8178c0fc0239" class="swiper is-swiper-product w-dyn-list">
-                    <div bind="2fb8e092-727e-f3ca-475b-8178c0fc023a" role="list" class="swiper-wrapper is-swiper-product w-dyn-items">
-                      <div bind="2fb8e092-727e-f3ca-475b-8178c0fc023b" role="listitem" class="swiper-slide is-swiper-product w-dyn-item">
-                        <div class="img-hight"><img alt="" loading="lazy" bind="7978e09f-6b72-4bed-57c5-500574fcbff5" src="" class="img-swiper_img"></div>
-                      </div>
-                    </div>
-                    <div bind="2fb8e092-727e-f3ca-475b-8178c0fc023c" class="w-dyn-empty" style="display:none;">
-                      <div>No items found.</div>
-                    </div>
                     <div bind="2fb8e092-727e-f3ca-475b-8178c0fc023a" role="list" class="swiper-wrapper is-swiper-product w-dyn-items">
                       <!-- Images will be populated by populate-cms.js -->
                     </div>
@@ -699,17 +717,6 @@
                       <div class="slider-selector_wrapper">
                         <div bind="116c2318-c33b-dcc5-4ef0-b6d435cfdf1f" class="swiper is-slider-selector w-dyn-list">
                           <div bind="116c2318-c33b-dcc5-4ef0-b6d435cfdf20" role="list" class="swiper-wrapper is-slider-selector w-dyn-items">
-                            <div bind="116c2318-c33b-dcc5-4ef0-b6d435cfdf21" role="listitem" class="swiper-slide is-slider-selector w-dyn-item">
-                              <a bind="116c2318-c33b-dcc5-4ef0-b6d435cfdf22" aria-label="Akurock Akustikpaneele Link" href="#" class="slider-selector_link is-slider-selector w-inline-block">
-                                <div class="slider-selector_height"><img bind="116c2318-c33b-dcc5-4ef0-b6d435cfdf24" loading="lazy" width="95" src="" alt="" class="slider-selector_img">
-                                </div>
-                              </a>
-                            </div>
-                          </div>
-                          <div bind="116c2318-c33b-dcc5-4ef0-b6d435cfdf25" class="w-dyn-empty" style="display:none;">
-                            <div>No items found.</div>
-                          </div>
-                          <div bind="116c2318-c33b-dcc5-4ef0-b6d435cfdf20" role="list" class="swiper-wrapper is-slider-selector w-dyn-items">
                             <!-- Variant selector will be populated by populate-cms.js -->
                           </div>
                         </div>
@@ -745,7 +752,7 @@
                     <div class="panel_calculator_wrapper">
                       <div class="sample-container">
                         <div class="text-block-132">Unentschlossen?</div>
-                        <a href="akurock-muster.html" class="text-block-133">Muster bestellen</a>
+                        <a href="/akurock-muster" class="text-block-133">Muster bestellen</a>
                       </div>
                     </div>
                     <div class="calculator-container">
@@ -796,7 +803,7 @@
                     </div>
                   </div>
                   <div class="delivery-time-wrapper">
-                    <div class="heading-163">Lieferzeit 5-10 Tage</div><img src="images/shipping-car-orange.svg" loading="lazy" width="26" alt="" class="image-110">
+                    <div class="heading-163">Lieferzeit 5-10 Tage</div><img src="/images/shipping-car-orange.svg" loading="lazy" width="26" alt="" class="image-110">
                   </div>
                 </div>
               </div>
@@ -807,39 +814,12 @@
                   </div>
                   <div bind="d37286f8-45ee-d5c0-5042-fa9b1e03f774" class="collection-list-wrapper-5 w-dyn-list">
                     <div bind="d37286f8-45ee-d5c0-5042-fa9b1e03f775" role="list" class="w-dyn-items">
-                      <div bind="d37286f8-45ee-d5c0-5042-fa9b1e03f776" role="listitem" class="collection-item-7 w-dyn-item">
-                        <div class="content_additionals">
-                          <div class="addtions_img_container"><img loading="lazy" bind="d37286f8-45ee-d5c0-5042-fa9b1e03f779" src="" alt="" class="image-214"></div>
-                          <div class="description additionals">
-                            <h2 bind="d37286f8-45ee-d5c0-5042-fa9b1e03f77b" class="additional_top"></h2>
-                            <div bind="d37286f8-45ee-d5c0-5042-fa9b1e03f77c" class="text-block-92"></div>
-                            <div data-commerce-type="variation-price" bind="d37286f8-45ee-d5c0-5042-fa9b1e03f77d" class="text-block-93"></div>
-                          </div>
-                        </div>
-                        <div class="buy-button">
-                          <div bind="d37286f8-45ee-d5c0-5042-fa9b1e03f77f">
-                            <form bind="d37286f8-45ee-d5c0-5042-fa9b1e03f780" template-bind="d37286f8-45ee-d5c0-5042-fa9b1e03f780" position-bind-position="prepend" data-node-type="commerce-add-to-cart-form" class="w-commerce-commerceaddtocartform default-state">
-                              <div position-id="d37286f8-45ee-d5c0-5042-fa9b1e03f788" class="quanitity_buy_wrap"><input type="submit" data-node-type="commerce-add-to-cart-button" data-loading-text="Wird hinzugefügt.." aria-busy="false" aria-haspopup="dialog" class="w-commerce-commerceaddtocartbutton addtional-products buy_button" value="Warenkorb"></div>
-                            </form>
-                            <div bind="d37286f8-45ee-d5c0-5042-fa9b1e03f78b" style="display:none" class="w-commerce-commerceaddtocartoutofstock" tabindex="0">
-                              <div>This product is out of stock.</div>
-                            </div>
-                            <div aria-live="assertive" bind="d37286f8-45ee-d5c0-5042-fa9b1e03f78e" data-node-type="commerce-add-to-cart-error" style="display:none" class="w-commerce-commerceaddtocarterror">
-                              <div data-node-type="commerce-add-to-cart-error" data-w-add-to-cart-quantity-error="Product is not available in this quantity." data-w-add-to-cart-general-error="Something went wrong when adding this item to the cart." data-w-add-to-cart-mixed-cart-error="You can’t purchase another product with a subscription." data-w-add-to-cart-buy-now-error="Something went wrong when trying to purchase this item." data-w-add-to-cart-checkout-disabled-error="Checkout is disabled on this site." data-w-add-to-cart-select-all-options-error="Please select an option in each set.">Product is not available in this quantity.</div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div bind="d37286f8-45ee-d5c0-5042-fa9b1e03f790" class="w-dyn-empty" style="display:none;">
-                      <div>No items found.</div>
-                    </div>
                     <div bind="d37286f8-45ee-d5c0-5042-fa9b1e03f775" role="list" class="w-dyn-items">
                       <!-- Accessories will be populated by populate-cms.js -->
                     </div>
                   </div>
                   <div class="div-block-680">
-                    <a data-w-id="d37286f8-45ee-d5c0-5042-fa9b1e03f793" style="background-color:rgba(255,255,255,0)" href="zubehoer.html" class="button-outline-black w-inline-block">
+                    <a data-w-id="d37286f8-45ee-d5c0-5042-fa9b1e03f793" style="background-color:rgba(255,255,255,0)" href="/zubehoer" class="button-outline-black w-inline-block">
                       <div class="button-text bottom side-note">Alle Zusatzprodukte</div>
                     </a>
                   </div>
@@ -849,19 +829,19 @@
                 <div class="accordion js-accordion">
                   <div id="w-node-_232d745c-aeae-bc7d-06e5-d49815befe63-d3e03b91" class="accordion-item js-accordion-item">
                     <div class="accordion-header js-accordion-header">
-                      <h2 class="mobile-nav-header information">Produktdetails</h2><img src="images/plus-add-outline.svg" loading="lazy" width="32" alt="" class="js-accordion-icon">
+                      <h2 class="mobile-nav-header information">Produktdetails</h2><img src="/images/plus-add-outline.svg" loading="lazy" width="32" alt="" class="js-accordion-icon">
                     </div>
                     <div id="w-node-_232d745c-aeae-bc7d-06e5-d49815befe68-d3e03b91" class="accordion-body js-accordion-body">
                       <div class="accordion-body_contents">
                         <h3 class="heading-210">Akurock Paneel Spezifikation</h3>
                         <p class="paragraph-86 info"><strong>AKUROCK-Akustikpaneele</strong> sind in der Größe 2400x600 mm erhältlich, mit einer Dicke von 23 mm. Diese Paneele sind so konzipiert, dass sie nahtlos aneinandergefügt werden können, was eine einheitliche und durchgehende Optik ermöglicht.</p>
-                        <div class="img_wrapper_overview"><img src="images/AKUROCK-by-stonearts®-Größe.png" loading="lazy" sizes="100vw" srcset="images/AKUROCK-by-stonearts®-Größe-p-500.png 500w, images/AKUROCK-by-stonearts®-Größe-p-800.png 800w, images/AKUROCK-by-stonearts®-Größe.png 1126w" alt="Eine technische Zeichnung eines AKUROCK Akustikpaneels, dass die Dimensionen des Wandpaneels zeigt." class="image-160"></div>
+                        <div class="img_wrapper_overview"><img src="/images/AKUROCK-by-stonearts®-Größe.png" loading="lazy" sizes="100vw" srcset="/images/AKUROCK-by-stonearts®-Größe-p-500.png 500w, /images/AKUROCK-by-stonearts®-Größe-p-800.png 800w, /images/AKUROCK-by-stonearts®-Größe.png 1126w" alt="Eine technische Zeichnung eines AKUROCK Akustikpaneels, dass die Dimensionen des Wandpaneels zeigt." class="image-160"></div>
                       </div>
                     </div>
                   </div>
                   <div id="w-node-_232d745c-aeae-bc7d-06e5-d49815befe76-d3e03b91" class="accordion-item js-accordion-item">
                     <div class="accordion-header js-accordion-header">
-                      <h2 class="mobile-nav-header information">Hauptmerkmale</h2><img src="images/plus-add-outline.svg" loading="lazy" width="32" alt="" class="js-accordion-icon">
+                      <h2 class="mobile-nav-header information">Hauptmerkmale</h2><img src="/images/plus-add-outline.svg" loading="lazy" width="32" alt="" class="js-accordion-icon">
                     </div>
                     <div id="w-node-_232d745c-aeae-bc7d-06e5-d49815befe7b-d3e03b91" class="accordion-body js-accordion-body">
                       <div class="accordion-body_contents">
@@ -877,20 +857,20 @@
                             <li>Konzipiert in Österreich</li>
                           </ul>
                         </div>
-                        <div class="accordion-img_container"><img src="images/Close-Up-Akurock-Wall-Panel.png" loading="lazy" alt="Akurock-wall-panel-close-up" srcset="images/Close-Up-Akurock-Wall-Panel-p-500.png 500w, images/Close-Up-Akurock-Wall-Panel.png 693w" sizes="100vw" class="image-125"></div>
+                        <div class="accordion-img_container"><img src="/images/Close-Up-Akurock-Wall-Panel.png" loading="lazy" alt="Akurock-wall-panel-close-up" srcset="/images/Close-Up-Akurock-Wall-Panel-p-500.png 500w, /images/Close-Up-Akurock-Wall-Panel.png 693w" sizes="100vw" class="image-125"></div>
                       </div>
                     </div>
                   </div>
                   <div id="w-node-_232d745c-aeae-bc7d-06e5-d49815befe86-d3e03b91" class="accordion-item js-accordion-item">
                     <div class="accordion-header js-accordion-header">
-                      <h2 class="mobile-nav-header information">Installation &amp; Downloads</h2><img src="images/plus-add-outline.svg" loading="lazy" width="32" alt="" class="js-accordion-icon">
+                      <h2 class="mobile-nav-header information">Installation &amp; Downloads</h2><img src="/images/plus-add-outline.svg" loading="lazy" width="32" alt="" class="js-accordion-icon">
                     </div>
                     <div id="w-node-_232d745c-aeae-bc7d-06e5-d49815befe8b-d3e03b91" class="accordion-body js-accordion-body">
                       <div class="accordion-body_contents">
                         <h3 class="heading-210">Sie benötigen keine Fachkräfte</h3>
                         <p class="paragraph-86">Die Zusammensetzung von Akurock ermöglicht eine außergewöhnlich einfache Installation, indem die Paneele direkt auf den Akustikfilz geklebt oder durch ihn hindurch verschraubt werden.</p>
                         <div class="button-wrapper-taps mobile">
-                          <a data-w-id="e069796e-e7c6-893c-96ff-34d1bdbb6dc6" style="background-color:rgba(255,255,255,0)" href="installation-and-guide.html" class="button-outline-black taps mobile w-inline-block">
+                          <a data-w-id="e069796e-e7c6-893c-96ff-34d1bdbb6dc6" style="background-color:rgba(255,255,255,0)" href="/installation-and-guide" class="button-outline-black taps mobile w-inline-block">
                             <div style="color:rgb(13,13,13)" class="button-text">Installationsguide</div>
                           </a>
                           <a data-w-id="e069796e-e7c6-893c-96ff-34d1bdbb6dc9" style="background-color:rgb(13,13,13)" href="#" class="button-outline-black taps cell-2 mobile is-datenblatt w-inline-block">
@@ -905,37 +885,37 @@
                   </div>
                   <div id="w-node-a97960a0-d296-3d04-1977-c825f15027af-d3e03b91" class="accordion-item js-accordion-item">
                     <div class="accordion-header js-accordion-header">
-                      <h2 class="mobile-nav-header information">Über unseren Stein</h2><img src="images/plus-add-outline.svg" loading="lazy" width="32" alt="" class="js-accordion-icon">
+                      <h2 class="mobile-nav-header information">Über unseren Stein</h2><img src="/images/plus-add-outline.svg" loading="lazy" width="32" alt="" class="js-accordion-icon">
                     </div>
                     <div id="w-node-a97960a0-d296-3d04-1977-c825f15027b4-d3e03b91" class="accordion-body js-accordion-body">
                       <div class="accordion-body_contents">
                         <h3 class="heading-210">Von der Natur geformt, von stonearts® veredelt</h3>
                         <p class="paragraph-86">Ausgewählter Marmor, Sandstein und Schiefer,<strong> </strong>innovativ in Handarbeit verarbeitet zu flexiblen und leichten Natursteinplatten.</p>
-                        <div class="information-img-wrap"><img src="images/Stoneskin-Product-Shot-smaller.webp" loading="lazy" sizes="100vw" srcset="images/Stoneskin-Product-Shot-smaller-p-500.webp 500w, images/Stoneskin-Product-Shot-smaller-p-800.webp 800w, images/Stoneskin-Product-Shot-smaller.webp 961w" alt="Stoneskin aus schwarzem Schiefer, hauchdünn und flexibel, zeigt die feine Struktur von Millionen Jahren geologischer Prozesse, der für die vereedelung von stonearts® Akustikpaneelen verwendet wird." class="image-189"></div>
+                        <div class="information-img-wrap"><img src="/images/Stoneskin-Product-Shot-smaller.webp" loading="lazy" sizes="100vw" srcset="/images/Stoneskin-Product-Shot-smaller-p-500.webp 500w, /images/Stoneskin-Product-Shot-smaller-p-800.webp 800w, /images/Stoneskin-Product-Shot-smaller.webp 961w" alt="Stoneskin aus schwarzem Schiefer, hauchdünn und flexibel, zeigt die feine Struktur von Millionen Jahren geologischer Prozesse, der für die vereedelung von stonearts® Akustikpaneelen verwendet wird." class="image-189"></div>
                       </div>
                     </div>
                   </div>
                   <div id="w-node-_14dc61d5-63c3-6dac-84ea-270972ae93d8-d3e03b91" class="accordion-item js-accordion-item">
                     <div class="accordion-header js-accordion-header">
-                      <h2 class="mobile-nav-header information">Nachhaltigkeit</h2><img src="images/plus-add-outline.svg" loading="lazy" width="32" alt="" class="js-accordion-icon">
+                      <h2 class="mobile-nav-header information">Nachhaltigkeit</h2><img src="/images/plus-add-outline.svg" loading="lazy" width="32" alt="" class="js-accordion-icon">
                     </div>
                     <div id="w-node-_14dc61d5-63c3-6dac-84ea-270972ae93dd-d3e03b91" class="accordion-body js-accordion-body">
                       <div class="accordion-body_contents">
                         <h3 class="heading-210">Verantwortung bei jedem Schritt.</h3>
                         <p class="paragraph-86">Das Akurock-Akustikpaneel von stonearts® ist ein in Österreich entworfenes, handgefertigtes Produkt mit einer 100% natürlichen Steinoberfläche. Es zeichnet sich nicht nur durch hervorragende Schallabsorption aus, sondern ist auch umweltfreundlich, da es upcycelten Akustikfilz verwendet.</p>
-                        <div class="information-img-wrap sustainability"><img src="images/Recycled-plastic-from-Pet-plastic-bottles.webp" loading="lazy" sizes="100vw" srcset="images/Recycled-plastic-from-Pet-plastic-bottles-p-500.jpg 500w, images/Recycled-plastic-from-Pet-plastic-bottles.webp 740w" alt="Zerdrückte Plastikflasche mit weißem Deckel auf gelbem Hintergrund, symbolisiert Recycling und nachhaltige Materialien, die in stonearts® Produkten verwendet werden." class="image-190"></div>
+                        <div class="information-img-wrap sustainability"><img src="/images/Recycled-plastic-from-Pet-plastic-bottles.webp" loading="lazy" sizes="100vw" srcset="/images/Recycled-plastic-from-Pet-plastic-bottles-p-500.jpg 500w, /images/Recycled-plastic-from-Pet-plastic-bottles.webp 740w" alt="Zerdrückte Plastikflasche mit weißem Deckel auf gelbem Hintergrund, symbolisiert Recycling und nachhaltige Materialien, die in stonearts® Produkten verwendet werden." class="image-190"></div>
                       </div>
                     </div>
                   </div>
                   <div id="w-node-_94035192-5966-4341-3047-d44453d17439-d3e03b91" class="accordion-item js-accordion-item">
                     <div class="accordion-header js-accordion-header">
-                      <h2 class="mobile-nav-header information">Schutz &amp; Pflege</h2><img src="images/plus-add-outline.svg" loading="lazy" width="32" alt="" class="js-accordion-icon">
+                      <h2 class="mobile-nav-header information">Schutz &amp; Pflege</h2><img src="/images/plus-add-outline.svg" loading="lazy" width="32" alt="" class="js-accordion-icon">
                     </div>
                     <div id="w-node-_94035192-5966-4341-3047-d44453d1743e-d3e03b91" class="accordion-body js-accordion-body">
                       <div class="accordion-body_contents">
                         <h3 class="heading-210">Reinigen: Schnell &amp; Einfach</h3>
                         <p class="paragraph-86">Wie pflege ich meine Akurock-Akustikpaneele? Ein schneller Feger, Staubsauger oder feuchtes Tuch – und sie sind wie neu! Für anspruchsvolle Fälle nutze unseren Nano-Versiegeler aus dem Shop. Bei stonearts® soll Pflege einfach sein.</p>
-                        <a data-w-id="9524922b-c667-d62a-266a-1360bc7dd1e3" style="background-color:rgb(250,248,247)" href="zubehoer.html" class="button-outline-black taps mobile w-inline-block">
+                        <a data-w-id="9524922b-c667-d62a-266a-1360bc7dd1e3" style="background-color:rgb(250,248,247)" href="/zubehoer" class="button-outline-black taps mobile w-inline-block">
                           <div class="button-text-style-2 mobile nano-seal">Zubehör</div>
                         </a>
                       </div>
@@ -949,15 +929,9 @@
             <div class="product_image_wrapper">
               <div bind="ba91b3e9-080a-1c76-e14e-e7aa27382349" item="product-images" class="w-dyn-list">
                 <div bind="ba91b3e9-080a-1c76-e14e-e7aa2738234a" role="list" class="product-image-grid w-dyn-items">
-                  <div bind="ba91b3e9-080a-1c76-e14e-e7aa2738234b" item="product-image" role="listitem" class="collection-item-2 w-dyn-item"><img item="product-image-src" loading="lazy" width="573" src="" alt="" bind="ba91b3e9-080a-1c76-e14e-e7aa2738234c" class="image-107"></div>
-                </div>
-                <div bind="ba91b3e9-080a-1c76-e14e-e7aa2738234d" class="w-dyn-empty" style="display:none;">
-                  <div>No items found.</div>
-                </div>
-                <div bind="ba91b3e9-080a-1c76-e14e-e7aa2738234a" role="list" class="product-image-grid w-dyn-items">
-                  <div bind="ba91b3e9-080a-1c76-e14e-e7aa2738234b" item="product-image" role="listitem" class="collection-item-2 w-dyn-item"><img item="product-image-src" loading="lazy" width="573" src="images/Brush_Block.webp" alt="Brush" bind="ba91b3e9-080a-1c76-e14e-e7aa2738234c" class="image-107"></div>
-                  <div class="collection-item-2 w-dyn-item"><img loading="lazy" width="573" src="images/brush-close-up.webp" alt="Brush Close-up" class="image-107"></div>
-                  <div class="collection-item-2 w-dyn-item"><img loading="lazy" width="573" src="images/20231120_145536-1.webp" alt="Brush Detail" class="image-107"></div>
+                  <div bind="ba91b3e9-080a-1c76-e14e-e7aa2738234b" item="product-image" role="listitem" class="collection-item-2 w-dyn-item"><img item="product-image-src" loading="lazy" width="573" src="/images/Brush_Block.webp" alt="Brush" bind="ba91b3e9-080a-1c76-e14e-e7aa2738234c" class="image-107"></div>
+                  <div class="collection-item-2 w-dyn-item"><img loading="lazy" width="573" src="/images/brush-close-up.webp" alt="Brush Close-up" class="image-107"></div>
+                  <div class="collection-item-2 w-dyn-item"><img loading="lazy" width="573" src="/images/20231120_145536-1.webp" alt="Brush Detail" class="image-107"></div>
                 </div>
               </div>
             </div>
@@ -1035,7 +1009,7 @@
                 <div class="panel_calculator_wrapper">
                   <div class="sample-container">
                     <div class="text-block-132">Unentschlossen?</div>
-                    <a href="akurock-muster.html" class="text-block-133">Muster bestellen</a>
+                    <a href="/akurock-muster" class="text-block-133">Muster bestellen</a>
                   </div>
                 </div>
                 <div class="panel_calculator_wrapper">
@@ -1090,7 +1064,7 @@
                       </div>
                     </div>
                     <div class="delivery-time-wrapper">
-                      <div class="heading-163">Lieferzeit 5-10 Tage</div><img src="images/Lkw_orange.svg" loading="lazy" width="26" alt="" class="image-110">
+                      <div class="heading-163">Lieferzeit 5-10 Tage</div><img src="/images/Lkw_orange.svg" loading="lazy" width="26" alt="" class="image-110">
                     </div>
                   </div>
                 </div>
@@ -1113,7 +1087,7 @@
                           <div class="accordion js-accordion">
                             <div id="w-node-_137b513d-b205-9d8d-35c8-06827522dc4a-d3e03b91" class="accordion-item js-accordion-item">
                               <div class="accordion-header js-accordion-header side-note">
-                                <h3 class="mobile-nav-header side-note">Ist das wirklich eine natürliche Steinoberfläche?</h3><img width="27" loading="lazy" alt="" src="images/plus-add-outline.svg" class="js-accordion-icon side-note">
+                                <h3 class="mobile-nav-header side-note">Ist das wirklich eine natürliche Steinoberfläche?</h3><img width="27" loading="lazy" alt="" src="/images/plus-add-outline.svg" class="js-accordion-icon side-note">
                               </div>
                               <div id="w-node-_137b513d-b205-9d8d-35c8-06827522dc4f-d3e03b91" class="accordion-body js-accordion-body">
                                 <div class="accordion-body_contents">
@@ -1123,7 +1097,7 @@
                             </div>
                             <div id="w-node-_137b513d-b205-9d8d-35c8-06827522dc56-d3e03b91" class="accordion-item js-accordion-item side-note">
                               <div class="accordion-header js-accordion-header side-note">
-                                <h4 class="mobile-nav-header side-note"><strong class="bold-text-48">Ist die Installation der stonearts® Akustikpaneele schwierig?</strong></h4><img width="32" loading="lazy" alt="" src="images/plus-add-outline.svg" class="js-accordion-icon side-note">
+                                <h4 class="mobile-nav-header side-note"><strong class="bold-text-48">Ist die Installation der stonearts® Akustikpaneele schwierig?</strong></h4><img width="32" loading="lazy" alt="" src="/images/plus-add-outline.svg" class="js-accordion-icon side-note">
                               </div>
                               <div id="w-node-_137b513d-b205-9d8d-35c8-06827522dc5b-d3e03b91" class="accordion-body js-accordion-body">
                                 <div class="accordion-body_contents">
@@ -1133,7 +1107,7 @@
                             </div>
                             <div id="w-node-_137b513d-b205-9d8d-35c8-06827522dc71-d3e03b91" class="accordion-item js-accordion-item side-note">
                               <div class="accordion-header js-accordion-header side-note">
-                                <h4 class="mobile-nav-header side-note">Woraus besteht das AKUROCK-Akustikpaneel?</h4><img width="32" loading="lazy" alt="" src="images/plus-add-outline.svg" class="js-accordion-icon side-note">
+                                <h4 class="mobile-nav-header side-note">Woraus besteht das AKUROCK-Akustikpaneel?</h4><img width="32" loading="lazy" alt="" src="/images/plus-add-outline.svg" class="js-accordion-icon side-note">
                               </div>
                               <div id="w-node-_137b513d-b205-9d8d-35c8-06827522dc76-d3e03b91" class="accordion-body js-accordion-body">
                                 <div class="accordion-body_contents">
@@ -1142,7 +1116,7 @@
                               </div>
                             </div>
                           </div>
-                          <a data-w-id="9495f31a-5dea-f198-ac66-7b3d0e68a09e" style="background-color:rgba(255,255,255,0)" href="faq.html" class="button-outline-white bottom faqs w-inline-block">
+                          <a data-w-id="9495f31a-5dea-f198-ac66-7b3d0e68a09e" style="background-color:rgba(255,255,255,0)" href="/faq" class="button-outline-white bottom faqs w-inline-block">
                             <div class="button-text bottom side-note">Alle FAQs</div>
                           </a>
                         </div>
@@ -1155,7 +1129,7 @@
                           <div class="side-note_wrap">
                             <p class="paragraph-101">Wie pflege ich meine Akurock-Akustikpaneele? Ein schneller Feger, Staubsauger oder feuchtes Tuch – und sie sind wie neu! Für anspruchsvolle Fälle nutze unseren Nano-Versiegeler aus dem Shop. Bei stonearts® soll Pflege einfach sein.</p>
                           </div>
-                          <a data-w-id="3362155a-9088-104f-ed86-12d0d328369b" style="background-color:rgb(13,13,13)" href="zubehoer.html" class="button-outline-black is-full w-inline-block">
+                          <a data-w-id="3362155a-9088-104f-ed86-12d0d328369b" style="background-color:rgb(13,13,13)" href="/zubehoer" class="button-outline-black is-full w-inline-block">
                             <div style="color:rgb(250,248,247)" class="button-text is-white">Zubehör</div>
                           </a>
                         </div>
@@ -1170,277 +1144,11 @@
                     </div>
                     <div bind="a7947cab-d687-58a0-424a-fd0cace23832" class="w-dyn-list">
                       <div bind="a7947cab-d687-58a0-424a-fd0cace23833" role="list" class="w-dyn-items">
-                        <div bind="a7947cab-d687-58a0-424a-fd0cace23834" role="listitem" class="collection-item-7 w-dyn-item">
-                          <div class="content_additionals">
-                            <div class="addtions_img_container"><img loading="lazy" bind="4af9742f-1734-ee72-79f2-a1020eb65a1f" src="" alt="" class="image-211"></div>
-                            <div class="description additionals">
-                              <h4 bind="8f4dd527-ce7a-d137-cf1c-332ab3b522d2" class="additional_top"></h4>
-                              <div bind="a4fcc94f-837a-20c9-9802-f8190bd0ee50" class="text-block-92"></div>
-                              <div data-commerce-type="variation-price" bind="06128686-eb7f-b3b5-f088-22a2ffc8d83d" class="text-block-96"></div>
-                            </div>
-                          </div>
-                          <div class="buy-button">
-                            <div bind="8db248f0-04c1-0c75-7c52-142af38fc6ef">
-                              <form bind="8db248f0-04c1-0c75-7c52-142af38fc6f0" template-bind="8db248f0-04c1-0c75-7c52-142af38fc6f0" position-bind-position="prepend" data-node-type="commerce-add-to-cart-form" class="w-commerce-commerceaddtocartform default-state">
-                                <div position-id="cceeefad-0a1b-6d2e-a202-201566227026" class="quanitity_buy_wrap"><input type="submit" data-node-type="commerce-add-to-cart-button" data-loading-text="Hinzufügen.." aria-busy="false" aria-haspopup="dialog" class="w-commerce-commerceaddtocartbutton addtional-products buy_button" value="Warenkorb"></div>
-                              </form>
-                              <div bind="8db248f0-04c1-0c75-7c52-142af38fc6fd" style="display:none" class="w-commerce-commerceaddtocartoutofstock" tabindex="0">
-                                <div>This product is out of stock.</div>
-                              </div>
-                              <div aria-live="assertive" bind="8db248f0-04c1-0c75-7c52-142af38fc700" data-node-type="commerce-add-to-cart-error" style="display:none" class="w-commerce-commerceaddtocarterror">
-                                <div data-node-type="commerce-add-to-cart-error" data-w-add-to-cart-quantity-error="Product is not available in this quantity." data-w-add-to-cart-general-error="Something went wrong when adding this item to the cart." data-w-add-to-cart-mixed-cart-error="You can’t purchase another product with a subscription." data-w-add-to-cart-buy-now-error="Something went wrong when trying to purchase this item." data-w-add-to-cart-checkout-disabled-error="Checkout is disabled on this site." data-w-add-to-cart-select-all-options-error="Please select an option in each set.">Product is not available in this quantity.</div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div bind="a7947cab-d687-58a0-424a-fd0cace23835" class="w-dyn-empty">
-                        <div>No items found.</div>
-                      </div>
                     </div>
                     <div class="div-block-681">
-                      <a data-w-id="f7f24169-0d92-f885-bdb4-d9dab548994c" style="background-color:rgba(255,255,255,0)" href="zubehoer.html" class="button-outline-white bottom faqs additions w-inline-block">
+                      <a data-w-id="f7f24169-0d92-f885-bdb4-d9dab548994c" style="background-color:rgba(255,255,255,0)" href="/zubehoer" class="button-outline-white bottom faqs additions w-inline-block">
                         <div style="color:rgb(13,13,13)" class="button-text">Alle Zusatzprodukte</div>
                       </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-      <section bind="409f9c8b-4b78-5f06-d0ad-57ad5bbfb293" class="section product add-ons">
-        <div class="w-layout-blockcontainer container-products w-container">
-          <div id="w-node-_409f9c8b-4b78-5f06-d0ad-57ad5bbfb295-d3e03b91" class="w-layout-layout quick-stack-2 wf-layout-layout">
-            <div id="w-node-_409f9c8b-4b78-5f06-d0ad-57ad5bbfb296-d3e03b91" class="w-layout-cell cell-8">
-              <div id="w-node-_409f9c8b-4b78-5f06-d0ad-57ad5bbfb297-d3e03b91" class="product_image_wrapper add-ons">
-                <div bind="409f9c8b-4b78-5f06-d0ad-57ad5bbfb298" class="collection-list-wrapper-2 add-ons w-dyn-list">
-                  <div bind="409f9c8b-4b78-5f06-d0ad-57ad5bbfb299" role="list" class="product-image-grid add-ons w-dyn-items">
-                    <div bind="409f9c8b-4b78-5f06-d0ad-57ad5bbfb29a" id="w-node-_409f9c8b-4b78-5f06-d0ad-57ad5bbfb29a-d3e03b91" role="listitem" class="collection-item-2 add-ons w-dyn-item">
-                      <div class="addon-image-container"><img bind="409f9c8b-4b78-5f06-d0ad-57ad5bbfb29b" loading="lazy" width="524" src="" alt="" class="image-107"></div>
-                    </div>
-                  </div>
-                  <div bind="409f9c8b-4b78-5f06-d0ad-57ad5bbfb29c" class="w-dyn-empty">
-                    <div>No items found.</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div id="w-node-_409f9c8b-4b78-5f06-d0ad-57ad5bbfb29f-d3e03b91" class="w-layout-cell cell-7" style="display: none;">
-              <div id="w-node-_409f9c8b-4b78-5f06-d0ad-57ad5bbfb2a0-d3e03b91" class="product_text_wrapper">
-                <div class="pd-heading">
-                  <div class="header-wrapper-product"><img src="/images/stonearts®-logo-black-long.svg" loading="lazy" width="162" alt="" class="image-145">
-                    <h1 class="heading-157">AKUROCK</h1>
-                  </div>
-                  <h2 bind="409f9c8b-4b78-5f06-d0ad-57ad5bbfb2a6" class="heading-158"></h2>
-                  <h3 data-commerce-type="variation-price" bind="409f9c8b-4b78-5f06-d0ad-57ad5bbfb2a7" class="heading-159"></h3>
-                </div>
-                <div class="selector">
-                  <div class="variation-wrapper div-block-604 div-block-605">
-                    <h3 bind="409f9c8b-4b78-5f06-d0ad-57ad5bbfb2ac" class="heading-161"></h3>
-                  </div>
-                  <div class="slider-selector_component">
-                    <div class="slider-selector_overflow">
-                      <div class="slider-selector_wrap">
-                        <div class="slider-selector_wrapper">
-                          <div bind="409f9c8b-4b78-5f06-d0ad-57ad5bbfb2b1" class="swiper is-slider-add-ons _2 w-dyn-list">
-                            <div bind="409f9c8b-4b78-5f06-d0ad-57ad5bbfb2b2" role="list" class="swiper-wrapper is-slider-add-ons _2 w-dyn-items">
-                              <div bind="409f9c8b-4b78-5f06-d0ad-57ad5bbfb2b3" role="listitem" class="swiper-slide is-slider-add-ons _2 w-dyn-item">
-                                <a bind="409f9c8b-4b78-5f06-d0ad-57ad5bbfb2b4" aria-label="Akurock Akustikpaneele Link" href="#" class="slider-selector_link is-slider-add-ons _2 w-inline-block">
-                                  <div class="slider-selector_height _2"><img bind="409f9c8b-4b78-5f06-d0ad-57ad5bbfb2b6" loading="lazy" width="95" src="" alt="" class="slider-selector_img is-slider-add-ons _2"></div>
-                                </a>
-                              </div>
-                            </div>
-                            <div bind="409f9c8b-4b78-5f06-d0ad-57ad5bbfb2b7" class="w-dyn-empty">
-                              <div>No items found.</div>
-                            </div>
-                          </div>
-                        </div>
-                        <div class="slider-selector_arrow swiper-prev">
-                          <div bind="46a100c5-5d66-8212-86b5-0217c3edab4d" class="arrow-embed is-reversed w-embed"><svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewbox="0 0 29.541 22.323">
-                              <g id="Group_44" data-name="Group 44" transform="translate(0 1.014)">
-                                <path id="Path_1" data-name="Path 1" d="M115.445,20.633l9.311-10.148L115.445.338" transform="translate(-97.25 -0.338)" fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="3"></path>
-                                <line id="Line_1" data-name="Line 1" x1="27.506" transform="translate(0 10.148)" fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="3"></line>
-                              </g>
-                            </svg></div>
-                        </div>
-                        <div class="slider-selector_arrow swiper-next">
-                          <div bind="ffd8cc17-5642-aa27-1138-f3096406845d" class="arrow-embed w-embed"><svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewbox="0 0 29.541 22.323">
-                              <g id="Group_44" data-name="Group 44" transform="translate(0 1.014)">
-                                <path id="Path_1" data-name="Path 1" d="M115.445,20.633l9.311-10.148L115.445.338" transform="translate(-97.25 -0.338)" fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="3"></path>
-                                <line id="Line_1" data-name="Line 1" x1="27.506" transform="translate(0 10.148)" fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="3"></line>
-                              </g>
-                            </svg></div>
-                        </div>
-                      </div>
-                      <div class="slider-main_bottom-wrapper is-slider-main">
-                        <div class="swiper-drag-wrapper is-slider-main">
-                          <div class="swiper-drag is-slider-main"></div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="w-layout-grid mobile-selection-grid">
-            <div id="w-node-_7d4ad969-9c93-2634-e0c7-deb6f874895a-d3e03b91" class="slider-wrapper-product-img">
-              <div class="slider-selector_component is-slider-addons">
-                <div class="slider-selector-orbit">
-                  <div class="slider-selector_wrapper is-slider-addons">
-                    <div bind="7d4ad969-9c93-2634-e0c7-deb6f874895e" class="swiper is-slider-addons w-dyn-list">
-                      <div bind="7d4ad969-9c93-2634-e0c7-deb6f874895f" role="list" class="swiper-wrapper is-slider-addons w-dyn-items">
-                        <div bind="7d4ad969-9c93-2634-e0c7-deb6f8748960" role="listitem" class="swiper-slide is-slider-addons w-dyn-item">
-                          <div class="img-hight"><img alt="" loading="lazy" bind="7d4ad969-9c93-2634-e0c7-deb6f8748961" src="" class="img-swiper_img add-on"></div>
-                        </div>
-                      </div>
-                      <div bind="7d4ad969-9c93-2634-e0c7-deb6f8748962" class="w-dyn-empty" style="display:none;">
-                        <div>No items found.</div>
-                      </div>
-                      <div bind="7d4ad969-9c93-2634-e0c7-deb6f874895f" role="list" class="swiper-wrapper is-slider-addons w-dyn-items">
-                        <div bind="7d4ad969-9c93-2634-e0c7-deb6f8748960" role="listitem" class="swiper-slide is-slider-addons w-dyn-item">
-                          <div class="img-hight"><img alt="Screws white" loading="lazy" bind="7d4ad969-9c93-2634-e0c7-deb6f8748961" src="images/Tools_1.47-1.webp" class="img-swiper_img add-on"></div>
-                        </div>
-                        <div class="swiper-slide is-slider-addons w-dyn-item">
-                          <div class="img-hight"><img alt="Screws black" loading="lazy" src="images/Tools_1.47-1.webp" class="img-swiper_img add-on"></div>
-                        </div>
-                        <div class="swiper-slide is-slider-addons w-dyn-item">
-                          <div class="img-hight"><img alt="Wandkleber" loading="lazy" src="images/Akurock-Glueing.webp" class="img-swiper_img add-on"></div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="slider-main_bottom-wrapper is-slider-product">
-                  <div class="swiper-bullet-wrapper is-slider-product">
-                    <div class="swiper-bullet"></div>
-                    <div class="swiper-bullet is-active"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="product_text_wrapper" style="display: none;">
-              <div class="pd-heading">
-                <div class="header-wrapper-product">
-                  <h1 class="heading-157">AKUROCK</h1>
-                  <h2 bind="562d66a6-e38c-7881-a616-1182f9ed3ad1" class="heading-158"></h2>
-                </div>
-                <div class="brand_wrapper">
-                  <div class="text-block-88">by</div>
-                  <div class="image_wrapper product logo"><img src="/images/stonearts®-logo-black-long.svg" loading="lazy" alt="" class="image-136"></div>
-                </div>
-                <div class="price_wrapper">
-                  <h3 data-commerce-type="variation-price" bind="562d66a6-e38c-7881-a616-1182f9ed3ad8" class="heading-159"></h3>
-                  <div class="text-block-86">Inkl. MwSt. zzgl. Versand</div>
-                </div>
-              </div>
-              <div class="selector">
-                <div class="variation-wrapper div-block-604 div-block-605">
-                  <h3 bind="3cf4aa70-0d84-d294-71cd-b36d5959da37" class="heading-161"></h3>
-                </div>
-                <div class="slider-selector_component is-slider-selector">
-                  <div class="slider-selector_overflow">
-                    <div class="slider-selector_wrap">
-                      <div class="slider-selector_wrapper">
-                        <div bind="3cf4aa70-0d84-d294-71cd-b36d5959da3c" class="swiper is-slider-add-ons _2 w-dyn-list">
-                          <div bind="3cf4aa70-0d84-d294-71cd-b36d5959da3d" role="list" class="swiper-wrapper is-slider-add-ons _2 w-dyn-items">
-                            <div bind="3cf4aa70-0d84-d294-71cd-b36d5959da3e" role="listitem" class="swiper-slide is-slider-add-ons _2 w-dyn-item">
-                              <a bind="3cf4aa70-0d84-d294-71cd-b36d5959da3f" aria-label="Link zu Akurock Akustikpaneelen" href="#" class="slider-selector_link is-slider-add-ons _2 w-inline-block">
-                                <div class="slider-selector_height _2"><img bind="3cf4aa70-0d84-d294-71cd-b36d5959da41" loading="lazy" width="95" src="" alt="" class="slider-selector_img is-slider-add-ons _2"></div>
-                              </a>
-                            </div>
-                          </div>
-                          <div bind="3cf4aa70-0d84-d294-71cd-b36d5959da42" class="w-dyn-empty">
-                            <div>No items found.</div>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="slider-selector_arrow swiper-prev mobile">
-                        <div bind="1a0c956f-dc52-3087-eb15-65056a7d04c0" class="arrow-embed is-reversed w-embed"><svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewbox="0 0 29.541 22.323">
-                            <g id="Group_44" data-name="Group 44" transform="translate(0 1.014)">
-                              <path id="Path_1" data-name="Path 1" d="M115.445,20.633l9.311-10.148L115.445.338" transform="translate(-97.25 -0.338)" fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="3"></path>
-                              <line id="Line_1" data-name="Line 1" x1="27.506" transform="translate(0 10.148)" fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="3"></line>
-                            </g>
-                          </svg></div>
-                      </div>
-                      <div class="slider-selector_arrow swiper-next mobile">
-                        <div bind="27468a87-5d08-052f-cb35-9fd3da7b009e" class="arrow-embed w-embed"><svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewbox="0 0 29.541 22.323">
-                            <g id="Group_44" data-name="Group 44" transform="translate(0 1.014)">
-                              <path id="Path_1" data-name="Path 1" d="M115.445,20.633l9.311-10.148L115.445.338" transform="translate(-97.25 -0.338)" fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="3"></path>
-                              <line id="Line_1" data-name="Line 1" x1="27.506" transform="translate(0 10.148)" fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="3"></line>
-                            </g>
-                          </svg></div>
-                      </div>
-                    </div>
-                    <div class="slider-main_bottom-wrapper is-slider-main">
-                      <div class="swiper-drag-wrapper is-slider-main">
-                        <div class="swiper-drag is-slider-main"></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="add-to-cart-wrapper">
-                <div class="size-selector">
-                  <div bind="3cf4aa70-0d84-d294-71cd-b36d5959da4e">
-                    <form data-node-type="commerce-add-to-cart-form" bind="3cf4aa70-0d84-d294-71cd-b36d5959da4f" template-bind="3cf4aa70-0d84-d294-71cd-b36d5959da4f" position-bind-position="prepend" class="w-commerce-commerceaddtocartform"><label for="quantity-20728818c58e7474139224b91b58f04d-2" bind="3cf4aa70-0d84-d294-71cd-b36d5959da56" position-id="3cf4aa70-0d84-d294-71cd-b36d5959da56" class="field-label-3">Quantity</label>
-                      <div position-id="3cf4aa70-0d84-d294-71cd-b36d5959da58" class="add-to-cart-wrapper div-block-607 div-block-608 div-block-609"><input type="number" pattern="^[0-9]+$" inputmode="numeric" id="quantity-20728818c58e7474139224b91b58f04d" name="commerce-add-to-cart-quantity-input" min="1" bind="3cf4aa70-0d84-d294-71cd-b36d5959da59" class="w-commerce-commerceaddtocartquantityinput q-num" value="1"><input type="submit" data-node-type="commerce-add-to-cart-button" data-loading-text="Adding to cart..." aria-busy="false" aria-haspopup="dialog" class="w-commerce-commerceaddtocartbutton add-to-cart-button" value="Add to Cart"></div>
-                    </form>
-                    <div tabindex="0" bind="3cf4aa70-0d84-d294-71cd-b36d5959da5b" style="display:none" class="w-commerce-commerceaddtocartoutofstock">
-                      <div>This product is out of stock.</div>
-                    </div>
-                    <div aria-live="assertive" bind="3cf4aa70-0d84-d294-71cd-b36d5959da5e" data-node-type="commerce-add-to-cart-error" style="display:none" class="w-commerce-commerceaddtocarterror">
-                      <div data-node-type="commerce-add-to-cart-error" data-w-add-to-cart-quantity-error="Product is not available in this quantity." data-w-add-to-cart-general-error="Something went wrong when adding this item to the cart." data-w-add-to-cart-mixed-cart-error="You can’t purchase another product with a subscription." data-w-add-to-cart-buy-now-error="Something went wrong when trying to purchase this item." data-w-add-to-cart-checkout-disabled-error="Checkout is disabled on this site." data-w-add-to-cart-select-all-options-error="Please select an option in each set.">Product is not available in this quantity.</div>
-                    </div>
-                  </div>
-                  <div class="delivery-time-wrapper">
-                    <h4 class="heading-163">Estimated Delivery 5-10 days</h4><img src="images/shipping-car-orange.svg" loading="lazy" width="26" alt="" class="image-110">
-                  </div>
-                </div>
-              </div>
-              <div class="sample-link-wrapper">
-                <h3 class="heading-165 add-ons">Got everything you need?</h3>
-                <h4 class="heading-166">Keep exploring Akurock.</h4>
-                <div class="slider-selector_component is-slider-selector">
-                  <div class="slider-selector_overflow">
-                    <div class="slider-selector_wrap">
-                      <div class="slider-selector_wrapper">
-                        <div bind="aa8f7202-0b6d-cb1b-e1ae-f295cfe93bbd" class="swiper is-slider-selector w-dyn-list">
-                          <div bind="aa8f7202-0b6d-cb1b-e1ae-f295cfe93bbe" role="list" class="swiper-wrapper is-slider-selector w-dyn-items">
-                            <div bind="aa8f7202-0b6d-cb1b-e1ae-f295cfe93bbf" role="listitem" class="swiper-slide is-slider-selector w-dyn-item">
-                              <a bind="aa8f7202-0b6d-cb1b-e1ae-f295cfe93bc0" aria-label="Link zu Akurock Akustikpaneelen" href="#" class="slider-selector_link is-slider-selector w-inline-block">
-                                <div class="slider-selector_height"><img bind="aa8f7202-0b6d-cb1b-e1ae-f295cfe93bc2" loading="lazy" width="95" src="" alt="" class="slider-selector_img"></div>
-                              </a>
-                            </div>
-                          </div>
-                          <div bind="aa8f7202-0b6d-cb1b-e1ae-f295cfe93bc3" class="w-dyn-empty">
-                            <div>No items found.</div>
-                          </div>
-                        </div>
-                        <div class="slider-selector_arrow swiper-prev">
-                          <div bind="aa8f7202-0b6d-cb1b-e1ae-f295cfe93bc7" class="arrow-embed is-reversed w-embed"><svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewbox="0 0 29.541 22.323">
-                              <g id="Group_44" data-name="Group 44" transform="translate(0 1.014)">
-                                <path id="Path_1" data-name="Path 1" d="M115.445,20.633l9.311-10.148L115.445.338" transform="translate(-97.25 -0.338)" fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="3"></path>
-                                <line id="Line_1" data-name="Line 1" x1="27.506" transform="translate(0 10.148)" fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="3"></line>
-                              </g>
-                            </svg></div>
-                        </div>
-                        <div class="slider-selector_arrow swiper-next">
-                          <div bind="aa8f7202-0b6d-cb1b-e1ae-f295cfe93bc9" class="arrow-embed w-embed"><svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewbox="0 0 29.541 22.323">
-                              <g id="Group_44" data-name="Group 44" transform="translate(0 1.014)">
-                                <path id="Path_1" data-name="Path 1" d="M115.445,20.633l9.311-10.148L115.445.338" transform="translate(-97.25 -0.338)" fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="3"></path>
-                                <line id="Line_1" data-name="Line 1" x1="27.506" transform="translate(0 10.148)" fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="3"></line>
-                              </g>
-                            </svg></div>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="slider-main_bottom-wrapper is-slider-main">
-                      <div class="swiper-drag-wrapper is-slider-main">
-                        <div class="swiper-drag is-slider-main"></div>
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -1478,7 +1186,7 @@
                   <div class="w-layout-grid grid-93">
                     <div class="taps-left">
                       <div class="w-layout-grid grid-94 specifications">
-                        <div class="img-container-taps"><img width="413" loading="lazy" alt="Akurock Akustikpaneele gefechter über einander gestapelt." src="images/AKUROCK_Fecher.webp" class="taps-hero-img specification"></div>
+                        <div class="img-container-taps"><img width="413" loading="lazy" alt="Akurock Akustikpaneele gefechter über einander gestapelt." src="/images/AKUROCK_Fecher.webp" class="taps-hero-img specification"></div>
                         <div class="taps-counter-information specifications">
                           <div class="taps-counter-wrapper">
                             <div class="counter installation-downloads">01</div>
@@ -1497,7 +1205,7 @@
                     <div id="w-node-_6bfd68e4-6ea1-ac17-faa8-c262585bd00b-d3e03b91" class="taps-right">
                       <div class="w-layout-grid taps-grid-right">
                         <div class="right-tap-img-text-wrapper specifications">
-                          <div class="taps-img-container-2 specifications"><img sizes="100vw" srcset="images/AKUROCK-by-stonearts®-Größe-p-500.png 500w, images/AKUROCK-by-stonearts®-Größe-p-800.png 800w, images/AKUROCK-by-stonearts®-Größe.png 1126w" alt="Eine technische Zeichnung eines AKUROCK Akustikpaneels, die die Dimensionen des Wandpaneels darstellt." src="images/AKUROCK-by-stonearts®-Größe.png" loading="lazy" class="image-152"></div>
+                          <div class="taps-img-container-2 specifications"><img sizes="100vw" srcset="/images/AKUROCK-by-stonearts®-Größe-p-500.png 500w, /images/AKUROCK-by-stonearts®-Größe-p-800.png 800w, /images/AKUROCK-by-stonearts®-Größe.png 1126w" alt="Eine technische Zeichnung eines AKUROCK Akustikpaneels, die die Dimensionen des Wandpaneels darstellt." src="/images/AKUROCK-by-stonearts®-Größe.png" loading="lazy" class="image-152"></div>
                         </div>
                       </div>
                     </div>
@@ -1512,7 +1220,7 @@
                   <div class="w-layout-grid grid-93">
                     <div class="taps-left">
                       <div class="w-layout-grid grid-94">
-                        <div class="img-container-taps"><img width="413" loading="lazy" alt="Stoneskin aus schwarzem Schiefer, hauchdünn und flexibel, zeigt die feine Struktur von Millionen Jahren geologischer Prozesse, der für die vereedelung von stonearts® Akustikpaneelen verwendet wird." src="images/stoneskin-rolled-akurock.webp" class="taps-hero-img installation-downloads"></div>
+                        <div class="img-container-taps"><img width="413" loading="lazy" alt="Stoneskin aus schwarzem Schiefer, hauchdünn und flexibel, zeigt die feine Struktur von Millionen Jahren geologischer Prozesse, der für die vereedelung von stonearts® Akustikpaneelen verwendet wird." src="/images/stoneskin-rolled-akurock.webp" class="taps-hero-img installation-downloads"></div>
                         <div class="taps-counter-information">
                           <div class="taps-counter-wrapper">
                             <div class="counter installation-downloads">02</div>
@@ -1533,11 +1241,11 @@
                     <div id="w-node-dfbfbedc-64db-41b9-5962-c77d144ca9d9-d3e03b91" class="taps-right">
                       <div class="w-layout-grid taps-grid-right">
                         <div class="right-tap-img-text-wrapper">
-                          <div class="taps-img-container-2"><img loading="lazy" src="images/Akurock-panel-dimensions-acoustic-panels-side-view-small.webp" alt="Nahaufnahme eines Akurock Akustikpaneels von stonearts® mit moderner Lamellenstruktur, schwarz-grau, ideal für hochwertige Schallabsorption und stilvolle Innenraumgestaltung." class="image-152"></div>
+                          <div class="taps-img-container-2"><img loading="lazy" src="/images/Akurock-panel-dimensions-acoustic-panels-side-view-small.webp" alt="Nahaufnahme eines Akurock Akustikpaneels von stonearts® mit moderner Lamellenstruktur, schwarz-grau, ideal für hochwertige Schallabsorption und stilvolle Innenraumgestaltung." class="image-152"></div>
                           <div class="text-block-73">Lamellen Design.</div>
                         </div>
                         <div class="taps-img-container-3">
-                          <div class="taps-img-container-2 _3"><img loading="lazy" src="images/acoustic-effect-acourock.webp" alt="Technische Zeichnung, die den Schallabsorptionsprozess eines Akustikpaneels von stonearts® zeigt, inklusive Schallwege und Beschriftungen wie &#x27;Incident Sound&#x27;, &#x27;Reflected Sound&#x27; und &#x27;Absorption&#x27;." class="image-153"></div>
+                          <div class="taps-img-container-2 _3"><img loading="lazy" src="/images/acoustic-effect-acourock.webp" alt="Technische Zeichnung, die den Schallabsorptionsprozess eines Akustikpaneels von stonearts® zeigt, inklusive Schallwege und Beschriftungen wie &#x27;Incident Sound&#x27;, &#x27;Reflected Sound&#x27; und &#x27;Absorption&#x27;." class="image-153"></div>
                           <div class="text-block-73">Soundklasse A.</div>
                         </div>
                       </div>
@@ -1553,7 +1261,7 @@
                   <div class="w-layout-grid grid-93">
                     <div class="taps-left">
                       <div class="w-layout-grid grid-94">
-                        <div class="img-container-taps"><img width="413" loading="lazy" alt="Hand streicht über ein Akurock Akustikpaneel von stonearts® mit brauner Oberfläche und schwarzen Lamellen, zeigt die hochwertige Textur und handwerkliche Qualität." src="images/Akurock-Installation.webp" class="taps-hero-img installation-downloads"></div>
+                        <div class="img-container-taps"><img width="413" loading="lazy" alt="Hand streicht über ein Akurock Akustikpaneel von stonearts® mit brauner Oberfläche und schwarzen Lamellen, zeigt die hochwertige Textur und handwerkliche Qualität." src="/images/Akurock-Installation.webp" class="taps-hero-img installation-downloads"></div>
                         <div class="taps-counter-information">
                           <div class="taps-counter-wrapper">
                             <div class="counter installation-downloads">03</div>
@@ -1564,10 +1272,10 @@
                             <p class="paragraph-72">Die Zusammensetzung der Akurock-Akustikpaneele ermöglicht eine <strong>außergewöhnlich einfache Installation</strong>, indem die Paneele direkt aufgeklebt oder durch den Akustikfilz hindurch verschraubt werden.</p>
                           </div>
                           <div class="button-wrapper-taps">
-                            <a data-w-id="cf5594e0-77f5-b1d4-7e0e-9e257197a10f" style="background-color:rgba(255,255,255,0)" href="installation-and-guide.html" class="button-outline-black taps w-inline-block">
+                            <a data-w-id="cf5594e0-77f5-b1d4-7e0e-9e257197a10f" style="background-color:rgba(255,255,255,0)" href="/installation-and-guide" class="button-outline-black taps w-inline-block">
                               <div style="color:rgb(13,13,13)" class="button-text">Installations Guide</div>
                             </a>
-                            <a data-w-id="314faeb5-7add-fb39-eca5-bc5262d10741" style="background-color:rgb(13,13,13)" href="zubehoer.html" class="button-outline-black taps cell-2 w-inline-block">
+                            <a data-w-id="314faeb5-7add-fb39-eca5-bc5262d10741" style="background-color:rgb(13,13,13)" href="/zubehoer" class="button-outline-black taps cell-2 w-inline-block">
                               <div style="color:rgb(250,248,247)" class="button-text is-white">Zusatzprodukte</div>
                             </a>
                           </div>
@@ -1577,10 +1285,10 @@
                     <div id="w-node-cbaa3229-7c92-749c-5808-e30b3802aac5-d3e03b91" class="taps-right">
                       <div class="w-layout-grid taps-grid-right">
                         <div class="right-tap-img-text-wrapper">
-                          <div class="taps-img-container-2"><img loading="lazy" src="images/Akurock-Screwing.webp" alt="Person verschraubt ein Akurock Akustikpaneel von stonearts® an die Wand, zeigt die einfache Installation der Akustikpaneele mit brauner Oberfläche und schwarzen Lamellen." class="image-152"></div>
+                          <div class="taps-img-container-2"><img loading="lazy" src="/images/Akurock-Screwing.webp" alt="Person verschraubt ein Akurock Akustikpaneel von stonearts® an die Wand, zeigt die einfache Installation der Akustikpaneele mit brauner Oberfläche und schwarzen Lamellen." class="image-152"></div>
                           <div class="text-block-73">Du kannst Sie verschrauben.</div>
                         </div>
-                        <div class="taps-img-container-3"><img loading="lazy" src="images/Akurock-Glueing.webp" alt="Verklebung eines Akurock Akustikpaneels von stonearts® an die Wand, zeigt den einfachen Installationsprozess." class="image-153">
+                        <div class="taps-img-container-3"><img loading="lazy" src="/images/Akurock-Glueing.webp" alt="Verklebung eines Akurock Akustikpaneels von stonearts® an die Wand, zeigt den einfachen Installationsprozess." class="image-153">
                           <div class="text-block-73">Du kannst Sie kleben.</div>
                         </div>
                       </div>
@@ -1596,7 +1304,7 @@
                   <div class="w-layout-grid grid-93">
                     <div class="taps-left">
                       <div class="w-layout-grid grid-94">
-                        <div class="img-container-taps"><img width="413" loading="lazy" alt="Nahaufnahme des beigen Sandsteins von stonearts®, zeigt die feine Textur und natürliche Struktur des Materials." src="images/brush-close-up.webp" class="taps-hero-img installation-downloads"></div>
+                        <div class="img-container-taps"><img width="413" loading="lazy" alt="Nahaufnahme des beigen Sandsteins von stonearts®, zeigt die feine Textur und natürliche Struktur des Materials." src="/images/brush-close-up.webp" class="taps-hero-img installation-downloads"></div>
                         <div class="taps-counter-information">
                           <div class="taps-counter-wrapper">
                             <div class="counter installation-downloads">04</div>
@@ -1607,7 +1315,7 @@
                             <p class="paragraph-72"><strong>Ausgewählter Marmor, Sandstein und Schiefer, </strong>innovativ verarbeitet zu flexiblen und leichten Steinplatten.</p>
                           </div>
                           <div class="button-wrapper-taps">
-                            <a data-w-id="24fd762f-2bc5-8086-745e-067e82ddf807" style="background-color:rgba(255,255,255,0)" href="stoneskin.html" class="button-outline-black taps w-inline-block">
+                            <a data-w-id="24fd762f-2bc5-8086-745e-067e82ddf807" style="background-color:rgba(255,255,255,0)" href="/stoneskin" class="button-outline-black taps w-inline-block">
                               <div style="color:rgb(13,13,13)" class="button-text">Mehr erfahren</div>
                             </a>
                           </div>
@@ -1617,11 +1325,11 @@
                     <div id="w-node-_24fd762f-2bc5-8086-745e-067e82ddf80d-d3e03b91" class="taps-right">
                       <div class="w-layout-grid taps-grid-right">
                         <div class="right-tap-img-text-wrapper">
-                          <div class="taps-img-container-2"><img loading="lazy" src="images/Whisper-tools-medium.webp" alt="Hammer und Meißel liegen auf hellem Sandstein, umgeben von zerbrochenen Steinstücken, zeigen die Werkzeuge für die Bearbeitung von stonearts® Materialien." class="image-152"></div>
+                          <div class="taps-img-container-2"><img loading="lazy" src="/images/Whisper-tools-medium.webp" alt="Hammer und Meißel liegen auf hellem Sandstein, umgeben von zerbrochenen Steinstücken, zeigen die Werkzeuge für die Bearbeitung von stonearts® Materialien." class="image-152"></div>
                           <div class="text-block-73">Millionen von Jahren...</div>
                         </div>
                         <div class="taps-img-container-3">
-                          <div class="taps-img-container-2 _3"><img loading="lazy" src="images/yuki-hands-on-peeled-small.webp" alt="Hände halten eine dünne, flexible Platte aus hellem Sandstein, die zur Veredelung von stonearts® Akustikpaneelen und dekorativen Wandverkleidungen verwendet wird, ideal für moderne und nachhaltige Innenraumlösungen." class="image-153"></div>
+                          <div class="taps-img-container-2 _3"><img loading="lazy" src="/images/yuki-hands-on-peeled-small.webp" alt="Hände halten eine dünne, flexible Platte aus hellem Sandstein, die zur Veredelung von stonearts® Akustikpaneelen und dekorativen Wandverkleidungen verwendet wird, ideal für moderne und nachhaltige Innenraumlösungen." class="image-153"></div>
                           <div class="text-block-73">auf einem dünnen Blatt.</div>
                         </div>
                       </div>
@@ -1637,7 +1345,7 @@
                   <div class="w-layout-grid grid-93">
                     <div class="taps-left">
                       <div class="w-layout-grid grid-94">
-                        <div class="img-container-taps"><img width="413" loading="lazy" alt="Zerdrückte Plastikflasche mit weißem Deckel auf gelbem Hintergrund, symbolisiert Recycling und Nachhaltigkeit." src="images/upcycling_plastic_acoustic_panel.webp" class="taps-hero-img installation-downloads"></div>
+                        <div class="img-container-taps"><img width="413" loading="lazy" alt="Zerdrückte Plastikflasche mit weißem Deckel auf gelbem Hintergrund, symbolisiert Recycling und Nachhaltigkeit." src="/images/upcycling_plastic_acoustic_panel.webp" class="taps-hero-img installation-downloads"></div>
                         <div class="taps-counter-information">
                           <div class="taps-counter-wrapper">
                             <div class="counter installation-downloads">05</div>
@@ -1648,7 +1356,7 @@
                             <p class="paragraph-72"><strong>Das Akurock-Akustikpaneel von stonearts®</strong> ist ein in Österreich entworfenes, handgefertigtes Produkt mit einer 100% natürlichen Steinoberfläche. Es zeichnet sich nicht nur durch hervorragende Schallabsorption aus, sondern ist auch <strong>umweltfreundlich, da es upcycelten Akustikfilz verwendet.</strong></p>
                           </div>
                           <div class="button-wrapper-taps">
-                            <a data-w-id="4d0d44aa-5fc6-3325-919d-c02a65936823" style="background-color:rgba(255,255,255,0)" href="verantwortung.html" class="button-outline-black taps key w-inline-block">
+                            <a data-w-id="4d0d44aa-5fc6-3325-919d-c02a65936823" style="background-color:rgba(255,255,255,0)" href="/verantwortung" class="button-outline-black taps key w-inline-block">
                               <div style="color:rgb(13,13,13)" class="button-text">Mehr erfahren</div>
                             </a>
                           </div>
@@ -1658,11 +1366,11 @@
                     <div id="w-node-_4d0d44aa-5fc6-3325-919d-c02a65936826-d3e03b91" class="taps-right">
                       <div class="w-layout-grid taps-grid-right">
                         <div class="right-tap-img-text-wrapper">
-                          <div class="taps-img-container-2"><img loading="lazy" src="images/natural_stone_acurock_usage.webp" alt="Nahaufnahme der natürlichen Oberfläche eines Natursteins mit komplexer Textur in Grau-, Weiß- und Schwarztönen." class="image-152"></div>
+                          <div class="taps-img-container-2"><img loading="lazy" src="/images/natural_stone_acurock_usage.webp" alt="Nahaufnahme der natürlichen Oberfläche eines Natursteins mit komplexer Textur in Grau-, Weiß- und Schwarztönen." class="image-152"></div>
                           <div class="text-block-73">90% geringere ökologische Belastung als Massivstein.</div>
                         </div>
                         <div class="taps-img-container-3">
-                          <div class="taps-img-container-2 _3"><img loading="lazy" src="images/sustainable_forestry.webp" alt="Nahaufnahme eines grünen Blattes mit deutlich sichtbaren Blattadern." class="image-153"></div>
+                          <div class="taps-img-container-2 _3"><img loading="lazy" src="/images/sustainable_forestry.webp" alt="Nahaufnahme eines grünen Blattes mit deutlich sichtbaren Blattadern." class="image-153"></div>
                           <div class="text-block-73">Holz aus nachhaltiger Forstwirtschaft</div>
                         </div>
                       </div>
@@ -1684,29 +1392,29 @@
               </div>
               <div id="w-node-fbd1704a-df8c-174c-2359-5f33842a49b7-d3e03b91" data-w-id="fbd1704a-df8c-174c-2359-5f33842a49b7" class="img_bento">
                 <div data-w-id="a437de8c-9d50-e96d-337f-25fa298a983e" class="selection-tile_text-wrapper">
-                  <div data-w-id="a437de8c-9d50-e96d-337f-25fa298a983f" class="arrow-wrapper"><img src="images/Large-Arrow-White-Selection-1.svg" loading="lazy" width="31" alt="" class="image-138"></div>
+                  <div data-w-id="a437de8c-9d50-e96d-337f-25fa298a983f" class="arrow-wrapper"><img src="/images/Large-Arrow-White-Selection-1.svg" loading="lazy" width="31" alt="" class="image-138"></div>
                   <div class="wrapper">
                     <p class="paragraph-77">Passt es zu deinem Raum?</p>
                     <h2 class="heading-174">Probiere unseren Visualizer.</h2>
                   </div>
                 </div>
                 <div class="button-wrap">
-                  <a data-w-id="b3332191-8fe7-8fe5-6555-8aa12b58d028" style="background-color:rgba(255,255,255,0)" href="visualizer.html" class="button-outline-white _2 bento is-visualizer w-inline-block">
+                  <a data-w-id="b3332191-8fe7-8fe5-6555-8aa12b58d028" style="background-color:rgba(255,255,255,0)" href="/visualizer" class="button-outline-white _2 bento is-visualizer w-inline-block">
                     <div class="button-text is-white">Visualisiere</div>
                   </a>
                 </div>
-                <a aria-label="Link zum stonearts® Visualisierer" href="visualizer.html" class="link-block-abs w-inline-block"></a>
+                <a aria-label="Link zum stonearts® Visualisierer" href="/visualizer" class="link-block-abs w-inline-block"></a>
               </div>
               <div id="w-node-_27b42142-c7f7-c6f7-fc15-2cc33b4637e2-d3e03b91" data-w-id="27b42142-c7f7-c6f7-fc15-2cc33b4637e2" class="long_img_bento">
                 <div data-w-id="744aa67f-7719-1aa5-b1ca-c10d84e3c422" class="selection-tile_text-wrapper">
-                  <div data-w-id="744aa67f-7719-1aa5-b1ca-c10d84e3c423" class="arrow-wrapper"><img src="images/Large-Arrow-more-fun-coral-Selection-1.svg" loading="lazy" width="31" alt="" class="image-137"></div>
+                  <div data-w-id="744aa67f-7719-1aa5-b1ca-c10d84e3c423" class="arrow-wrapper"><img src="/images/Large-Arrow-more-fun-coral-Selection-1.svg" loading="lazy" width="31" alt="" class="image-137"></div>
                   <div class="wrapper">
                     <p class="paragraph-77 bento">Berühren und überzeugen.</p>
                     <h2 class="heading-174 bento">Muster erkunden.</h2>
                   </div>
                 </div>
-                <a aria-label="Link zu den Akurock Akustikpaneel Mustern" href="akurock-muster.html" class="link-block-abs samples w-inline-block"></a>
-                <a href="akurock-muster.html" class="button-outline-white _2 bento samples w-inline-block">
+                <a aria-label="Link zu den Akurock Akustikpaneel Mustern" href="/akurock-muster" class="link-block-abs samples w-inline-block"></a>
+                <a href="/akurock-muster" class="button-outline-white _2 bento samples w-inline-block">
                   <div class="button-text samples">Musterbox</div>
                 </a>
               </div>
@@ -1741,7 +1449,7 @@
       <section class="section-bento-main large_img product">
         <div class="w-layout-blockcontainer container-medium w-container">
           <div class="w-layout-grid bento-grid-main product">
-            <div id="w-node-_3459baf1-d83d-86d2-2a68-c6e43dec32e0-d3e03b91" class="bento-img-container"><img src="images/20231120_123248-5.webp" loading="lazy" sizes="100vw" srcset="images/20231120_123248-5-p-500.webp 500w, images/20231120_123248-5-p-800.webp 800w, images/20231120_123248-5.webp 814w" alt="Hammer und Meißel liegen auf hellem Sandstein, umgeben von zerbrochenen Steinstücken, zeigen die Werkzeuge für die Bearbeitung von stonearts® Materialien." class="image-165"></div>
+            <div id="w-node-_3459baf1-d83d-86d2-2a68-c6e43dec32e0-d3e03b91" class="bento-img-container"><img src="/images/20231120_123248-5.webp" loading="lazy" sizes="100vw" srcset="/images/20231120_123248-5-p-500.webp 500w, /images/20231120_123248-5-p-800.webp 800w, /images/20231120_123248-5.webp 814w" alt="Hammer und Meißel liegen auf hellem Sandstein, umgeben von zerbrochenen Steinstücken, zeigen die Werkzeuge für die Bearbeitung von stonearts® Materialien." class="image-165"></div>
             <div id="w-node-fc513157-a1b0-939b-efc3-725eb7299428-d3e03b91" class="bento-img-container _2">
               <div class="text-wrapper-stone">
                 <div class="text-block-77">Geboren aus den Elementen,<br>ein Echo der Ewigkeit.</div>
@@ -1756,7 +1464,7 @@
             <div class="shout-out-wrapper installation">
               <div class="shout-out-container installation">
                 <h2 class="slogan guide">Es geht nicht nur um Stil, schaffe dir gleichzeitig ein gesundes Klangumfeld.</h2>
-                <div class="image_wrapper_wave"><img src="images/sound_wave_pure_background_white_transparent_background-1.png" loading="lazy" alt="" class="image-155 is-produkt"></div>
+                <div class="image_wrapper_wave"><img src="/images/sound_wave_pure_background_white_transparent_background-1.png" loading="lazy" alt="" class="image-155 is-produkt"></div>
               </div>
             </div>
           </div>
@@ -1795,21 +1503,13 @@
                   <div bind="0dc2258a-324b-911a-6cd2-a023a2bd7ad6" class="swiper sustainability w-dyn-list">
                     <div bind="0dc2258a-324b-911a-6cd2-a023a2bd7ad7" role="list" class="swiper-wrapper sustainability w-dyn-items">
                       <div bind="0dc2258a-324b-911a-6cd2-a023a2bd7ad8" role="listitem" class="swiper-slide sustainability w-dyn-item">
-                        <div class="slider-selector_height sustainability"><img sym-bind="{&quot;img&quot;:{&quot;type&quot;:&quot;Call&quot;,&quot;val&quot;:{&quot;fun&quot;:{&quot;type&quot;:&quot;Variable&quot;,&quot;val&quot;:[&quot;DynamoGateway&quot;,&quot;dynamoImageToImage&quot;]},&quot;arg&quot;:{&quot;type&quot;:&quot;Select&quot;,&quot;val&quot;:{&quot;from&quot;:{&quot;type&quot;:&quot;Variable&quot;,&quot;val&quot;:&quot;Dynamo&quot;},&quot;prop&quot;:&quot;banner&quot;}}}}}" loading="lazy" width="95" alt="" src="" class="slider-selector_img sustainability w-dyn-bind-empty"></div>
-                      </div>
-                    </div>
-                    <div bind="0dc2258a-324b-911a-6cd2-a023a2bd7adb" class="w-dyn-empty" style="display:none;">
-                      <div>No items found.</div>
-                    </div>
-                    <div bind="0dc2258a-324b-911a-6cd2-a023a2bd7ad7" role="list" class="swiper-wrapper sustainability w-dyn-items">
-                      <div bind="0dc2258a-324b-911a-6cd2-a023a2bd7ad8" role="listitem" class="swiper-slide sustainability w-dyn-item">
-                        <div class="slider-selector_height sustainability"><img loading="lazy" width="95" alt="Sustainability" src="images/upcycling_plastic_acoustic_panel.webp" class="slider-selector_img sustainability"></div>
+                        <div class="slider-selector_height sustainability"><img loading="lazy" width="95" alt="Sustainability" src="/images/upcycling_plastic_acoustic_panel.webp" class="slider-selector_img sustainability"></div>
                       </div>
                       <div class="swiper-slide sustainability w-dyn-item">
-                        <div class="slider-selector_height sustainability"><img loading="lazy" width="95" alt="Sustainability" src="images/natural_stone_acurock_usage.webp" class="slider-selector_img sustainability"></div>
+                        <div class="slider-selector_height sustainability"><img loading="lazy" width="95" alt="Sustainability" src="/images/natural_stone_acurock_usage.webp" class="slider-selector_img sustainability"></div>
                       </div>
                       <div class="swiper-slide sustainability w-dyn-item">
-                        <div class="slider-selector_height sustainability"><img loading="lazy" width="95" alt="Sustainability" src="images/sustainable_forestry.webp" class="slider-selector_img sustainability"></div>
+                        <div class="slider-selector_height sustainability"><img loading="lazy" width="95" alt="Sustainability" src="/images/sustainable_forestry.webp" class="slider-selector_img sustainability"></div>
                       </div>
                     </div>
                   </div>
@@ -1826,7 +1526,7 @@
               <div class="slogan_installation_guide_wrap">
                 <h2 class="heading-220">Verwandle dein Zuhause.</h2>
                 <p class="paragraph-93">Keine Fachkräfte nötig – folge diesem Link, um zu erfahren, wie du dein DIY-Projekt starten kannst.</p>
-                <a data-w-id="0580e130-ad9f-eaf3-e3ff-6c321fc34fc5" style="background-color:rgba(255,255,255,0)" href="installation-and-guide.html" class="button-outline-white guide w-inline-block">
+                <a data-w-id="0580e130-ad9f-eaf3-e3ff-6c321fc34fc5" style="background-color:rgba(255,255,255,0)" href="/installation-and-guide" class="button-outline-white guide w-inline-block">
                   <div class="button-text is-guide">Installationsguide</div>
                 </a>
               </div>
@@ -1836,9 +1536,9 @@
       </section>
       <section id="review" class="section-2 review product">
         <div class="w-layout-blockcontainer basic-container social w-container">
-          <div class="review-wrapper" style="display: none !important;">
+          <div class="review-wrapper">
             <div bind="c5d541b3-281a-4da7-939e-b05d10f3378d" class="code-embed w-embed w-script">
-              <div class="embedsocial-hashtag" data-ref="5a718517d5cd78b005c3e95bc8569dc4e508184d" style="display: none !important;"></div>
+              <div class="embedsocial-hashtag" data-ref="5a718517d5cd78b005c3e95bc8569dc4e508184d"></div>
               <script> (function(d, s, id) { var js; if (d.getElementById(id)) {d.getElementById(id).parentNode.removeChild(d.getElementById(id));} js = d.createElement(s); js.id = id; js.src = "https://embedsocial.com/cdn/ht.js"; d.getElementsByTagName("head")[0].appendChild(js); }(document, "script", "EmbedSocialHashtagScript")); </script>
             </div>
           </div>
@@ -1856,7 +1556,7 @@
                     <div bind="b1144648-ea22-8332-4fb8-cb5f7119a7b0" class="form-block-2 w-form">
                       <form id="wf-form-Subscribe" name="wf-form-Subscribe" data-name="Subscribe" method="get" class="form-2" data-wf-page-id="64ad5017cecbda3ed3e03b91" data-wf-element-id="b1144648-ea22-8332-4fb8-cb5f7119a7b1"><label for="Newsletter-2" class="field-label">Verbinden wir uns</label>
                         <div class="flex-wrapper-newsletter"><input class="text-field-6 w-input" maxlength="256" name="Newsletter-2" data-name="Newsletter 2" placeholder="Deine Email" type="email" id="Newsletter-2" required=""><input type="submit" data-wait="Please wait..." class="submit-button-newsletter w-button" value=""></div><label class="w-checkbox">
-                          <div class="w-checkbox-input w-checkbox-input--inputType-custom checkbox-newsletter"></div><input type="checkbox" name="checkbox-2" id="checkbox-2" data-name="Checkbox 2" style="opacity:0;position:absolute;z-index:-1"><span class="checkbox-label w-form-label" for="checkbox-2">Ja, ich möchte den Newsletter von stonearts® erhalten, und ich akzeptiere die Bedingungen der <a href="cookie-und-datschenschutzerklaerung.html" class="link-11">Datenschutzrichtlinien.</a></span>
+                          <div class="w-checkbox-input w-checkbox-input--inputType-custom checkbox-newsletter"></div><input type="checkbox" name="checkbox-2" id="checkbox-2" data-name="Checkbox 2" style="opacity:0;position:absolute;z-index:-1"><span class="checkbox-label w-form-label" for="checkbox-2">Ja, ich möchte den Newsletter von stonearts® erhalten, und ich akzeptiere die Bedingungen der <a href="/cookie-und-datschenschutzerklaerung" class="link-11">Datenschutzrichtlinien.</a></span>
                         </label>
                       </form>
                       <div class="w-form-done">
@@ -1873,20 +1573,20 @@
                     <div id="w-node-b1144648-ea22-8332-4fb8-cb5f7119a795-7119a779" class="w-layout-cell cell-26">
                       <h3 class="heading-150">Brauchst du Hilfe?</h3>
                       <div class="link-block-holder-footer">
-                        <a href="kontaktier-uns.html" class="footer-links">Kontaktiere uns</a>
-                        <a href="installation-and-guide.html" class="footer-links">Installationsguide</a>
-                        <a href="zahlung-und-versand.html" class="footer-links">Zahlung &amp; Versand</a>
-                        <a href="faq.html" class="footer-links">FAQs</a>
+                        <a href="/kontaktier-uns" class="footer-links">Kontaktiere uns</a>
+                        <a href="/installation-and-guide" class="footer-links">Installationsguide</a>
+                        <a href="/zahlung-und-versand" class="footer-links">Zahlung &amp; Versand</a>
+                        <a href="/faq" class="footer-links">FAQs</a>
                       </div>
                     </div>
                     <div id="w-node-b1144648-ea22-8332-4fb8-cb5f7119a7a3-7119a779" class="w-layout-cell cell-22">
                       <div>
                         <h3 class="heading-150">Company</h3>
                         <div class="link-block-holder-footer">
-                          <a href="stein-selektion.html" class="footer-links">Unsere Steine</a>
-                          <a href="stoneskin.html" class="footer-links">Stoneskin</a>
-                          <a href="uber-uns.html" class="footer-links">Über uns</a>
-                          <a href="verantwortung.html" class="footer-links">Verantwortung</a>
+                          <a href="/stein-selektion" class="footer-links">Unsere Steine</a>
+                          <a href="/stoneskin" class="footer-links">Stoneskin</a>
+                          <a href="/uber-uns" class="footer-links">Über uns</a>
+                          <a href="/verantwortung" class="footer-links">Verantwortung</a>
                         </div>
                       </div>
                     </div>
@@ -1896,16 +1596,16 @@
                   <div id="w-node-c864b520-897b-0062-ab70-2c8afeac0149-7119a779" class="slogan-wrap-footer"><img src="/images/stonearts®-logo-black-long.svg" loading="lazy" width="151" alt="" class="image-123"></div>
                   <h3 class="heading-148">#follow us</h3>
                   <div class="social-media-icon_wrapper">
-                    <a href="https://www.facebook.com/stoneartsglobal?_rdr" target="_blank" class="social-media-link w-inline-block"><img src="images/facebook-circle-Black.svg" loading="lazy" width="39" alt="" class="image-99"></a>
-                    <a href="https://www.instagram.com/stonearts_official/" target="_blank" class="social-media-link w-inline-block"><img src="images/Instagram-Circle-Black.svg" loading="lazy" width="38" alt="" class="image-100"></a>
-                    <a href="https://www.youtube.com/channel/UCpdPxE-_gXMg9hG_p3hvrkw" target="_blank" class="social-media-link w-inline-block"><img src="images/Youtube-Circle-Black.svg" loading="lazy" width="39" alt="" class="image-101"></a>
-                    <a href="https://www.tiktok.com/@stonearts_official?is_from_webapp=1&amp;sender_device=pc" target="_blank" class="social-media-link w-inline-block"><img src="images/tiktok-Circle-Black.svg" loading="lazy" width="39" alt="" class="image-102"></a>
-                    <a href="https://at.pinterest.com/17qo2x7ctqzuy3hlhny50ia1rfuphi/" target="_blank" class="social-media-link w-inline-block"><img src="images/Pinterest-Circle-Black.svg" loading="lazy" width="41" alt="" class="image-135"></a>
+                    <a href="https://www.facebook.com/stoneartsglobal?_rdr" target="_blank" class="social-media-link w-inline-block"><img src="/images/facebook-circle-Black.svg" loading="lazy" width="39" alt="" class="image-99"></a>
+                    <a href="https://www.instagram.com/stonearts_official/" target="_blank" class="social-media-link w-inline-block"><img src="/images/Instagram-Circle-Black.svg" loading="lazy" width="38" alt="" class="image-100"></a>
+                    <a href="https://www.youtube.com/channel/UCpdPxE-_gXMg9hG_p3hvrkw" target="_blank" class="social-media-link w-inline-block"><img src="/images/Youtube-Circle-Black.svg" loading="lazy" width="39" alt="" class="image-101"></a>
+                    <a href="https://www.tiktok.com/@stonearts_official?is_from_webapp=1&amp;sender_device=pc" target="_blank" class="social-media-link w-inline-block"><img src="/images/tiktok-Circle-Black.svg" loading="lazy" width="39" alt="" class="image-102"></a>
+                    <a href="https://at.pinterest.com/17qo2x7ctqzuy3hlhny50ia1rfuphi/" target="_blank" class="social-media-link w-inline-block"><img src="/images/Pinterest-Circle-Black.svg" loading="lazy" width="41" alt="" class="image-135"></a>
                   </div>
                 </div>
                 <div id="w-node-b1144648-ea22-8332-4fb8-cb5f7119a78b-7119a779" class="footer-main-block logo">
                   <div class="follow_us_wrapper">
-                    <div class="payment-options-wrapper"><img src="images/5e905dee2a9d698070cfc797_Paypal.svg" loading="lazy" width="47" alt="" class="image-103"><img src="images/5fb0641eb3236f6b8331173c_Visa.svg" loading="lazy" width="47" alt="" class="image-103"><img src="images/5fb0641eb3236f4208311736_Mastercard.svg" loading="lazy" width="40" alt="" class="image-104"><img src="images/5fb0641eb3236f5eb731172c_Maestro.svg" loading="lazy" width="40" alt="" class="image-104"><img src="images/logo_black.png" loading="lazy" width="65" alt="" class="image-134"></div>
+                    <div class="payment-options-wrapper"><img src="/images/5e905dee2a9d698070cfc797_Paypal.svg" loading="lazy" width="47" alt="" class="image-103"><img src="/images/5fb0641eb3236f6b8331173c_Visa.svg" loading="lazy" width="47" alt="" class="image-103"><img src="/images/5fb0641eb3236f4208311736_Mastercard.svg" loading="lazy" width="40" alt="" class="image-104"><img src="/images/5fb0641eb3236f5eb731172c_Maestro.svg" loading="lazy" width="40" alt="" class="image-104"><img src="/images/logo_black.png" loading="lazy" width="65" alt="" class="image-134"></div>
                   </div>
                 </div>
               </div>
@@ -1921,13 +1621,13 @@
                   <h3 class="heading-149">© 2025 stonearts® all rights reserved</h3>
                 </div>
                 <div class="company-details-wrapper">
-                  <a href="allgemeine-geschaeftsbedingungen.html" class="legal-links w-inline-block">
+                  <a href="/allgemeine-geschaeftsbedingungen" class="legal-links w-inline-block">
                     <h3 class="heading-151">AGBs</h3>
                   </a>
-                  <a href="cookie-und-datschenschutzerklaerung.html" class="legal-links w-inline-block">
+                  <a href="/cookie-und-datschenschutzerklaerung" class="legal-links w-inline-block">
                     <h3 class="heading-151">Datenschutz</h3>
                   </a>
-                  <a href="impressum.html" class="legal-links w-inline-block">
+                  <a href="/impressum" class="legal-links w-inline-block">
                     <h3 policy-link="terms" class="heading-151">Impressum</h3>
                   </a>
                 </div>

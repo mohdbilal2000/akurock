@@ -5676,12 +5676,19 @@ blockquote {
 @media screen and (min-width: 768px) {
   .mobile-selection-grid .add-ons-sample_wrapper,
   .mobile-selection-grid .additonal_products_wrapper,
-  .mobile-selection-grid .collection-list-wrapper-5,
-  .mobile-selection-grid .w-dyn-items {
+  .mobile-selection-grid .collection-list-wrapper-5 {
     display: block !important;
     visibility: visible !important;
   }
-  
+  /* Only force block on accessory dyn-items, NOT the product image grid */
+  .mobile-selection-grid .collection-list-wrapper-5 .w-dyn-items {
+    display: block !important;
+    visibility: visible !important;
+  }
+  .mobile-selection-grid .product-image-grid.w-dyn-items {
+    display: grid !important;
+  }
+
   .mobile-selection-grid .collection-item-7 {
     display: flex !important;
   }

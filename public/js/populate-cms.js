@@ -7,6 +7,27 @@
 (function() {
   'use strict';
 
+  // ============================================================================
+  // CLIENT-SIDE TRANSLATION HELPER
+  // ============================================================================
+  const _locale = window.__LOCALE__ || 'de';
+  let _i18nDict = null;
+
+  async function loadI18n() {
+    if (_locale === 'de') return; // No translation needed for German
+    try {
+      const resp = await fetch(`/data/i18n/${_locale}.json?v=${Date.now()}`);
+      if (resp.ok) _i18nDict = await resp.json();
+    } catch (e) {
+      console.warn('populate-cms.js: Could not load i18n for', _locale);
+    }
+  }
+
+  function t(text) {
+    if (!text || !_i18nDict) return text;
+    return _i18nDict[text] || text;
+  }
+
   // Load CMS data
   let cmsData = null;
   let cartManagerInitialized = false; // Prevent double-initialization
@@ -550,12 +571,12 @@
       // For sample boxes - map to sample images
       if (product.category === 'AKUROCK Muster' || product.id?.includes('-sample')) {
         const sampleMap = {
-          'brush-sample': 'images/Sample-0123421_12.webp',
-          'whisper-sample': 'images/Sample-0240316_small.webp',
-          'gaia-sample': 'images/Sample-0123421_12.webp', // Use available sample image
-          'ligia-sample': 'images/Sample-0240316_small.webp',
-          'yami-sample': 'images/Sample-0123421_12.webp',
-          'yuki-sample': 'images/Sample-0240316_small.webp',
+          'brush-sample': 'images/Brush_sample.png',
+          'whisper-sample': 'images/Whisper_sample.png',
+          'gaia-sample': 'images/Gaia_sample.png',
+          'ligia-sample': 'images/Ligia_sample.png',
+          'yami-sample': 'images/Yami_sample.png',
+          'yuki-sample': 'images/Yuki_sample.png',
         };
         
         const localPath = sampleMap[productSlug] || sampleMap[product.id];
@@ -890,7 +911,7 @@
       const section = el.closest('.product_text_wrapper');
       if (section && window.getComputedStyle(section).display !== 'none') {
         if (product.name) {
-          el.textContent = product.name;
+          el.textContent = t(product.name);
         } else {
           console.warn('populate-cms.js: Product missing name');
         }
@@ -933,7 +954,7 @@
     const stoneDescriptionEls = document.querySelectorAll('[bind="116c2318-c33b-dcc5-4ef0-b6d435cfdf1a"], [bind="1a91082b-8f19-b175-b9ba-0deb9fa8ae0b"], [bind="409f9c8b-4b78-5f06-d0ad-57ad5bbfb2ac"], [bind="3cf4aa70-0d84-d294-71cd-b36d5959da37"]');
     stoneDescriptionEls.forEach(el => {
       if (product.stone) {
-        el.textContent = product.stone;
+        el.textContent = t(product.stone);
       } else {
         console.warn('populate-cms.js: Product missing stone description:', product.name);
       }
@@ -943,7 +964,7 @@
     const descriptionEls = document.querySelectorAll('.product-description-wrapper p, .product-description-text');
     descriptionEls.forEach(el => {
       if (product.description) {
-        el.textContent = product.description;
+        el.textContent = t(product.description);
       }
     });
 
@@ -957,8 +978,8 @@
         if (dimText.toLowerCase().includes('size per panel') || dimText.toLowerCase().includes('größe pro paneel')) {
           el.textContent = dimText;
         } else {
-          // Add prefix - use German format to match template
-          el.textContent = `Größe pro Paneel - ${dimText}`;
+          // Add prefix - translate label
+          el.textContent = `${t('Größe pro Paneel')} - ${dimText}`;
         }
       } else {
         console.warn('populate-cms.js: Product missing dimensions:', product.name);
@@ -1238,12 +1259,12 @@
         
         // Map product slugs to their slider image URLs (matching the website)
         const sliderImageMap = {
-          'yami': 'images/667530f03d356da1743e6c58_Yami.webp',
-          'yuki': 'https://cdn.prod.website-files.com/64ad5017cecbda3ed3e03b0f/6672c665321c865a6ece69a9_Yuki.webp',
-          'brush': 'https://cdn.prod.website-files.com/64ad5017cecbda3ed3e03b0f/6672bbb7fc31823192fae261_Brush.webp',
-          'whisper': 'https://cdn.prod.website-files.com/64ad5017cecbda3ed3e03b0f/6672b96579bfa56457a41e01_Whisper.webp',
-          'gaia': 'images/667530ff3fb596c83de661fc_Gaia.png',
-          'ligia': 'https://cdn.prod.website-files.com/64ad5017cecbda3ed3e03b0f/6672c5e85eaae26e4deef821_ligia.webp'
+          'yami': '/images/667530f03d356da1743e6c58_Yami.webp',
+          'yuki': '/images/6672c665321c865a6ece69a9_Yuki.webp',
+          'brush': '/images/6672bbb7fc31823192fae261_Brush.webp',
+          'whisper': '/images/6672b96579bfa56457a41e01_Whisper.webp',
+          'gaia': '/images/667530ff3fb596c83de661fc_Gaia.png',
+          'ligia': '/images/6672c5e85eaae26e4deef821_ligia.webp'
         };
         
         // PATTERN ENFORCEMENT: Only include products that follow the pattern
@@ -1358,16 +1379,16 @@
               
               item.innerHTML = `
                 <div class="content_additionals">
-                  <div class="addtions_img_container"><img loading="lazy" src="${accessoryImage}" alt="${accessory.name || ''}" class="${imageClass}" onerror="console.error('Accessory image failed to load:', '${accessoryImage}'); this.onerror=null;"></div>
+                  <div class="addtions_img_container"><img loading="lazy" src="${accessoryImage}" alt="${t(accessory.name || '')}" class="${imageClass}" onerror="console.error('Accessory image failed to load:', '${accessoryImage}'); this.onerror=null;"></div>
                   <div class="description additionals">
-                    <h2 class="additional_top">${accessory.name || ''}</h2>
-                    <div class="text-block-92">${accessory.description || ''}</div>
+                    <h2 class="additional_top">${t(accessory.name || '')}</h2>
+                    <div class="text-block-92">${t(accessory.description || '')}</div>
                     <div class="text-block-93">${accessory.price || ''} ${accessory.currency || 'EUR'}</div>
                   </div>
                 </div>
                 <div class="buy-button">
                   <form class="w-commerce-commerceaddtocartform default-state" data-node-type="commerce-add-to-cart-form" data-wf-product-id="${accessoryFormId}" data-wf-variant-id="${accessoryVariantId}" data-product-id="${accessoryDataId}">
-                    <div class="quanitity_buy_wrap"><input type="submit" data-node-type="commerce-add-to-cart-button" class="w-commerce-commerceaddtocartbutton addtional-products buy_button" value="Add to Cart"></div>
+                    <div class="quanitity_buy_wrap"><input type="submit" data-node-type="commerce-add-to-cart-button" class="w-commerce-commerceaddtocartbutton addtional-products buy_button" value="${t('Add to Cart')}"></div>
                   </form>
                 </div>
               `;
@@ -1766,14 +1787,14 @@
                     onsubmit="return false;">
                 <input type="hidden" name="commerce-add-to-cart-quantity-input" value="1">
                 <div class="addtocart_container" style="background-color: ${nameColor};">
-                  <img src="images/Large-Arrow-White-Selection.svg" loading="lazy" width="36" alt="" class="image-131">
+                  <img src="/images/Large-Arrow-White-Selection.svg" loading="lazy" width="36" alt="" class="image-131">
                   <input type="button" 
                          data-node-type="commerce-add-to-cart-button" 
-                         data-loading-text="Unterwegs..." 
+                         data-loading-text="${t('Hinzufügen..')}" 
                          aria-busy="false" 
                          aria-haspopup="dialog" 
                          class="w-commerce-commerceaddtocartbutton add-to-cart-button-2" 
-                         value="Warenkorb"
+                         value="${t('In den Warenkorb')}"
                          style="background-color: transparent; color: white; border: none; cursor: pointer;">
                 </div>
               </form>
@@ -2337,12 +2358,12 @@
       
       // Clean display name - remove "-Sample" suffix if present
       const displayName = (product.name || '').replace(/-Sample$/i, '').trim() || product.special_field_slogan || 'Sample';
-      
+
       const nameColor = product.button_header_color || 'hsla(0, 0%, 0%, 1.00)';
       const cardBgColor = product.color || 'hsla(0, 0%, 95%, 0.30)';
       const priceValue = product.priceValue || parseFloat((product.price || '0').replace(/[^\d.]/g, '')) || 5.00;
       const priceDisplay = product.price || `€${priceValue.toFixed(2)}`;
-      const description = product.stone || product.description || '';
+      const description = t(product.stone || product.description || '');
       
       // Create sample box card
       const card = document.createElement('div');
@@ -2383,15 +2404,15 @@
                     onsubmit="return false;">
                 <a position-id="e19d87a7-4ff0-df81-23a1-e1aec52e1551" data-node-type="commerce-buy-now-button" data-default-text="Buy now" data-subscription-text="Subscribe now" aria-busy="false" aria-haspopup="false" style="display:none" class="w-commerce-commercebuynowbutton w-dyn-hide" href="/checkout">Buy now</a>
                 <div bind="ec356d63-f585-bba1-47c8-b5a2a0763874" position-id="ec356d63-f585-bba1-47c8-b5a2a0763874" class="addtocart_container" style="background-color: ${nameColor}; width: 50px; height: 50px;">
-                  <img src="images/Large-Arrow-White-Selection.svg" loading="lazy" width="36" alt="" class="image-131">
+                  <img src="/images/Large-Arrow-White-Selection.svg" loading="lazy" width="36" alt="" class="image-131">
                   <input type="submit" 
                          bind="e19d87a7-4ff0-df81-23a1-e1aec52e1550"
                          data-node-type="commerce-add-to-cart-button" 
-                         data-loading-text="Unterwegs..." 
+                         data-loading-text="${t('Hinzufügen..')}" 
                          aria-busy="false" 
                          aria-haspopup="dialog" 
                          class="w-commerce-commerceaddtocartbutton add-to-cart-button-2" 
-                         value="Warenkorb"
+                         value="${t('In den Warenkorb')}"
                          style="display: none; transform: translate3d(-40px, 0px, 0px) scale3d(1, 1, 1) rotateX(0deg) rotateY(0deg) rotateZ(0deg) skew(0deg); transform-style: preserve-3d; opacity: 0;">
                 </div>
               </form>
@@ -2516,18 +2537,8 @@
           descriptionText = descriptionMap[accessory.id];
         }
         
-        // Translate German names to English for display
-        const nameMap = {
-          'Schrauben weiß': 'Screws white',
-          'Schrauben schwarz': 'Screws black',
-          'Wandkleber': 'Wall glue',
-          'Kartuschenpresse': 'Cartridge press',
-          'Lattenschrauben': 'Slatted screws',
-          'Nano-Versiegelung': 'Nano-sealing',
-          'Acoustic Felt': 'Acoustic Felt'
-        };
-        
-        const displayName = nameMap[accessory.name] || accessory.name;
+        // Translate accessory names using i18n t() function
+        const displayName = t(accessory.name) || accessory.name;
         
         item.innerHTML = `
           <div bind="4a7dc39c-fd5a-acc7-8775-f4e5a479d73e" class="item-wrap_samples is-addons">
@@ -2546,7 +2557,7 @@
               <div bind="4a7dc39c-fd5a-acc7-8775-f4e5a479d74a" class="add-to-cart is-addons">
                 <form bind="4a7dc39c-fd5a-acc7-8775-f4e5a479d74b" template-bind="4a7dc39c-fd5a-acc7-8775-f4e5a479d74b" position-bind-position="prepend" data-node-type="commerce-add-to-cart-form" class="w-commerce-commerceaddtocartform" data-wf-product-id="${accessoryFormId}" data-wf-variant-id="${accessoryVariantId}">
                   <a position-id="4a7dc39c-fd5a-acc7-8775-f4e5a479d756" data-node-type="commerce-buy-now-button" data-default-text="Buy now" data-subscription-text="Subscribe now" aria-busy="false" aria-haspopup="false" style="display:none" class="w-commerce-commercebuynowbutton" href="checkout.html">Buy now</a>
-                  <div bind="4a7dc39c-fd5a-acc7-8775-f4e5a479d757" position-id="4a7dc39c-fd5a-acc7-8775-f4e5a479d757" style="width:50px;height:50px" class="addtocart_container"><img src="images/Large-Arrow-White-Selection.svg" loading="lazy" width="36" alt="" class="image-131"><input data-loading-text="Unterwegs.." data-node-type="commerce-add-to-cart-button" class="w-commerce-commerceaddtocartbutton add-to-cart-button-2" style="display:none;-webkit-transform:translate3d(-40px, 0, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);-moz-transform:translate3d(-40px, 0, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);-ms-transform:translate3d(-40px, 0, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);transform:translate3d(-40px, 0, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);opacity:0" aria-haspopup="dialog" type="submit" bind="4a7dc39c-fd5a-acc7-8775-f4e5a479d759" aria-busy="false" value="Warenkorb"></div>
+                  <div bind="4a7dc39c-fd5a-acc7-8775-f4e5a479d757" position-id="4a7dc39c-fd5a-acc7-8775-f4e5a479d757" style="width:50px;height:50px" class="addtocart_container"><img src="/images/Large-Arrow-White-Selection.svg" loading="lazy" width="36" alt="" class="image-131"><input data-loading-text="${t('Hinzufügen..')}" data-node-type="commerce-add-to-cart-button" class="w-commerce-commerceaddtocartbutton add-to-cart-button-2" style="display:none;-webkit-transform:translate3d(-40px, 0, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);-moz-transform:translate3d(-40px, 0, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);-ms-transform:translate3d(-40px, 0, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);transform:translate3d(-40px, 0, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);opacity:0" aria-haspopup="dialog" type="submit" bind="4a7dc39c-fd5a-acc7-8775-f4e5a479d759" aria-busy="false" value="${t('In den Warenkorb')}"></div>
                 </form>
                 <div bind="4a7dc39c-fd5a-acc7-8775-f4e5a479d75a" style="display:none" class="w-commerce-commerceaddtocartoutofstock" tabindex="0">
                   <div>This product is out of stock.</div>
@@ -2953,7 +2964,8 @@
 
     console.log('populate-cms.js: Starting initialization...');
 
-    loadCMSData().then(data => {
+    // Load i18n translations before CMS data
+    loadI18n().then(() => loadCMSData()).then(data => {
       if (!data) {
         console.error('populate-cms.js: Failed to load CMS data');
         return;
