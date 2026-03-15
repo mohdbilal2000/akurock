@@ -93,6 +93,32 @@
       opacity: 1;
       transition: 0.5s ease-in-out;
     }
+    /* Mobile: ensure product gallery swiper shows images even before Swiper JS init */
+    @media screen and (max-width: 991px) {
+      .section.product.top .mobile-selection-grid {
+        display: grid !important;
+      }
+      .section.product.top .slider-selector_component.is-slider-product.mobile {
+        display: block !important;
+      }
+      /* Ensure swiper shows first slide even without JS initialization */
+      .swiper.is-swiper-product {
+        overflow: hidden;
+        width: 100%;
+        min-height: 300px;
+      }
+      .swiper.is-swiper-product .swiper-wrapper {
+        display: flex;
+        width: 100%;
+      }
+      .swiper.is-swiper-product .swiper-slide {
+        flex-shrink: 0;
+        width: 100%;
+      }
+      .section.product.top .product-selection-grid {
+        display: none !important;
+      }
+    }
     /* Force product hero section visible on desktop */
     @media screen and (min-width: 992px) {
       .section.product.top .mobile-selection-grid {

@@ -88,9 +88,9 @@
       "currency": "EUR",
       "mainImage": "/images/6672b83a8bd67b5b72bbd5fb_Whisper_Paneel.webp",
       "special_image": "/images/6672b83a8bd67b5b72bbd5fb_Whisper_Paneel.webp",
-      "special_image_2": "https://uploads-ssl.webflow.com/64ad5017cecbda3ed3e03b0f/6672b845e7846b687ecca399_Whisper_Stone.webp",
+      "special_image_2": "/images/6672b845e7846b687ecca399_Whisper_Stone.webp",
       "hover_image": "/images/6672b83a8bd67b5b72bbd5fb_Whisper_Paneel.webp",
-      "hover_image_installation": "https://uploads-ssl.webflow.com/64ad5017cecbda3ed3e03b0f/6672b83e1ccaf75ca6c81da1_Whisper_Installation.webp",
+      "hover_image_installation": "/images/6672b83e1ccaf75ca6c81da1_Whisper_Installation.webp",
       "selection_slider_image": "/images/6672b83a8bd67b5b72bbd5fb_Whisper_Paneel.webp",
       "images": [
         {
@@ -99,17 +99,17 @@
           "sort_order": 1
         },
         {
-          "url": "https://uploads-ssl.webflow.com/64ad5017cecbda3ed3e03b0f/6672b83e1ccaf75ca6c81da1_Whisper_Installation.webp",
+          "url": "/images/6672b83e1ccaf75ca6c81da1_Whisper_Installation.webp",
           "type": "installation",
           "sort_order": 2
         },
         {
-          "url": "https://uploads-ssl.webflow.com/64ad5017cecbda3ed3e03b0f/6672b845e7846b687ecca399_Whisper_Stone.webp",
+          "url": "/images/6672b845e7846b687ecca399_Whisper_Stone.webp",
           "type": "stone",
           "sort_order": 3
         },
         {
-          "url": "https://uploads-ssl.webflow.com/64ad5017cecbda3ed3e03b0f/6672b849e46050415b8fa8aa_Whisper%20Close_Up.webp",
+          "url": "/images/6672b849e46050415b8fa8aa_Whisper_Close_Up.webp",
           "type": "closeup",
           "sort_order": 4
         }
@@ -158,29 +158,29 @@
       "priceValue": 220.00,
       "currency": "EUR",
       "mainImage": "/images/6675865105eb9b089b31d729_Ligia_Paneel.jpg",
-      "special_image": "https://uploads-ssl.webflow.com/64ad5017cecbda3ed3e03b0f/6672c5cccadaf188f323804b_Ligia_Paneel.webp",
-      "special_image_2": "https://uploads-ssl.webflow.com/64ad5017cecbda3ed3e03b0f/6672c5d54c31e70e1894d52f_ligia_Stone.webp",
-      "hover_image": "https://uploads-ssl.webflow.com/64ad5017cecbda3ed3e03b0f/6672c5cccadaf188f323804b_Ligia_Paneel.webp",
-      "hover_image_installation": "https://uploads-ssl.webflow.com/64ad5017cecbda3ed3e03b0f/6672c5d076bbb3ca1509c75c_Ligia_Installation.webp",
+      "special_image": "/images/6672c5cccadaf188f323804b_Ligia_Paneel.webp",
+      "special_image_2": "/images/6672c5d54c31e70e1894d52f_ligia_Stone.webp",
+      "hover_image": "/images/6672c5cccadaf188f323804b_Ligia_Paneel.webp",
+      "hover_image_installation": "/images/6672c5d076bbb3ca1509c75c_Ligia_Installation.webp",
       "selection_slider_image": "/images/6675865105eb9b089b31d729_Ligia_Paneel.jpg",
       "images": [
         {
-          "url": "https://uploads-ssl.webflow.com/64ad5017cecbda3ed3e03b0f/6672c5cccadaf188f323804b_Ligia_Paneel.webp",
+          "url": "/images/6672c5cccadaf188f323804b_Ligia_Paneel.webp",
           "type": "panel",
           "sort_order": 1
         },
         {
-          "url": "https://uploads-ssl.webflow.com/64ad5017cecbda3ed3e03b0f/6672c5d076bbb3ca1509c75c_Ligia_Installation.webp",
+          "url": "/images/6672c5d076bbb3ca1509c75c_Ligia_Installation.webp",
           "type": "installation",
           "sort_order": 2
         },
         {
-          "url": "https://uploads-ssl.webflow.com/64ad5017cecbda3ed3e03b0f/6672c5d54c31e70e1894d52f_ligia_Stone.webp",
+          "url": "/images/6672c5d54c31e70e1894d52f_ligia_Stone.webp",
           "type": "stone",
           "sort_order": 3
         },
         {
-          "url": "https://uploads-ssl.webflow.com/64ad5017cecbda3ed3e03b0f/6672c5da69da413a405dafea_Ligia_CloseUp.webp",
+          "url": "/images/6672c5da69da413a405dafea_Ligia_CloseUp.webp",
           "type": "closeup",
           "sort_order": 4
         }
@@ -230,7 +230,7 @@
       "currency": "EUR",
       "mainImage": "/images/667530ff3fb596c83de661fc_Gaia.png",
       "special_image": "/images/667530ff3fb596c83de661fc_Gaia.png",
-      "special_image_2": "https://uploads-ssl.webflow.com/64ad5017cecbda3ed3e03b0f/6672c5618fb534f344983a07_Gaia_Stone.webp",
+      "special_image_2": "/images/6672c5618fb534f344983a07_Gaia_Stone.webp",
       "hover_image": "/images/667530ff3fb596c83de661fc_Gaia.png",
       "hover_image_installation": "/images/667028eef6662d7537c5ce7c_Gaia.webp",
       "selection_slider_image": "/images/667530ff3fb596c83de661fc_Gaia.png",
@@ -241,12 +241,12 @@
           "sort_order": 1
         },
         {
-          "url": "https://uploads-ssl.webflow.com/64ad5017cecbda3ed3e03b0f/6672c5618fb534f344983a07_Gaia_Stone.webp",
+          "url": "/images/6672c5618fb534f344983a07_Gaia_Stone.webp",
           "type": "stone",
           "sort_order": 2
         },
         {
-          "url": "https://uploads-ssl.webflow.com/64ad5017cecbda3ed3e03b0f/6672c5643a3925cdbf0b675b_Gaia_CloseUp.webp",
+          "url": "/images/6672c5643a3925cdbf0b675b_Gaia_CloseUp.webp",
           "type": "closeup",
           "sort_order": 3
         },
@@ -300,29 +300,29 @@
       "priceValue": 220.00,
       "currency": "EUR",
       "mainImage": "/images/667530f03d356da1743e6c58_Yami.webp",
-      "special_image": "https://uploads-ssl.webflow.com/64ad5017cecbda3ed3e03b0f/6672c4a3cc07e459748b16a8_Yami_Paneel.webp",
-      "special_image_2": "https://uploads-ssl.webflow.com/64ad5017cecbda3ed3e03b0f/6672c50ce1fa6622177a75ca_Yami_Stone.webp",
+      "special_image": "/images/6672c4a3cc07e459748b16a8_Yami_Paneel.webp",
+      "special_image_2": "/images/6672c50ce1fa6622177a75ca_Yami_Stone.webp",
       "hover_image": "/images/667028dee4828849dcfebbed_Obsidian.webp",
       "hover_image_installation": "/images/667028dee4828849dcfebbed_Obsidian.webp",
       "selection_slider_image": "/images/667530f03d356da1743e6c58_Yami.webp",
       "images": [
         {
-          "url": "https://uploads-ssl.webflow.com/64ad5017cecbda3ed3e03b0f/6672c4a3cc07e459748b16a8_Yami_Paneel.webp",
+          "url": "/images/6672c4a3cc07e459748b16a8_Yami_Paneel.webp",
           "type": "panel",
           "sort_order": 1
         },
         {
-          "url": "https://uploads-ssl.webflow.com/64ad5017cecbda3ed3e03b0f/6672c50639174e9162b76f2b_Yami_Installation.webp",
+          "url": "/images/6672c50639174e9162b76f2b_Yami_Installation.webp",
           "type": "installation",
           "sort_order": 2
         },
         {
-          "url": "https://uploads-ssl.webflow.com/64ad5017cecbda3ed3e03b0f/6672c50ce1fa6622177a75ca_Yami_Stone.webp",
+          "url": "/images/6672c50ce1fa6622177a75ca_Yami_Stone.webp",
           "type": "stone",
           "sort_order": 3
         },
         {
-          "url": "https://uploads-ssl.webflow.com/64ad5017cecbda3ed3e03b0f/6672c51284bd2e1841de54d2_Yami_CloseUp.webp",
+          "url": "/images/6672c51284bd2e1841de54d2_Yami_CloseUp.webp",
           "type": "closeup",
           "sort_order": 4
         }
@@ -371,29 +371,29 @@
       "priceValue": 220.00,
       "currency": "EUR",
       "mainImage": "/images/6675865fe02421482b8a18a9_Yuki_Paneel.jpg",
-      "special_image": "https://uploads-ssl.webflow.com/64ad5017cecbda3ed3e03b0f/6672c643b9abe5d94880a355_Yuki_Paneel.webp",
-      "special_image_2": "https://uploads-ssl.webflow.com/64ad5017cecbda3ed3e03b0f/6672c64c321c865a6ece5d6d_Yuki_Stone.webp",
-      "hover_image": "https://uploads-ssl.webflow.com/64ad5017cecbda3ed3e03b0f/6672c643b9abe5d94880a355_Yuki_Paneel.webp",
-      "hover_image_installation": "https://uploads-ssl.webflow.com/64ad5017cecbda3ed3e03b0f/6672c63ae67969e703f5bffa_Yuki_Installation.webp",
+      "special_image": "/images/6672c643b9abe5d94880a355_Yuki_Paneel.webp",
+      "special_image_2": "/images/6672c64c321c865a6ece5d6d_Yuki_Stone.webp",
+      "hover_image": "/images/6672c643b9abe5d94880a355_Yuki_Paneel.webp",
+      "hover_image_installation": "/images/6672c63ae67969e703f5bffa_Yuki_Installation.webp",
       "selection_slider_image": "/images/6675865fe02421482b8a18a9_Yuki_Paneel.jpg",
       "images": [
         {
-          "url": "https://uploads-ssl.webflow.com/64ad5017cecbda3ed3e03b0f/6672c643b9abe5d94880a355_Yuki_Paneel.webp",
+          "url": "/images/6672c643b9abe5d94880a355_Yuki_Paneel.webp",
           "type": "panel",
           "sort_order": 1
         },
         {
-          "url": "https://uploads-ssl.webflow.com/64ad5017cecbda3ed3e03b0f/6672c63ae67969e703f5bffa_Yuki_Installation.webp",
+          "url": "/images/6672c63ae67969e703f5bffa_Yuki_Installation.webp",
           "type": "installation",
           "sort_order": 2
         },
         {
-          "url": "https://uploads-ssl.webflow.com/64ad5017cecbda3ed3e03b0f/6672c64c321c865a6ece5d6d_Yuki_Stone.webp",
+          "url": "/images/6672c64c321c865a6ece5d6d_Yuki_Stone.webp",
           "type": "stone",
           "sort_order": 3
         },
         {
-          "url": "https://uploads-ssl.webflow.com/64ad5017cecbda3ed3e03b0f/6672c650782fc2f0512a8e1b_Yuki_CloseUp.webp",
+          "url": "/images/6672c650782fc2f0512a8e1b_Yuki_CloseUp.webp",
           "type": "closeup",
           "sort_order": 4
         }
@@ -688,7 +688,7 @@
       "priceValue": 40.00,
       "currency": "EUR",
       "mainImage": "/images/64b7ebdad523d6a9c1e37e0b_Black%20Acoustic-felt.jpg",
-      "selection_slider_image": "https://uploads-ssl.webflow.com/64ad5017cecbda3ed3e03b0f/64b7ec4d856eed9e41a944a9_Pet-Acoustic-felt-black.png",
+      "selection_slider_image": "/images/64b7ec4d856eed9e41a944a9_Pet-Acoustic-felt-black.png",
       "requiresShipping": false,
       "sorting": 1
     },
