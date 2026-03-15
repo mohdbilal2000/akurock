@@ -515,13 +515,15 @@
       const pathname = window.location.pathname.toLowerCase();
       const filename = pathname.split('/').pop() || '';
       
-      if (filename.includes('detail_product') || 
-          pathname.includes('detail_product') || 
+      if (filename.includes('detail_product') ||
+          pathname.includes('detail_product') ||
           pathname.includes('product/') ||
           document.querySelector('[bind="44360311-a628-3bd3-7fc8-c24734f06683"]')) {
         console.log('populate-cms.js: Re-populating product page');
         populateProductPage();
-      } else if (filename.includes('zubehoer') || pathname.includes('zubehoer') || 
+      } else if (filename.includes('zubehoer') || pathname.includes('zubehoer') ||
+                 filename.includes('accessories') || pathname.includes('accessories') ||
+                 filename.includes('accesorios') || pathname.includes('accesorios') ||
                  document.querySelector('[bind="4a7dc39c-fd5a-acc7-8775-f4e5a479d73b"]')) {
         console.log('populate-cms.js: Re-populating accessories page');
         populateAccessoriesPage();
@@ -529,6 +531,12 @@
         console.log('populate-cms.js: Re-populating homepage');
         populateHomePageSlider();
         populateMarketingContent();
+      } else if (filename.includes('akurock-muster') || pathname.includes('akurock-muster') ||
+                 filename.includes('sample-box') || pathname.includes('sample-box') ||
+                 filename.includes('caja-de-muestras') || pathname.includes('caja-de-muestras') ||
+                 document.querySelector('#sample-boxes-grid-container')) {
+        console.log('populate-cms.js: Re-populating sample boxes page');
+        populateSampleBoxesPage();
       }
     }
   });
@@ -2403,17 +2411,16 @@
                     action="javascript:void(0);"
                     onsubmit="return false;">
                 <a position-id="e19d87a7-4ff0-df81-23a1-e1aec52e1551" data-node-type="commerce-buy-now-button" data-default-text="Buy now" data-subscription-text="Subscribe now" aria-busy="false" aria-haspopup="false" style="display:none" class="w-commerce-commercebuynowbutton w-dyn-hide" href="/quotation">Buy now</a>
-                <div bind="ec356d63-f585-bba1-47c8-b5a2a0763874" position-id="ec356d63-f585-bba1-47c8-b5a2a0763874" class="addtocart_container" style="background-color: ${nameColor}; width: 50px; height: 50px;">
+                <div bind="ec356d63-f585-bba1-47c8-b5a2a0763874" position-id="ec356d63-f585-bba1-47c8-b5a2a0763874" class="addtocart_container" style="background-color: ${nameColor};">
                   <img src="/images/Large-Arrow-White-Selection.svg" loading="lazy" width="36" alt="" class="image-131">
-                  <input type="submit" 
+                  <input type="submit"
                          bind="e19d87a7-4ff0-df81-23a1-e1aec52e1550"
-                         data-node-type="commerce-add-to-cart-button" 
-                         data-loading-text="${t('Hinzufügen..')}" 
-                         aria-busy="false" 
-                         aria-haspopup="dialog" 
-                         class="w-commerce-commerceaddtocartbutton add-to-cart-button-2" 
-                         value="${t('In den Warenkorb')}"
-                         style="display: none; transform: translate3d(-40px, 0px, 0px) scale3d(1, 1, 1) rotateX(0deg) rotateY(0deg) rotateZ(0deg) skew(0deg); transform-style: preserve-3d; opacity: 0;">
+                         data-node-type="commerce-add-to-cart-button"
+                         data-loading-text="${t('Hinzufügen..')}"
+                         aria-busy="false"
+                         aria-haspopup="dialog"
+                         class="w-commerce-commerceaddtocartbutton add-to-cart-button-2"
+                         value="${t('In den Warenkorb')}">
                 </div>
               </form>
               <div bind="e19d87a7-4ff0-df81-23a1-e1aec52e1552" style="display:none" class="w-commerce-commerceaddtocartoutofstock" tabindex="0">
@@ -2472,6 +2479,45 @@
       console.log('populate-cms.js: ✅ All', sampleBoxes.length, 'sample boxes successfully added to page');
     }
     
+    // Populate the Musterbox collection form (right-side "get the complete collection" box)
+    const musterboxProduct = cmsData.products.find(p =>
+      p.category === 'AKUROCK Musterbox' || p.id === 'musterbox'
+    );
+    if (musterboxProduct && musterboxProduct.productId && musterboxProduct.variantId) {
+      // Find the collection box form (inside .sample-selection-box_wrap)
+      const collectionBoxWrap = document.querySelector('.sample-selection-box_wrap');
+      if (collectionBoxWrap) {
+        const collectionForm = collectionBoxWrap.querySelector('[data-node-type="commerce-add-to-cart-form"]');
+        if (collectionForm) {
+          collectionForm.setAttribute('data-wf-product-id', musterboxProduct.productId);
+          collectionForm.setAttribute('data-wf-variant-id', musterboxProduct.variantId);
+          collectionForm.setAttribute('data-commerce-product-id', musterboxProduct.productId);
+          collectionForm.setAttribute('data-commerce-sku-id', musterboxProduct.variantId);
+          collectionForm.setAttribute('action', 'javascript:void(0);');
+          collectionForm.onsubmit = function() { return false; };
+          setupFormImmediately(collectionForm, musterboxProduct.productId, musterboxProduct.variantId);
+          console.log('✅ populate-cms.js: Musterbox collection form populated with IDs:', musterboxProduct.productId, musterboxProduct.variantId);
+        }
+        // Translate the collection box text
+        const collectionText = collectionBoxWrap.querySelector('.text-block-69');
+        if (collectionText) {
+          const locale = window.__LOCALE__ || 'de';
+          if (locale === 'en') {
+            collectionText.innerHTML = 'Get the complete<br>collection and try<br>them all on your wall.';
+          } else if (locale === 'es') {
+            collectionText.innerHTML = 'Consigue la colección<br>completa y pruébalas<br>todas en tu pared.';
+          }
+        }
+        // Translate the add-to-cart button
+        const collectionBtn = collectionBoxWrap.querySelector('.add-to-cart-button-4');
+        if (collectionBtn) {
+          collectionBtn.value = t('In den Warenkorb');
+        }
+      }
+    } else {
+      console.warn('⚠️ populate-cms.js: Musterbox product not found in CMS data');
+    }
+
     // Re-initialize cart integration for the new forms AFTER IDs are set
     // Use requestAnimationFrame to ensure DOM updates are complete
     requestAnimationFrame(() => {
@@ -3010,7 +3056,9 @@
           populateProductPage();
           // NOTE: initCartIntegration() is called INSIDE populateProductPage() after IDs are set
           // Do NOT call it here - it would run before form IDs are injected
-        } else if (filename.includes('zubehoer') || pathname.includes('zubehoer') || 
+        } else if (filename.includes('zubehoer') || pathname.includes('zubehoer') ||
+                   filename.includes('accessories') || pathname.includes('accessories') ||
+                   filename.includes('accesorios') || pathname.includes('accesorios') ||
                    document.querySelector('[bind="4a7dc39c-fd5a-acc7-8775-f4e5a479d73b"]')) {
           console.log('populate-cms.js: Detected accessories page');
           populateAccessoriesPage();
@@ -3023,7 +3071,10 @@
           populateHomepageProductGrid();
           // Initialize cart integration IMMEDIATELY
           initCartIntegration();
-        } else if (filename.includes('akurock-muster') || pathname.includes('akurock-muster')) {
+        } else if (filename.includes('akurock-muster') || pathname.includes('akurock-muster') ||
+                   filename.includes('sample-box') || pathname.includes('sample-box') ||
+                   filename.includes('caja-de-muestras') || pathname.includes('caja-de-muestras') ||
+                   document.querySelector('#sample-boxes-grid-container')) {
           console.log('populate-cms.js: Detected sample boxes page');
           
           // CRITICAL: Force check if we have sample boxes in data
