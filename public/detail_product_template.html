@@ -72,6 +72,24 @@
     visibility: visible !important;
     opacity: 1 !important;
   }
+  /* CRITICAL: Force hide out-of-stock messages and error states on all product pages
+     Webflow commerce JS shows these when it can't verify inventory from its backend.
+     Since we use our own cart system, products are always in stock. */
+  .w-commerce-commerceaddtocartoutofstock {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    overflow: hidden !important;
+  }
+  .w-commerce-commerceaddtocarterror {
+    display: none !important;
+  }
+  /* Ensure add-to-cart forms are always visible */
+  .w-commerce-commerceaddtocartform {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
 </style>
   <!--  [Attributes by Finsweet] CMS Load  -->
   <script async="" src="https://cdn.jsdelivr.net/npm/@finsweet/attributes-cmsload@1/cmsload.js"></script>

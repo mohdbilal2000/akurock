@@ -976,7 +976,61 @@
     productPageEmptyStates.forEach(state => {
       state.style.display = 'none';
     });
-    
+
+    // CRITICAL: Force hide ALL out-of-stock messages and error states
+    // Webflow commerce JS shows these when it can't verify inventory from its backend.
+    // Since we use our own cart system (CartManager), products are always in stock.
+    function forceHideOutOfStock() {
+      document.querySelectorAll('.w-commerce-commerceaddtocartoutofstock').forEach(el => {
+        el.style.setProperty('display', 'none', 'important');
+      });
+      document.querySelectorAll('.w-commerce-commerceaddtocarterror').forEach(el => {
+        el.style.setProperty('display', 'none', 'important');
+      });
+      // Ensure add-to-cart forms stay visible
+      document.querySelectorAll('.w-commerce-commerceaddtocartform').forEach(el => {
+        el.style.setProperty('display', 'block', 'important');
+      });
+    }
+    forceHideOutOfStock();
+
+    // Use MutationObserver to prevent Webflow from showing out-of-stock messages
+    const outOfStockObserver = new MutationObserver(function(mutations) {
+      let needsFix = false;
+      mutations.forEach(function(mutation) {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+          const target = mutation.target;
+          if (target.classList.contains('w-commerce-commerceaddtocartoutofstock') ||
+              target.classList.contains('w-commerce-commerceaddtocarterror')) {
+            if (target.style.display !== 'none') {
+              needsFix = true;
+            }
+          }
+          if (target.classList.contains('w-commerce-commerceaddtocartform')) {
+            if (target.style.display === 'none') {
+              needsFix = true;
+            }
+          }
+        }
+      });
+      if (needsFix) {
+        forceHideOutOfStock();
+      }
+    });
+
+    // Observe the product page for style changes
+    outOfStockObserver.observe(document.body, {
+      attributes: true,
+      attributeFilter: ['style'],
+      subtree: true
+    });
+
+    // Also run on timers to catch delayed Webflow commerce initialization
+    setTimeout(forceHideOutOfStock, 500);
+    setTimeout(forceHideOutOfStock, 1000);
+    setTimeout(forceHideOutOfStock, 2000);
+    setTimeout(forceHideOutOfStock, 5000);
+
     let product = getCurrentProduct();
     console.log('📦 populate-cms.js: Current product:', product ? {
       name: product.name,
@@ -1345,8 +1399,9 @@
             
             console.log(`populate-cms.js: Variant selector - ${p.name}: ${p.selection_slider_image} -> ${thumbImage}`);
             
+            const localePrefix = _locale && _locale !== 'de' ? `/${_locale}` : '';
             slide.innerHTML = `
-              <a href="/product/${p.slug}" class="slider-selector_link is-slider-selector w-inline-block ${isActive}">
+              <a href="${localePrefix}/product/${p.slug}" class="slider-selector_link is-slider-selector w-inline-block ${isActive}">
                 <div class="slider-selector_height">
                   <img loading="lazy" width="95" src="${thumbImage}" alt="${p.name || ''}" class="slider-selector_img" onerror="console.error('Variant selector image failed:', '${thumbImage}'); this.onerror=null;">
                 </div>
@@ -1436,8 +1491,9 @@
           slide.className = `swiper-slide is-slider-selector w-dyn-item${isActive ? ' is-active' : ''}${index === 1 ? ' swiper-slide-next' : ''}`;
           slide.setAttribute('aria-label', `${index + 1} / ${sortedProducts.length}`);
           
+          const localePrefixDesktop = _locale && _locale !== 'de' ? `/${_locale}` : '';
           slide.innerHTML = `
-            <a bind="1a91082b-8f19-b175-b9ba-0deb9fa8ae13" aria-label="Akurock Acoustic Panels Link" href="/product/${p.slug}" class="slider-selector_link is-slider-selector w-inline-block${isActive ? ' w--current' : ''}"${isActive ? ' aria-current="page"' : ''}>
+            <a bind="1a91082b-8f19-b175-b9ba-0deb9fa8ae13" aria-label="Akurock Acoustic Panels Link" href="${localePrefixDesktop}/product/${p.slug}" class="slider-selector_link is-slider-selector w-inline-block${isActive ? ' w--current' : ''}"${isActive ? ' aria-current="page"' : ''}>
               <img bind="1a91082b-8f19-b175-b9ba-0deb9fa8ae15" loading="lazy" width="95" alt="${p.name || ''}" src="${thumbImage}" class="slider-selector_img" onerror="console.error('Desktop variant selector image failed:', '${thumbImage}'); this.onerror=null;">
               <div class="swiper-main-img"></div>
             </a>
@@ -2199,8 +2255,9 @@
         const displayImageUrl = getImagePath({ ...product, mainImage: mainImageUrl }, 'mainImage') || mainImageUrl;
         const displayHoverUrl = getImagePath({ ...product, mainImage: hoverImageUrl }, 'mainImage') || hoverImageUrl;
         
+        const localePrefixMain = _locale && _locale !== 'de' ? `/${_locale}` : '';
         slide.innerHTML = `
-          <a href="/product/${product.slug}" class="slider-selector_link is-slider-main w-inline-block">
+          <a href="${localePrefixMain}/product/${product.slug}" class="slider-selector_link is-slider-main w-inline-block">
             <div class="slider-main_image-height is-slider-main">
               <img src="${displayImageUrl}" loading="lazy" alt="${product.name}" class="slider-main_image" onerror="this.onerror=null; this.src='${mainImageUrl}'">
               <img src="${displayHoverUrl}" loading="lazy" style="opacity:0; transition: opacity 0.5s ease-in-out;" alt="${product.name}" class="slider-main_image-2" onerror="this.onerror=null; this.src='${hoverImageUrl}'">
