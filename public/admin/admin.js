@@ -146,6 +146,10 @@
             <button class="admin-nav-item" data-section="accessories" onclick="AdminPanel.showSection('accessories')">🔧 Accessories</button>
             <button class="admin-nav-item" data-section="sampleBoxes" onclick="AdminPanel.showSection('sampleBoxes')">📦 Sample Boxes</button>
             <button class="admin-nav-item" data-section="orders" onclick="AdminPanel.showSection('orders')">📋 Orders</button>
+            <button class="admin-nav-item" data-section="collections" onclick="AdminPanel.showSection('collections')">📂 Collections</button>
+            <button class="admin-nav-item" data-section="newsletter" onclick="AdminPanel.showSection('newsletter')">📧 Newsletter</button>
+            <button class="admin-nav-item" data-section="content" onclick="AdminPanel.showSection('content')">📝 Content</button>
+            <button class="admin-nav-item" data-section="settings" onclick="AdminPanel.showSection('settings')">⚙️ Settings</button>
             <button class="admin-nav-item" data-section="siteHealth" onclick="AdminPanel.showSection('siteHealth')">🏥 Site Health</button>
             <button class="admin-nav-item" data-section="seo" onclick="AdminPanel.showSection('seo')">🔍 SEO</button>
             <button class="admin-nav-item" data-section="redirects" onclick="AdminPanel.showSection('redirects')">🔀 Redirects</button>
@@ -189,10 +193,20 @@
             <div class="admin-card" style="margin-top: 1.5rem;">
               <h2 class="admin-section-title">Quick Actions</h2>
               <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem;">
-                <button class="admin-btn" onclick="AdminPanel.showSection('products')">Manage Products</button>
-                <button class="admin-btn-secondary" onclick="AdminPanel.showSection('accessories')">Manage Accessories</button>
-                <button class="admin-btn-secondary" onclick="AdminPanel.showSection('siteHealth')">Run Site Health Check</button>
-                <button class="admin-btn-secondary" onclick="AdminPanel.showSection('seo')">SEO Audit</button>
+                <button class="admin-btn" onclick="AdminPanel.showSection('products')" style="width: auto;">Manage Products</button>
+                <button class="admin-btn-secondary" onclick="AdminPanel.showSection('orders')" style="color: #333; border-color: #ddd;">View Orders</button>
+                <button class="admin-btn-secondary" onclick="AdminPanel.showSection('collections')" style="color: #333; border-color: #ddd;">Manage Collections</button>
+                <button class="admin-btn-secondary" onclick="AdminPanel.showSection('newsletter')" style="color: #333; border-color: #ddd;">Newsletter</button>
+                <button class="admin-btn-secondary" onclick="AdminPanel.showSection('content')" style="color: #333; border-color: #ddd;">Edit Content</button>
+                <button class="admin-btn-secondary" onclick="AdminPanel.showSection('settings')" style="color: #333; border-color: #ddd;">Settings</button>
+                <button class="admin-btn-secondary" onclick="AdminPanel.showSection('siteHealth')" style="color: #333; border-color: #ddd;">Site Health Check</button>
+                <button class="admin-btn-secondary" onclick="AdminPanel.showSection('seo')" style="color: #333; border-color: #ddd;">SEO Audit</button>
+              </div>
+            </div>
+
+            <div class="admin-card" style="margin-top: 1.5rem;">
+              <h2 class="admin-section-title">Catalog Overview</h2>
+              <div id="dashboardChart" style="margin-top: 1rem; display: flex; gap: 0.5rem; align-items: flex-end; height: 120px;">
               </div>
             </div>
 
@@ -297,6 +311,41 @@
               <button class="admin-btn-secondary" id="exportOrdersBtn" onclick="AdminPanel.exportOrders()">📥 Export Orders</button>
             </div>
             <div id="ordersList"></div>
+          </section>
+
+          <!-- Collections Section -->
+          <section class="admin-section" id="collectionsSection">
+            <div class="admin-section-header">
+              <h2 class="admin-section-title">📂 Collections</h2>
+              <button class="admin-btn" onclick="AdminPanel.addCollection()">➕ Add Collection</button>
+            </div>
+            <div id="collectionsList"></div>
+          </section>
+
+          <!-- Newsletter Section -->
+          <section class="admin-section" id="newsletterSection">
+            <div class="admin-section-header">
+              <h2 class="admin-section-title">📧 Newsletter</h2>
+              <button class="admin-btn-secondary" onclick="AdminPanel.exportSubscribers()">📥 Export Subscribers</button>
+            </div>
+            <div id="newsletterContent"></div>
+          </section>
+
+          <!-- Content Editor Section -->
+          <section class="admin-section" id="contentSection">
+            <div class="admin-section-header">
+              <h2 class="admin-section-title">📝 Content Management</h2>
+            </div>
+            <div id="contentEditorContent"></div>
+          </section>
+
+          <!-- Settings Section -->
+          <section class="admin-section" id="settingsSection">
+            <div class="admin-section-header">
+              <h2 class="admin-section-title">⚙️ Settings</h2>
+              <button class="admin-btn" onclick="AdminPanel.saveSettings()">💾 Save Settings</button>
+            </div>
+            <div id="settingsContent"></div>
           </section>
 
           <!-- Site Health Section -->
@@ -482,17 +531,32 @@
     if (accessoriesEl) accessoriesEl.textContent = accessoriesCount;
     if (sampleBoxesEl) sampleBoxesEl.textContent = sampleBoxesCount;
     
-    // Update order statistics if OrderManager is available
-    if (window.OrderManager && totalOrdersEl && pendingOrdersEl) {
-      try {
-        const stats = window.OrderManager.getStatistics();
-        totalOrdersEl.textContent = stats.total;
-        pendingOrdersEl.textContent = stats.pending;
-      } catch (error) {
-        console.error('AdminPanel: Error getting order statistics:', error);
-        if (totalOrdersEl) totalOrdersEl.textContent = '0';
-        if (pendingOrdersEl) pendingOrdersEl.textContent = '0';
-      }
+    // Update order statistics from localStorage
+    const ORDERS_KEY = 'stonearts_orders';
+    let orders = [];
+    try { orders = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]'); } catch (e) { orders = []; }
+    if (totalOrdersEl) totalOrdersEl.textContent = orders.length;
+    if (pendingOrdersEl) pendingOrdersEl.textContent = orders.filter(o => o.status === 'pending').length;
+
+    // Render mini bar chart
+    const chartEl = document.getElementById('dashboardChart');
+    if (chartEl) {
+      const collections = AdminPanel.cmsData.collections || [];
+      const bars = [
+        { label: 'Products', value: productsCount, color: '#0d0d0d' },
+        { label: 'Accessories', value: accessoriesCount, color: '#ff6b35' },
+        { label: 'Samples', value: sampleBoxesCount, color: '#17a2b8' },
+        { label: 'Collections', value: collections.length, color: '#28a745' },
+        { label: 'Orders', value: orders.length, color: '#6f42c1' }
+      ];
+      const maxVal = Math.max(...bars.map(b => b.value), 1);
+      chartEl.innerHTML = bars.map(bar => `
+        <div style="flex: 1; text-align: center; display: flex; flex-direction: column; justify-content: flex-end; height: 100%;">
+          <div style="font-weight: 700; font-size: 1.1rem; margin-bottom: 4px;">${bar.value}</div>
+          <div style="background: ${bar.color}; height: ${Math.max((bar.value / maxVal) * 80, 8)}px; border-radius: 6px 6px 0 0; transition: height 0.5s ease; min-height: 8px;"></div>
+          <div style="font-size: 0.7rem; color: #666; margin-top: 4px; white-space: nowrap;">${bar.label}</div>
+        </div>
+      `).join('');
     }
   }
 
@@ -508,6 +572,10 @@
       'sampleBoxes': 'sampleBoxesSection',
       'sample-boxes': 'sampleBoxesSection',
       'orders': 'ordersSection',
+      'collections': 'collectionsSection',
+      'newsletter': 'newsletterSection',
+      'content': 'contentSection',
+      'settings': 'settingsSection',
       'siteHealth': 'siteHealthSection',
       'seo': 'seoSection',
       'redirects': 'redirectsSection'
@@ -549,53 +617,49 @@
               renderSampleBoxesList();
             }
           } else if (section === 'orders' || sectionId === 'ordersSection') {
-            if (typeof renderOrdersList === 'function') {
-              renderOrdersList();
-            }
+            renderOrdersList();
+          } else if (section === 'collections' || sectionId === 'collectionsSection') {
+            renderCollectionsList();
+          } else if (section === 'newsletter' || sectionId === 'newsletterSection') {
+            renderNewsletterSection();
+          } else if (section === 'content' || sectionId === 'contentSection') {
+            renderContentEditor();
+          } else if (section === 'settings' || sectionId === 'settingsSection') {
+            renderSettingsSection();
           } else if (section === 'dashboard' || sectionId === 'dashboardSection') {
             updateDashboardStats();
           }
         }
       }).catch(error => {
         console.error('AdminPanel: Error reloading data:', error);
-        // Fallback to original behavior if reload fails
         const sectionEl = document.getElementById(sectionId);
         if (sectionEl) {
           sectionEl.classList.add('active');
           AdminPanel.currentSection = section;
-          if (section === 'products' || sectionId === 'productsSection') {
-            renderProductsList();
-          } else if (section === 'accessories' || sectionId === 'accessoriesSection') {
-            renderAccessoriesList();
-          } else if (section === 'sampleBoxes' || section === 'sample-boxes' || sectionId === 'sampleBoxesSection') {
-            if (typeof renderSampleBoxesList === 'function') {
-              renderSampleBoxesList();
-            }
-          } else if (section === 'orders' || sectionId === 'ordersSection') {
-            if (typeof renderOrdersList === 'function') {
-              renderOrdersList();
-            }
-          }
+          renderSectionContent(section, sectionId);
         }
       });
     } else {
-      // Fallback if AdminDataManager not available
       const sectionEl = document.getElementById(sectionId);
       if (sectionEl) {
         sectionEl.classList.add('active');
         AdminPanel.currentSection = section;
-        if (section === 'products' || sectionId === 'productsSection') {
-          renderProductsList();
-        } else if (section === 'accessories' || sectionId === 'accessoriesSection') {
-          renderAccessoriesList();
-        } else if (section === 'sampleBoxes' || section === 'sample-boxes' || sectionId === 'sampleBoxesSection') {
-          if (typeof renderSampleBoxesList === 'function') {
-            renderSampleBoxesList();
-          }
-        }
+        renderSectionContent(section, sectionId);
       }
     }
   };
+
+  function renderSectionContent(section, sectionId) {
+    if (section === 'products' || sectionId === 'productsSection') renderProductsList();
+    else if (section === 'accessories' || sectionId === 'accessoriesSection') renderAccessoriesList();
+    else if (section === 'sampleBoxes' || section === 'sample-boxes' || sectionId === 'sampleBoxesSection') renderSampleBoxesList();
+    else if (section === 'orders' || sectionId === 'ordersSection') renderOrdersList();
+    else if (section === 'collections' || sectionId === 'collectionsSection') renderCollectionsList();
+    else if (section === 'newsletter' || sectionId === 'newsletterSection') renderNewsletterSection();
+    else if (section === 'content' || sectionId === 'contentSection') renderContentEditor();
+    else if (section === 'settings' || sectionId === 'settingsSection') renderSettingsSection();
+    else if (section === 'dashboard' || sectionId === 'dashboardSection') updateDashboardStats();
+  }
 
   /**
    * Render products list
@@ -2603,6 +2667,825 @@
       });
     }
   }
+
+  // ============================================================================
+  // ORDERS MANAGEMENT
+  // ============================================================================
+
+  function renderOrdersList() {
+    const container = document.getElementById('ordersList');
+    if (!container) return;
+
+    const ORDERS_KEY = 'stonearts_orders';
+    let orders = [];
+    try {
+      const stored = localStorage.getItem(ORDERS_KEY);
+      if (stored) orders = JSON.parse(stored);
+    } catch (e) { orders = []; }
+
+    if (!orders || orders.length === 0) {
+      container.innerHTML = `
+        <div class="admin-empty-state">
+          <div class="admin-empty-state-icon">📋</div>
+          <h3 class="admin-empty-state-title">No Orders Yet</h3>
+          <p class="admin-empty-state-text">Orders from the quotation form will appear here. You can also add manual orders.</p>
+          <button class="admin-btn" onclick="AdminPanel.addOrder()" style="margin-top: 1rem; width: auto; display: inline-block;">➕ Add Manual Order</button>
+        </div>
+      `;
+      return;
+    }
+
+    orders.sort((a, b) => new Date(b.createdAt || b.date || 0) - new Date(a.createdAt || a.date || 0));
+
+    const statusColors = { pending: '#ffc107', processing: '#17a2b8', completed: '#28a745', cancelled: '#dc3545', shipped: '#6f42c1' };
+
+    container.innerHTML = `
+      <div style="margin-bottom: 1rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+        <button class="admin-btn" onclick="AdminPanel.addOrder()" style="width: auto;">➕ Add Order</button>
+        <div style="display: flex; gap: 0.5rem; align-items: center; margin-left: auto;">
+          <span style="font-size: 0.85rem; color: #666;">Filter:</span>
+          <select id="orderStatusFilter" onchange="AdminPanel.filterOrders()" style="padding: 0.5rem; border: 2px solid #e9e9e9; border-radius: 8px; font-size: 0.85rem;">
+            <option value="all">All (${orders.length})</option>
+            <option value="pending">Pending (${orders.filter(o => o.status === 'pending').length})</option>
+            <option value="processing">Processing (${orders.filter(o => o.status === 'processing').length})</option>
+            <option value="completed">Completed (${orders.filter(o => o.status === 'completed').length})</option>
+            <option value="shipped">Shipped (${orders.filter(o => o.status === 'shipped').length})</option>
+            <option value="cancelled">Cancelled (${orders.filter(o => o.status === 'cancelled').length})</option>
+          </select>
+        </div>
+      </div>
+      <div class="admin-card" style="margin-bottom: 1rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; padding: 1rem;">
+        <div style="text-align: center;"><div style="font-size: 1.5rem; font-weight: 700;">${orders.length}</div><div style="font-size: 0.8rem; color: #666;">Total Orders</div></div>
+        <div style="text-align: center;"><div style="font-size: 1.5rem; font-weight: 700; color: #ffc107;">${orders.filter(o => o.status === 'pending').length}</div><div style="font-size: 0.8rem; color: #666;">Pending</div></div>
+        <div style="text-align: center;"><div style="font-size: 1.5rem; font-weight: 700; color: #17a2b8;">${orders.filter(o => o.status === 'processing').length}</div><div style="font-size: 0.8rem; color: #666;">Processing</div></div>
+        <div style="text-align: center;"><div style="font-size: 1.5rem; font-weight: 700; color: #28a745;">${orders.filter(o => o.status === 'completed').length}</div><div style="font-size: 0.8rem; color: #666;">Completed</div></div>
+      </div>
+      <div id="ordersTableContainer">
+        ${renderOrdersTable(orders)}
+      </div>
+    `;
+  }
+
+  function renderOrdersTable(orders) {
+    const statusColors = { pending: '#ffc107', processing: '#17a2b8', completed: '#28a745', cancelled: '#dc3545', shipped: '#6f42c1' };
+    return `
+      <div class="admin-table">
+        <div class="admin-table-header" style="grid-template-columns: 80px 2fr 1fr 1fr 1fr 140px;">
+          <div>#</div><div>Customer</div><div>Items</div><div>Total</div><div>Status</div><div>Actions</div>
+        </div>
+        ${orders.map((order, i) => `
+          <div class="admin-table-row" data-status="${order.status || 'pending'}" style="grid-template-columns: 80px 2fr 1fr 1fr 1fr 140px;">
+            <div style="font-weight: 600; color: #666;">#${order.id ? order.id.slice(-6).toUpperCase() : (i + 1)}</div>
+            <div>
+              <div class="admin-table-name">${escapeHtml((order.customer || order.firstName || '') + ' ' + (order.lastName || ''))}</div>
+              <div class="admin-text-small admin-text-muted">${escapeHtml(order.email || '')} ${order.createdAt ? '&bull; ' + new Date(order.createdAt).toLocaleDateString() : ''}</div>
+            </div>
+            <div style="font-size: 0.9rem;">${order.items ? order.items.length + ' item(s)' : 'N/A'}</div>
+            <div class="admin-table-price">${order.total ? '€' + parseFloat(order.total).toFixed(2) : 'N/A'}</div>
+            <div>
+              <select onchange="AdminPanel.updateOrderStatus('${order.id || i}', this.value)" style="padding: 0.35rem 0.5rem; border: 2px solid ${statusColors[order.status] || '#e9e9e9'}; border-radius: 20px; font-size: 0.75rem; font-weight: 600; background: ${statusColors[order.status] || '#e9e9e9'}22; cursor: pointer;">
+                ${['pending', 'processing', 'shipped', 'completed', 'cancelled'].map(s => `<option value="${s}" ${order.status === s ? 'selected' : ''}>${s.charAt(0).toUpperCase() + s.slice(1)}</option>`).join('')}
+              </select>
+            </div>
+            <div class="admin-table-actions">
+              <button class="admin-btn-small admin-btn-edit" onclick="AdminPanel.viewOrder('${order.id || i}')">View</button>
+              <button class="admin-btn-small admin-btn-delete" onclick="AdminPanel.deleteOrder('${order.id || i}')">Del</button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  AdminPanel.filterOrders = function() {
+    const filter = document.getElementById('orderStatusFilter')?.value || 'all';
+    document.querySelectorAll('#ordersTableContainer .admin-table-row').forEach(row => {
+      if (filter === 'all' || row.dataset.status === filter) {
+        row.style.display = '';
+      } else {
+        row.style.display = 'none';
+      }
+    });
+  };
+
+  AdminPanel.updateOrderStatus = function(orderId, status) {
+    const ORDERS_KEY = 'stonearts_orders';
+    let orders = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
+    const order = orders.find(o => o.id === orderId) || orders[parseInt(orderId)];
+    if (order) {
+      order.status = status;
+      order.updatedAt = new Date().toISOString();
+      localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
+      showNotification('Order status updated to ' + status, 'success');
+    }
+  };
+
+  AdminPanel.viewOrder = function(orderId) {
+    const ORDERS_KEY = 'stonearts_orders';
+    let orders = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
+    const order = orders.find(o => o.id === orderId) || orders[parseInt(orderId)];
+    if (!order) { showNotification('Order not found', 'error'); return; }
+
+    const modal = document.getElementById('modalOverlay');
+    const modalContent = document.getElementById('modalContent');
+    modalContent.innerHTML = `
+      <div class="admin-modal-header">
+        <h2 class="admin-modal-title">📋 Order #${(order.id || '').slice(-6).toUpperCase()}</h2>
+        <button class="admin-modal-close" onclick="AdminPanel.closeModal()">&times;</button>
+      </div>
+      <div class="admin-modal-body">
+        <div class="admin-form-section">
+          <h3 class="admin-form-section-title">👤 Customer Information</h3>
+          <div class="admin-form-row">
+            <div class="admin-form-group"><label class="admin-form-label">Name</label><div class="admin-form-value">${escapeHtml((order.customer || order.firstName || '') + ' ' + (order.lastName || ''))}</div></div>
+            <div class="admin-form-group"><label class="admin-form-label">Email</label><div class="admin-form-value">${escapeHtml(order.email || 'N/A')}</div></div>
+          </div>
+          <div class="admin-form-row">
+            <div class="admin-form-group"><label class="admin-form-label">Phone</label><div class="admin-form-value">${escapeHtml(order.phone || 'N/A')}</div></div>
+            <div class="admin-form-group"><label class="admin-form-label">Company</label><div class="admin-form-value">${escapeHtml(order.company || 'N/A')}</div></div>
+          </div>
+          <div class="admin-form-row">
+            <div class="admin-form-group admin-form-group-full"><label class="admin-form-label">Address</label><div class="admin-form-value">${escapeHtml([order.address, order.city, order.postalCode, order.country].filter(Boolean).join(', ') || 'N/A')}</div></div>
+          </div>
+          ${order.message ? `<div class="admin-form-group admin-form-group-full"><label class="admin-form-label">Message</label><div class="admin-form-value">${escapeHtml(order.message)}</div></div>` : ''}
+        </div>
+        <div class="admin-form-section" style="margin-top: 1.5rem;">
+          <h3 class="admin-form-section-title">📦 Order Items</h3>
+          ${order.items && order.items.length > 0 ? `
+            <table style="width: 100%; border-collapse: collapse; margin-top: 1rem;">
+              <thead><tr style="border-bottom: 2px solid #eee; text-align: left;"><th style="padding: 0.5rem;">Product</th><th style="padding: 0.5rem;">Qty</th><th style="padding: 0.5rem;">Price</th></tr></thead>
+              <tbody>${order.items.map(item => `
+                <tr style="border-bottom: 1px solid #f0f0f0;">
+                  <td style="padding: 0.5rem;">${escapeHtml(item.name || item.productName || 'Unknown')}</td>
+                  <td style="padding: 0.5rem;">${item.quantity || 1}</td>
+                  <td style="padding: 0.5rem;">€${parseFloat(item.price || 0).toFixed(2)}</td>
+                </tr>
+              `).join('')}</tbody>
+            </table>
+          ` : '<p style="color: #666; padding: 1rem;">No items recorded</p>'}
+          <div style="text-align: right; margin-top: 1rem; font-size: 1.2rem; font-weight: 700;">Total: €${parseFloat(order.total || 0).toFixed(2)}</div>
+        </div>
+        <div class="admin-form-section" style="margin-top: 1.5rem;">
+          <h3 class="admin-form-section-title">📊 Order Details</h3>
+          <div class="admin-form-row">
+            <div class="admin-form-group"><label class="admin-form-label">Status</label><div class="admin-form-value">${(order.status || 'pending').toUpperCase()}</div></div>
+            <div class="admin-form-group"><label class="admin-form-label">Created</label><div class="admin-form-value">${order.createdAt ? new Date(order.createdAt).toLocaleString() : 'N/A'}</div></div>
+            <div class="admin-form-group"><label class="admin-form-label">Updated</label><div class="admin-form-value">${order.updatedAt ? new Date(order.updatedAt).toLocaleString() : 'N/A'}</div></div>
+          </div>
+          ${order.notes ? `<div class="admin-form-group admin-form-group-full"><label class="admin-form-label">Notes</label><div class="admin-form-value">${escapeHtml(order.notes)}</div></div>` : ''}
+        </div>
+      </div>
+      <div class="admin-modal-footer">
+        <button type="button" class="admin-btn-secondary" onclick="AdminPanel.closeModal()">Close</button>
+      </div>
+    `;
+    modal.classList.add('show');
+  };
+
+  AdminPanel.addOrder = function() {
+    const modal = document.getElementById('modalOverlay');
+    const modalContent = document.getElementById('modalContent');
+    modalContent.innerHTML = `
+      <div class="admin-modal-header">
+        <h2 class="admin-modal-title">➕ Add Manual Order</h2>
+        <button class="admin-modal-close" onclick="AdminPanel.closeModal()">&times;</button>
+      </div>
+      <div class="admin-modal-body">
+        <form id="orderForm" class="admin-form">
+          <div class="admin-form-section">
+            <h3 class="admin-form-section-title">👤 Customer</h3>
+            <div class="admin-form-row">
+              <div class="admin-form-group"><label class="admin-form-label">First Name *</label><input type="text" name="firstName" class="admin-form-input" required></div>
+              <div class="admin-form-group"><label class="admin-form-label">Last Name *</label><input type="text" name="lastName" class="admin-form-input" required></div>
+            </div>
+            <div class="admin-form-row">
+              <div class="admin-form-group"><label class="admin-form-label">Email *</label><input type="email" name="email" class="admin-form-input" required></div>
+              <div class="admin-form-group"><label class="admin-form-label">Phone</label><input type="text" name="phone" class="admin-form-input"></div>
+            </div>
+            <div class="admin-form-row">
+              <div class="admin-form-group"><label class="admin-form-label">Address</label><input type="text" name="address" class="admin-form-input"></div>
+              <div class="admin-form-group"><label class="admin-form-label">City</label><input type="text" name="city" class="admin-form-input"></div>
+            </div>
+            <div class="admin-form-row">
+              <div class="admin-form-group"><label class="admin-form-label">Postal Code</label><input type="text" name="postalCode" class="admin-form-input"></div>
+              <div class="admin-form-group"><label class="admin-form-label">Country</label><input type="text" name="country" class="admin-form-input" value="Austria"></div>
+            </div>
+          </div>
+          <div class="admin-form-section">
+            <h3 class="admin-form-section-title">📦 Order Details</h3>
+            <div class="admin-form-row">
+              <div class="admin-form-group"><label class="admin-form-label">Product</label>
+                <select name="product" class="admin-form-select" id="orderProductSelect">
+                  <option value="">Select product...</option>
+                  ${(AdminPanel.cmsData?.products || []).filter(p => p.category === 'AKUROCK Akustikpaneele' && !p.id?.includes('-sample')).map(p => `<option value="${p.id}" data-price="${p.priceValue || 0}">${escapeHtml(p.name)} - ${p.price || ''}</option>`).join('')}
+                  ${(AdminPanel.cmsData?.accessories || []).map(a => `<option value="${a.id}" data-price="${a.priceValue || 0}">${escapeHtml(a.name)} - ${a.price || ''}</option>`).join('')}
+                </select>
+              </div>
+              <div class="admin-form-group"><label class="admin-form-label">Quantity</label><input type="number" name="quantity" class="admin-form-input" value="1" min="1"></div>
+              <div class="admin-form-group"><label class="admin-form-label">Total (€)</label><input type="number" name="total" class="admin-form-input" step="0.01" value="0"></div>
+            </div>
+            <div class="admin-form-group admin-form-group-full"><label class="admin-form-label">Notes</label><textarea name="notes" class="admin-form-textarea" rows="2"></textarea></div>
+            <div class="admin-form-group"><label class="admin-form-label">Status</label>
+              <select name="status" class="admin-form-select">
+                <option value="pending">Pending</option>
+                <option value="processing">Processing</option>
+                <option value="shipped">Shipped</option>
+                <option value="completed">Completed</option>
+              </select>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="admin-modal-footer">
+        <button type="button" class="admin-btn-secondary" onclick="AdminPanel.closeModal()">❌ Cancel</button>
+        <button type="button" class="admin-btn" onclick="AdminPanel.saveOrder()">💾 Save Order</button>
+      </div>
+    `;
+    modal.classList.add('show');
+  };
+
+  AdminPanel.saveOrder = function() {
+    const form = document.getElementById('orderForm');
+    if (!form || !form.checkValidity()) { form?.reportValidity(); return; }
+    const fd = new FormData(form);
+    const ORDERS_KEY = 'stonearts_orders';
+    let orders = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
+    const productSelect = document.getElementById('orderProductSelect');
+    const selectedOption = productSelect?.selectedOptions[0];
+    const order = {
+      id: 'ord_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8),
+      firstName: fd.get('firstName'), lastName: fd.get('lastName'),
+      customer: fd.get('firstName') + ' ' + fd.get('lastName'),
+      email: fd.get('email'), phone: fd.get('phone'),
+      address: fd.get('address'), city: fd.get('city'),
+      postalCode: fd.get('postalCode'), country: fd.get('country'),
+      items: selectedOption?.value ? [{ productId: selectedOption.value, name: selectedOption.textContent.split(' - ')[0], quantity: parseInt(fd.get('quantity')) || 1, price: selectedOption.dataset.price || 0 }] : [],
+      total: fd.get('total') || 0, status: fd.get('status') || 'pending',
+      notes: fd.get('notes'), createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()
+    };
+    orders.push(order);
+    localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
+    showNotification('Order created successfully', 'success');
+    AdminPanel.closeModal();
+    renderOrdersList();
+    updateDashboardStats();
+  };
+
+  AdminPanel.deleteOrder = function(orderId) {
+    if (!confirm('Delete this order?')) return;
+    const ORDERS_KEY = 'stonearts_orders';
+    let orders = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
+    orders = orders.filter(o => o.id !== orderId);
+    localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
+    showNotification('Order deleted', 'success');
+    renderOrdersList();
+    updateDashboardStats();
+  };
+
+  AdminPanel.exportOrders = function() {
+    const ORDERS_KEY = 'stonearts_orders';
+    const orders = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
+    if (orders.length === 0) { showNotification('No orders to export', 'info'); return; }
+    const csvHeader = 'ID,Customer,Email,Phone,Address,City,PostalCode,Country,Items,Total,Status,Date,Notes\n';
+    const csvRows = orders.map(o => [
+      o.id || '', (o.customer || o.firstName + ' ' + o.lastName).replace(/,/g, ' '), o.email || '', o.phone || '',
+      (o.address || '').replace(/,/g, ' '), o.city || '', o.postalCode || '', o.country || '',
+      o.items ? o.items.map(i => i.name + ' x' + (i.quantity || 1)).join('; ') : '', o.total || 0, o.status || '',
+      o.createdAt || '', (o.notes || '').replace(/,/g, ' ').replace(/\n/g, ' ')
+    ].map(v => '"' + v + '"').join(',')).join('\n');
+    const blob = new Blob([csvHeader + csvRows], { type: 'text/csv' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'orders-export-' + new Date().toISOString().split('T')[0] + '.csv';
+    link.click();
+    URL.revokeObjectURL(link.href);
+    showNotification('Orders exported as CSV', 'success');
+  };
+
+  // ============================================================================
+  // COLLECTIONS MANAGEMENT
+  // ============================================================================
+
+  function renderCollectionsList() {
+    const container = document.getElementById('collectionsList');
+    if (!container || !AdminPanel.cmsData) return;
+    const collections = AdminPanel.cmsData.collections || [];
+    const allProducts = [...(AdminPanel.cmsData.products || []), ...(AdminPanel.cmsData.samples || [])];
+
+    if (collections.length === 0) {
+      container.innerHTML = `
+        <div class="admin-empty-state">
+          <div class="admin-empty-state-icon">📂</div>
+          <h3 class="admin-empty-state-title">No Collections</h3>
+          <p class="admin-empty-state-text">Create collections to organize your products.</p>
+          <button class="admin-btn" onclick="AdminPanel.addCollection()" style="margin-top: 1rem; width: auto; display: inline-block;">➕ Create Collection</button>
+        </div>`;
+      return;
+    }
+
+    container.innerHTML = `
+      <div class="admin-table">
+        <div class="admin-table-header" style="grid-template-columns: 2fr 1fr 1fr 1fr 140px;">
+          <div>Collection</div><div>Products</div><div>Category</div><div>Sort Order</div><div>Actions</div>
+        </div>
+        ${collections.map(col => {
+          const productCount = col.products ? col.products.length : 0;
+          return `
+          <div class="admin-table-row" style="grid-template-columns: 2fr 1fr 1fr 1fr 140px;">
+            <div>
+              <div class="admin-table-name">${escapeHtml(col.title || col.name || 'Unnamed')}</div>
+              <div class="admin-text-small admin-text-muted">${escapeHtml(col.slug || col.id || '')}</div>
+            </div>
+            <div>${productCount} products</div>
+            <div class="admin-table-category">${escapeHtml(col.category || 'General')}</div>
+            <div>${col.sort_order || 0}</div>
+            <div class="admin-table-actions">
+              <button class="admin-btn-small admin-btn-edit" onclick="AdminPanel.editCollection('${escapeHtml(col.id || col.slug)}')">Edit</button>
+              <button class="admin-btn-small admin-btn-delete" onclick="AdminPanel.deleteCollection('${escapeHtml(col.id || col.slug)}')">Del</button>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    `;
+  }
+
+  AdminPanel.addCollection = function() {
+    showCollectionForm({ id: '', title: '', slug: '', category: '', sort_order: 0, products: [] }, true);
+  };
+
+  AdminPanel.editCollection = function(colId) {
+    const col = (AdminPanel.cmsData.collections || []).find(c => c.id === colId || c.slug === colId);
+    if (!col) { showNotification('Collection not found', 'error'); return; }
+    showCollectionForm(col);
+  };
+
+  function showCollectionForm(col, isNew = false) {
+    const modal = document.getElementById('modalOverlay');
+    const modalContent = document.getElementById('modalContent');
+    const allProducts = [...(AdminPanel.cmsData.products || []), ...(AdminPanel.cmsData.samples || [])];
+    const colProductIds = (col.products || []).map(p => typeof p === 'string' ? p : p.id);
+
+    modalContent.innerHTML = `
+      <div class="admin-modal-header">
+        <h2 class="admin-modal-title">${isNew ? '➕ New Collection' : '✏️ Edit Collection'}</h2>
+        <button class="admin-modal-close" onclick="AdminPanel.closeModal()">&times;</button>
+      </div>
+      <div class="admin-modal-body">
+        <form id="collectionForm" class="admin-form">
+          <div class="admin-form-section">
+            <h3 class="admin-form-section-title">📋 Collection Details</h3>
+            <div class="admin-form-row">
+              <div class="admin-form-group"><label class="admin-form-label">Title *</label><input type="text" name="title" class="admin-form-input" value="${escapeHtml(col.title || '')}" required></div>
+              <div class="admin-form-group"><label class="admin-form-label">Slug *</label><input type="text" name="slug" class="admin-form-input" value="${escapeHtml(col.slug || '')}" required></div>
+            </div>
+            <div class="admin-form-row">
+              <div class="admin-form-group"><label class="admin-form-label">Category</label><input type="text" name="category" class="admin-form-input" value="${escapeHtml(col.category || '')}"></div>
+              <div class="admin-form-group"><label class="admin-form-label">Sort Order</label><input type="number" name="sort_order" class="admin-form-input" value="${col.sort_order || 0}"></div>
+            </div>
+          </div>
+          <div class="admin-form-section">
+            <h3 class="admin-form-section-title">🛍️ Products in Collection</h3>
+            <p class="admin-text-small admin-text-muted" style="margin-bottom: 1rem;">Select products to include in this collection:</p>
+            <div style="max-height: 300px; overflow-y: auto; border: 2px solid #e9e9e9; border-radius: 8px; padding: 0.5rem;">
+              ${allProducts.map(p => `
+                <label style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem; border-bottom: 1px solid #f5f5f5; cursor: pointer;">
+                  <input type="checkbox" name="products" value="${p.id}" ${colProductIds.includes(p.id) ? 'checked' : ''} style="width: 18px; height: 18px;">
+                  <span style="font-weight: 500;">${escapeHtml(p.name || p.id)}</span>
+                  <span class="admin-text-small admin-text-muted">${escapeHtml(p.category || '')}</span>
+                </label>
+              `).join('')}
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="admin-modal-footer">
+        <button type="button" class="admin-btn-secondary" onclick="AdminPanel.closeModal()">❌ Cancel</button>
+        <button type="button" class="admin-btn" onclick="AdminPanel.saveCollection(${isNew ? 'true' : 'false'}, '${escapeHtml(col.id || col.slug || '')}')">💾 Save</button>
+      </div>
+    `;
+    modal.classList.add('show');
+  }
+
+  AdminPanel.saveCollection = function(isNew, originalId) {
+    const form = document.getElementById('collectionForm');
+    if (!form || !form.checkValidity()) { form?.reportValidity(); return; }
+    const fd = new FormData(form);
+    const selectedProducts = fd.getAll('products');
+    const colData = {
+      id: fd.get('slug') || originalId || 'col-' + Date.now(),
+      title: fd.get('title'), slug: fd.get('slug'),
+      category: fd.get('category'), sort_order: parseInt(fd.get('sort_order')) || 0,
+      products: selectedProducts
+    };
+    if (!AdminPanel.cmsData.collections) AdminPanel.cmsData.collections = [];
+    if (isNew) {
+      AdminPanel.cmsData.collections.push(colData);
+    } else {
+      const idx = AdminPanel.cmsData.collections.findIndex(c => c.id === originalId || c.slug === originalId);
+      if (idx >= 0) AdminPanel.cmsData.collections[idx] = { ...AdminPanel.cmsData.collections[idx], ...colData };
+    }
+    window.AdminDataManager.saveCMSData(AdminPanel.cmsData);
+    showNotification('Collection saved', 'success');
+    AdminPanel.closeModal();
+    renderCollectionsList();
+  };
+
+  AdminPanel.deleteCollection = function(colId) {
+    if (!confirm('Delete this collection?')) return;
+    AdminPanel.cmsData.collections = (AdminPanel.cmsData.collections || []).filter(c => c.id !== colId && c.slug !== colId);
+    window.AdminDataManager.saveCMSData(AdminPanel.cmsData);
+    showNotification('Collection deleted', 'success');
+    renderCollectionsList();
+  };
+
+  // ============================================================================
+  // NEWSLETTER MANAGEMENT
+  // ============================================================================
+
+  function renderNewsletterSection() {
+    const container = document.getElementById('newsletterContent');
+    if (!container) return;
+
+    const SUBS_KEY = 'stonearts_newsletter_subscribers';
+    let subscribers = [];
+    try { subscribers = JSON.parse(localStorage.getItem(SUBS_KEY) || '[]'); } catch (e) { subscribers = []; }
+
+    container.innerHTML = `
+      <div class="admin-card" style="margin-bottom: 1rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+        <div style="text-align: center; padding: 1rem;">
+          <div style="font-size: 2.5rem; font-weight: 700;">${subscribers.length}</div>
+          <div style="color: #666; font-size: 0.9rem;">Total Subscribers</div>
+        </div>
+        <div style="text-align: center; padding: 1rem;">
+          <div style="font-size: 2.5rem; font-weight: 700; color: #28a745;">${subscribers.filter(s => s.status === 'active' || !s.status).length}</div>
+          <div style="color: #666; font-size: 0.9rem;">Active</div>
+        </div>
+        <div style="text-align: center; padding: 1rem;">
+          <div style="font-size: 2.5rem; font-weight: 700; color: #17a2b8;">${subscribers.filter(s => { const d = new Date(s.subscribedAt || s.date); const week = new Date(); week.setDate(week.getDate() - 7); return d >= week; }).length}</div>
+          <div style="color: #666; font-size: 0.9rem;">This Week</div>
+        </div>
+      </div>
+
+      <div class="admin-card" style="margin-bottom: 1rem;">
+        <h3 style="margin-bottom: 1rem;">Add Subscriber</h3>
+        <div style="display: flex; gap: 1rem; align-items: end;">
+          <div style="flex: 1;"><input type="email" id="newSubscriberEmail" class="admin-form-input" placeholder="email@example.com" style="margin: 0;"></div>
+          <div style="flex: 1;"><input type="text" id="newSubscriberName" class="admin-form-input" placeholder="Name (optional)" style="margin: 0;"></div>
+          <button class="admin-btn" onclick="AdminPanel.addSubscriber()" style="width: auto; white-space: nowrap;">➕ Add</button>
+        </div>
+      </div>
+
+      ${subscribers.length > 0 ? `
+        <div class="admin-table">
+          <div class="admin-table-header" style="grid-template-columns: 2fr 2fr 1fr 1fr 80px;">
+            <div>Email</div><div>Name</div><div>Status</div><div>Date</div><div>Actions</div>
+          </div>
+          ${subscribers.sort((a, b) => new Date(b.subscribedAt || b.date || 0) - new Date(a.subscribedAt || a.date || 0)).map((sub, i) => `
+            <div class="admin-table-row" style="grid-template-columns: 2fr 2fr 1fr 1fr 80px;">
+              <div style="font-weight: 500;">${escapeHtml(sub.email || '')}</div>
+              <div>${escapeHtml(sub.name || '-')}</div>
+              <div><span class="admin-status-badge ${sub.status === 'unsubscribed' ? 'admin-status-cancelled' : 'admin-status-completed'}">${sub.status || 'active'}</span></div>
+              <div class="admin-text-small">${sub.subscribedAt ? new Date(sub.subscribedAt).toLocaleDateString() : '-'}</div>
+              <div><button class="admin-btn-small admin-btn-delete" onclick="AdminPanel.removeSubscriber(${i})">Del</button></div>
+            </div>
+          `).join('')}
+        </div>
+      ` : '<div class="admin-empty-state"><div class="admin-empty-state-icon">📧</div><h3 class="admin-empty-state-title">No Subscribers Yet</h3><p class="admin-empty-state-text">Subscribers from your newsletter form will appear here.</p></div>'}
+    `;
+  }
+
+  AdminPanel.addSubscriber = function() {
+    const email = document.getElementById('newSubscriberEmail')?.value?.trim();
+    const name = document.getElementById('newSubscriberName')?.value?.trim();
+    if (!email || !email.includes('@')) { showNotification('Enter a valid email', 'error'); return; }
+    const SUBS_KEY = 'stonearts_newsletter_subscribers';
+    let subs = JSON.parse(localStorage.getItem(SUBS_KEY) || '[]');
+    if (subs.find(s => s.email === email)) { showNotification('Already subscribed', 'warning'); return; }
+    subs.push({ email, name: name || '', status: 'active', subscribedAt: new Date().toISOString(), source: 'admin' });
+    localStorage.setItem(SUBS_KEY, JSON.stringify(subs));
+    showNotification('Subscriber added', 'success');
+    renderNewsletterSection();
+  };
+
+  AdminPanel.removeSubscriber = function(index) {
+    if (!confirm('Remove this subscriber?')) return;
+    const SUBS_KEY = 'stonearts_newsletter_subscribers';
+    let subs = JSON.parse(localStorage.getItem(SUBS_KEY) || '[]');
+    subs.splice(index, 1);
+    localStorage.setItem(SUBS_KEY, JSON.stringify(subs));
+    showNotification('Subscriber removed', 'success');
+    renderNewsletterSection();
+  };
+
+  AdminPanel.exportSubscribers = function() {
+    const SUBS_KEY = 'stonearts_newsletter_subscribers';
+    const subs = JSON.parse(localStorage.getItem(SUBS_KEY) || '[]');
+    if (subs.length === 0) { showNotification('No subscribers to export', 'info'); return; }
+    const csv = 'Email,Name,Status,Date,Source\n' + subs.map(s =>
+      [s.email, s.name || '', s.status || 'active', s.subscribedAt || '', s.source || ''].map(v => '"' + v + '"').join(',')
+    ).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'subscribers-' + new Date().toISOString().split('T')[0] + '.csv';
+    link.click();
+    showNotification('Subscribers exported', 'success');
+  };
+
+  // ============================================================================
+  // CONTENT EDITOR
+  // ============================================================================
+
+  function renderContentEditor() {
+    const container = document.getElementById('contentEditorContent');
+    if (!container) return;
+
+    const CONTENT_KEY = 'stonearts_content';
+    let content = {};
+    try { content = JSON.parse(localStorage.getItem(CONTENT_KEY) || '{}'); } catch (e) { content = {}; }
+
+    container.innerHTML = `
+      <div class="admin-card" style="margin-bottom: 1.5rem;">
+        <h3 style="margin-bottom: 1rem;">🏠 Homepage Content</h3>
+        <div class="admin-form">
+          <div class="admin-form-group">
+            <label class="admin-form-label">Hero Title (German)</label>
+            <input type="text" id="content_hero_title_de" class="admin-form-input" value="${escapeHtml(content.hero_title_de || 'Lebe wild.')}" placeholder="Main headline">
+          </div>
+          <div class="admin-form-group">
+            <label class="admin-form-label">Hero Subtitle (German)</label>
+            <input type="text" id="content_hero_subtitle_de" class="admin-form-input" value="${escapeHtml(content.hero_subtitle_de || 'Wohne leise.')}" placeholder="Subtitle">
+          </div>
+          <div class="admin-form-group">
+            <label class="admin-form-label">Hero CTA Button Text</label>
+            <input type="text" id="content_hero_cta" class="admin-form-input" value="${escapeHtml(content.hero_cta || 'Jetzt Shoppen')}" placeholder="Call to action">
+          </div>
+          <div class="admin-form-group">
+            <label class="admin-form-label">Banner Text</label>
+            <textarea id="content_banner_text" class="admin-form-textarea" rows="2">${escapeHtml(content.banner_text || '')}</textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-card" style="margin-bottom: 1.5rem;">
+        <h3 style="margin-bottom: 1rem;">❓ FAQ Management</h3>
+        <p class="admin-text-small admin-text-muted" style="margin-bottom: 1rem;">Manage frequently asked questions shown on the FAQ page.</p>
+        <div id="faqList">
+          ${renderFAQItems(content.faqs || getDefaultFAQs())}
+        </div>
+        <button class="admin-btn-secondary" onclick="AdminPanel.addFAQ()" style="margin-top: 1rem; color: #333; border-color: #ddd;">➕ Add FAQ</button>
+      </div>
+
+      <div class="admin-card" style="margin-bottom: 1.5rem;">
+        <h3 style="margin-bottom: 1rem;">📞 Contact Information</h3>
+        <div class="admin-form">
+          <div class="admin-form-row">
+            <div class="admin-form-group"><label class="admin-form-label">Company Name</label><input type="text" id="content_company" class="admin-form-input" value="${escapeHtml(content.company_name || 'stonearts® GmbH')}"></div>
+            <div class="admin-form-group"><label class="admin-form-label">Email</label><input type="email" id="content_email" class="admin-form-input" value="${escapeHtml(content.contact_email || 'office@stonearts.at')}"></div>
+          </div>
+          <div class="admin-form-row">
+            <div class="admin-form-group"><label class="admin-form-label">Phone</label><input type="text" id="content_phone" class="admin-form-input" value="${escapeHtml(content.contact_phone || '')}"></div>
+            <div class="admin-form-group"><label class="admin-form-label">Address</label><input type="text" id="content_address" class="admin-form-input" value="${escapeHtml(content.address || 'Vienna, Austria')}"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-card">
+        <h3 style="margin-bottom: 1rem;">🔗 Social Media Links</h3>
+        <div class="admin-form">
+          <div class="admin-form-row">
+            <div class="admin-form-group"><label class="admin-form-label">Instagram</label><input type="url" id="content_instagram" class="admin-form-input" value="${escapeHtml(content.instagram || 'https://www.instagram.com/stonearts_official/')}"></div>
+            <div class="admin-form-group"><label class="admin-form-label">TikTok</label><input type="url" id="content_tiktok" class="admin-form-input" value="${escapeHtml(content.tiktok || 'https://www.tiktok.com/@stonearts_official')}"></div>
+          </div>
+          <div class="admin-form-row">
+            <div class="admin-form-group"><label class="admin-form-label">Facebook</label><input type="url" id="content_facebook" class="admin-form-input" value="${escapeHtml(content.facebook || 'https://www.facebook.com/stoneartsglobal')}"></div>
+            <div class="admin-form-group"><label class="admin-form-label">YouTube</label><input type="url" id="content_youtube" class="admin-form-input" value="${escapeHtml(content.youtube || 'https://www.youtube.com/@stonearts')}"></div>
+          </div>
+          <div class="admin-form-row">
+            <div class="admin-form-group"><label class="admin-form-label">Pinterest</label><input type="url" id="content_pinterest" class="admin-form-input" value="${escapeHtml(content.pinterest || 'https://www.pinterest.com/stonearts/')}"></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: 1.5rem; text-align: right;">
+        <button class="admin-btn" onclick="AdminPanel.saveContent()" style="width: auto;">💾 Save All Content</button>
+      </div>
+    `;
+  }
+
+  function getDefaultFAQs() {
+    return [
+      { q: 'Wie installiere ich die Akustikpaneele?', a: 'Die Paneele können verschraubt oder geklebt werden. Folgen Sie unserem Installationsguide für detaillierte Anweisungen.' },
+      { q: 'Welche Schallschutzklasse haben die Paneele?', a: 'Unsere Paneele erreichen die Soundklasse A - die höchste Absorptionsklasse.' },
+      { q: 'Kann ich eine Musterbox bestellen?', a: 'Ja, Sie können Musterboxen für €5.00 bestellen, um das Material vor dem Kauf zu testen.' },
+      { q: 'Wie lange dauert die Lieferung?', a: 'Die Lieferzeit beträgt in der Regel 5-10 Werktage.' }
+    ];
+  }
+
+  function renderFAQItems(faqs) {
+    if (!faqs || faqs.length === 0) return '<p class="admin-text-muted">No FAQs added</p>';
+    return faqs.map((faq, i) => `
+      <div style="padding: 1rem; background: #f9f9f9; border-radius: 8px; margin-bottom: 0.75rem; border-left: 3px solid #0d0d0d;">
+        <div style="display: flex; justify-content: space-between; align-items: start; gap: 1rem;">
+          <div style="flex: 1;">
+            <div style="font-weight: 600; margin-bottom: 0.25rem;">${escapeHtml(faq.q || '')}</div>
+            <div style="color: #666; font-size: 0.9rem;">${escapeHtml(faq.a || '')}</div>
+          </div>
+          <div style="display: flex; gap: 0.5rem; flex-shrink: 0;">
+            <button class="admin-btn-small admin-btn-edit" onclick="AdminPanel.editFAQ(${i})">Edit</button>
+            <button class="admin-btn-small admin-btn-delete" onclick="AdminPanel.deleteFAQ(${i})">Del</button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  AdminPanel.addFAQ = function() {
+    const q = prompt('Enter the question:');
+    if (!q) return;
+    const a = prompt('Enter the answer:');
+    if (!a) return;
+    const CONTENT_KEY = 'stonearts_content';
+    let content = JSON.parse(localStorage.getItem(CONTENT_KEY) || '{}');
+    if (!content.faqs) content.faqs = getDefaultFAQs();
+    content.faqs.push({ q, a });
+    localStorage.setItem(CONTENT_KEY, JSON.stringify(content));
+    renderContentEditor();
+    showNotification('FAQ added', 'success');
+  };
+
+  AdminPanel.editFAQ = function(index) {
+    const CONTENT_KEY = 'stonearts_content';
+    let content = JSON.parse(localStorage.getItem(CONTENT_KEY) || '{}');
+    const faqs = content.faqs || getDefaultFAQs();
+    if (!faqs[index]) return;
+    const q = prompt('Edit question:', faqs[index].q);
+    if (q === null) return;
+    const a = prompt('Edit answer:', faqs[index].a);
+    if (a === null) return;
+    faqs[index] = { q, a };
+    content.faqs = faqs;
+    localStorage.setItem(CONTENT_KEY, JSON.stringify(content));
+    renderContentEditor();
+    showNotification('FAQ updated', 'success');
+  };
+
+  AdminPanel.deleteFAQ = function(index) {
+    if (!confirm('Delete this FAQ?')) return;
+    const CONTENT_KEY = 'stonearts_content';
+    let content = JSON.parse(localStorage.getItem(CONTENT_KEY) || '{}');
+    const faqs = content.faqs || getDefaultFAQs();
+    faqs.splice(index, 1);
+    content.faqs = faqs;
+    localStorage.setItem(CONTENT_KEY, JSON.stringify(content));
+    renderContentEditor();
+    showNotification('FAQ deleted', 'success');
+  };
+
+  AdminPanel.saveContent = function() {
+    const CONTENT_KEY = 'stonearts_content';
+    let content = JSON.parse(localStorage.getItem(CONTENT_KEY) || '{}');
+    const fields = {
+      hero_title_de: 'content_hero_title_de', hero_subtitle_de: 'content_hero_subtitle_de',
+      hero_cta: 'content_hero_cta', banner_text: 'content_banner_text',
+      company_name: 'content_company', contact_email: 'content_email',
+      contact_phone: 'content_phone', address: 'content_address',
+      instagram: 'content_instagram', tiktok: 'content_tiktok',
+      facebook: 'content_facebook', youtube: 'content_youtube', pinterest: 'content_pinterest'
+    };
+    for (const [key, id] of Object.entries(fields)) {
+      const el = document.getElementById(id);
+      if (el) content[key] = el.value;
+    }
+    localStorage.setItem(CONTENT_KEY, JSON.stringify(content));
+    showNotification('Content saved successfully', 'success');
+  };
+
+  // ============================================================================
+  // SETTINGS
+  // ============================================================================
+
+  function renderSettingsSection() {
+    const container = document.getElementById('settingsContent');
+    if (!container) return;
+
+    const SETTINGS_KEY = 'stonearts_settings';
+    let settings = {};
+    try { settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}'); } catch (e) { settings = {}; }
+
+    container.innerHTML = `
+      <div class="admin-card" style="margin-bottom: 1.5rem;">
+        <h3 style="margin-bottom: 1rem;">🏪 Store Information</h3>
+        <div class="admin-form">
+          <div class="admin-form-row">
+            <div class="admin-form-group"><label class="admin-form-label">Store Name</label><input type="text" id="settings_store_name" class="admin-form-input" value="${escapeHtml(settings.store_name || 'stonearts®')}"></div>
+            <div class="admin-form-group"><label class="admin-form-label">Legal Name</label><input type="text" id="settings_legal_name" class="admin-form-input" value="${escapeHtml(settings.legal_name || 'stonearts® GmbH')}"></div>
+          </div>
+          <div class="admin-form-row">
+            <div class="admin-form-group"><label class="admin-form-label">Website</label><input type="url" id="settings_website" class="admin-form-input" value="${escapeHtml(settings.website || 'https://www.akurock.com')}"></div>
+            <div class="admin-form-group"><label class="admin-form-label">Support Email</label><input type="email" id="settings_email" class="admin-form-input" value="${escapeHtml(settings.support_email || 'office@stonearts.at')}"></div>
+          </div>
+          <div class="admin-form-row">
+            <div class="admin-form-group"><label class="admin-form-label">VAT Number</label><input type="text" id="settings_vat" class="admin-form-input" value="${escapeHtml(settings.vat_number || '')}" placeholder="ATU12345678"></div>
+            <div class="admin-form-group"><label class="admin-form-label">Company Registration</label><input type="text" id="settings_reg" class="admin-form-input" value="${escapeHtml(settings.company_reg || '')}" placeholder="FN 123456x"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-card" style="margin-bottom: 1.5rem;">
+        <h3 style="margin-bottom: 1rem;">💰 Currency & Tax</h3>
+        <div class="admin-form">
+          <div class="admin-form-row">
+            <div class="admin-form-group"><label class="admin-form-label">Default Currency</label>
+              <select id="settings_currency" class="admin-form-select">
+                <option value="EUR" ${settings.currency === 'EUR' || !settings.currency ? 'selected' : ''}>EUR (€)</option>
+                <option value="USD" ${settings.currency === 'USD' ? 'selected' : ''}>USD ($)</option>
+                <option value="GBP" ${settings.currency === 'GBP' ? 'selected' : ''}>GBP (&pound;)</option>
+                <option value="CHF" ${settings.currency === 'CHF' ? 'selected' : ''}>CHF (Fr.)</option>
+              </select>
+            </div>
+            <div class="admin-form-group"><label class="admin-form-label">Tax Rate (%)</label><input type="number" id="settings_tax_rate" class="admin-form-input" step="0.01" value="${settings.tax_rate || 20}" placeholder="20"></div>
+            <div class="admin-form-group"><label class="admin-form-label">Prices Include Tax</label>
+              <select id="settings_tax_included" class="admin-form-select">
+                <option value="true" ${settings.tax_included !== 'false' ? 'selected' : ''}>Yes (Brutto)</option>
+                <option value="false" ${settings.tax_included === 'false' ? 'selected' : ''}>No (Netto)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-card" style="margin-bottom: 1.5rem;">
+        <h3 style="margin-bottom: 1rem;">🚚 Shipping</h3>
+        <div class="admin-form">
+          <div class="admin-form-row">
+            <div class="admin-form-group"><label class="admin-form-label">Default Delivery Time</label><input type="text" id="settings_delivery" class="admin-form-input" value="${escapeHtml(settings.delivery_time || '5-10 Werktage')}"></div>
+            <div class="admin-form-group"><label class="admin-form-label">Shipping Cost (€)</label><input type="number" id="settings_shipping_cost" class="admin-form-input" step="0.01" value="${settings.shipping_cost || 0}" placeholder="0 = Free"></div>
+          </div>
+          <div class="admin-form-row">
+            <div class="admin-form-group"><label class="admin-form-label">Free Shipping Threshold (€)</label><input type="number" id="settings_free_shipping" class="admin-form-input" step="0.01" value="${settings.free_shipping_threshold || 0}" placeholder="0 = Always free"></div>
+            <div class="admin-form-group"><label class="admin-form-label">Shipping Countries</label><input type="text" id="settings_shipping_countries" class="admin-form-input" value="${escapeHtml(settings.shipping_countries || 'Austria, Germany, Switzerland')}" placeholder="Comma-separated"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-card" style="margin-bottom: 1.5rem;">
+        <h3 style="margin-bottom: 1rem;">🌐 Localization</h3>
+        <div class="admin-form">
+          <div class="admin-form-row">
+            <div class="admin-form-group"><label class="admin-form-label">Default Language</label>
+              <select id="settings_default_locale" class="admin-form-select">
+                <option value="de" ${settings.default_locale === 'de' || !settings.default_locale ? 'selected' : ''}>German (DE)</option>
+                <option value="en" ${settings.default_locale === 'en' ? 'selected' : ''}>English (EN)</option>
+                <option value="es" ${settings.default_locale === 'es' ? 'selected' : ''}>Spanish (ES)</option>
+              </select>
+            </div>
+            <div class="admin-form-group"><label class="admin-form-label">Timezone</label><input type="text" id="settings_timezone" class="admin-form-input" value="${escapeHtml(settings.timezone || 'Europe/Vienna')}"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-card" style="margin-bottom: 1.5rem;">
+        <h3 style="margin-bottom: 1rem;">📊 Analytics & Tracking</h3>
+        <div class="admin-form">
+          <div class="admin-form-row">
+            <div class="admin-form-group"><label class="admin-form-label">Google Analytics ID</label><input type="text" id="settings_ga_id" class="admin-form-input" value="${escapeHtml(settings.ga_id || '')}" placeholder="G-XXXXXXXXXX"></div>
+            <div class="admin-form-group"><label class="admin-form-label">Google Tag Manager ID</label><input type="text" id="settings_gtm_id" class="admin-form-input" value="${escapeHtml(settings.gtm_id || '')}" placeholder="GTM-XXXXXXX"></div>
+          </div>
+          <div class="admin-form-row">
+            <div class="admin-form-group"><label class="admin-form-label">Facebook Pixel ID</label><input type="text" id="settings_fb_pixel" class="admin-form-input" value="${escapeHtml(settings.fb_pixel || '')}" placeholder="1234567890"></div>
+            <div class="admin-form-group"><label class="admin-form-label">EmbedSocial Reference</label><input type="text" id="settings_embedsocial" class="admin-form-input" value="${escapeHtml(settings.embedsocial_ref || '3737eac229ab10ae3d5348681c86ac09bd278a67')}"></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: 1.5rem; text-align: right;">
+        <button class="admin-btn" onclick="AdminPanel.saveSettings()" style="width: auto;">💾 Save All Settings</button>
+      </div>
+    `;
+  }
+
+  AdminPanel.saveSettings = function() {
+    const SETTINGS_KEY = 'stonearts_settings';
+    const ids = {
+      store_name: 'settings_store_name', legal_name: 'settings_legal_name',
+      website: 'settings_website', support_email: 'settings_email',
+      vat_number: 'settings_vat', company_reg: 'settings_reg',
+      currency: 'settings_currency', tax_rate: 'settings_tax_rate', tax_included: 'settings_tax_included',
+      delivery_time: 'settings_delivery', shipping_cost: 'settings_shipping_cost',
+      free_shipping_threshold: 'settings_free_shipping', shipping_countries: 'settings_shipping_countries',
+      default_locale: 'settings_default_locale', timezone: 'settings_timezone',
+      ga_id: 'settings_ga_id', gtm_id: 'settings_gtm_id', fb_pixel: 'settings_fb_pixel',
+      embedsocial_ref: 'settings_embedsocial'
+    };
+    const settings = {};
+    for (const [key, id] of Object.entries(ids)) {
+      const el = document.getElementById(id);
+      if (el) settings[key] = el.value;
+    }
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+    showNotification('Settings saved successfully', 'success');
+  };
 
   // ============================================================================
   // SITE HEALTH CHECK
