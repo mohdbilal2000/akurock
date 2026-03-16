@@ -452,7 +452,7 @@
       "createdOn": "Thu May 23 2024 16:06:35 GMT+0000",
       "updatedOn": "Thu Jul 11 2024 11:00:03 GMT+0000",
       "publishedOn": "Thu Jul 11 2024 11:00:12 GMT+0000",
-      "sample_card_color": "#dbad90"
+      "sample_card_color": "#b89060"
     },
     {
       "id": "whisper-sample",
@@ -480,7 +480,7 @@
       "createdOn": "Wed Oct 04 2023 14:56:38 GMT+0000",
       "updatedOn": "Thu Jul 11 2024 10:57:29 GMT+0000",
       "publishedOn": "Thu Jul 11 2024 11:00:12 GMT+0000",
-      "sample_card_color": "#9e958d"
+      "sample_card_color": "#8a8278"
     },
     {
       "id": "ligia-sample",
@@ -507,7 +507,8 @@
       "requiresShipping": true,
       "createdOn": "Wed Oct 04 2023 15:04:49 GMT+0000",
       "updatedOn": "Thu Jul 11 2024 10:58:05 GMT+0000",
-      "publishedOn": "Thu Jul 11 2024 11:00:12 GMT+0000"
+      "publishedOn": "Thu Jul 11 2024 11:00:12 GMT+0000",
+      "sample_card_color": "#5a8090"
     },
     {
       "id": "gaia-sample",
@@ -534,7 +535,8 @@
       "requiresShipping": true,
       "createdOn": "Wed Oct 04 2023 15:03:16 GMT+0000",
       "updatedOn": "Thu Jul 11 2024 10:57:56 GMT+0000",
-      "publishedOn": "Thu Jul 11 2024 11:00:12 GMT+0000"
+      "publishedOn": "Thu Jul 11 2024 11:00:12 GMT+0000",
+      "sample_card_color": "#8b4a38"
     },
     {
       "id": "yami-sample",
@@ -561,7 +563,8 @@
       "requiresShipping": true,
       "createdOn": "Wed Oct 04 2023 15:01:11 GMT+0000",
       "updatedOn": "Thu Jul 11 2024 10:57:42 GMT+0000",
-      "publishedOn": "Thu Jul 11 2024 11:00:12 GMT+0000"
+      "publishedOn": "Thu Jul 11 2024 11:00:12 GMT+0000",
+      "sample_card_color": "#2e3640"
     },
     {
       "id": "yuki-sample",
@@ -589,7 +592,7 @@
       "createdOn": "Wed Oct 04 2023 15:06:19 GMT+0000",
       "updatedOn": "Thu Jul 11 2024 10:58:16 GMT+0000",
       "publishedOn": "Thu Jul 11 2024 11:00:12 GMT+0000",
-      "sample_card_color": "#b8a9a6"
+      "sample_card_color": "#8a8278"
     },
     {
       "id": "brush-sample-premium",

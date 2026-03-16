@@ -90,6 +90,16 @@
     visibility: visible !important;
     opacity: 1 !important;
   }
+  /* Fix: add-to-cart button text always white on colored background */
+  .addtocart_container .add-to-cart-button-2,
+  .addtocart_container .w-commerce-commerceaddtocartbutton {
+    color: #ffffff !important;
+    background-color: transparent !important;
+  }
+  /* Fix: product description text always visible (dark) */
+  .product-description-text {
+    color: #333333 !important;
+  }
 </style>
   <!--  [Attributes by Finsweet] CMS Load  -->
   <script async="" src="https://cdn.jsdelivr.net/npm/@finsweet/attributes-cmsload@1/cmsload.js"></script>

@@ -2571,77 +2571,88 @@
 
     sampleBoxes.forEach((product, index) => {
       console.log(`🔄 populate-cms.js: Creating card ${index + 1}/${sampleBoxes.length} for:`, product.name);
-      // Try local images first, fallback to CDN URLs
-      const displayImage = getImagePath(product, 'mainImage') || 
-                          getImagePath(product, 'selection_slider_image') ||
-                          product.mainImage || 
-                          product.selection_slider_image ||
-                          (product.images && product.images.length > 0 ? product.images[0].url : '') ||
-                          '';
-      
-      // Clean display name - remove "-Sample" suffix if present
-      const displayName = (product.name || '').replace(/-Sample$/i, '').trim() || product.special_field_slogan || 'Sample';
 
-      // Use sample_card_color if available, otherwise button_header_color with visibility check
+      // ── Image: prefer dedicated sample PNG, fallback to main image ──
+      const sampleSlug = (product.special_field_slogan || product.name || '').replace(/-Sample$/i, '').trim();
+      const samplePng = '/images/' + sampleSlug + '_sample.png';
+      const fallbackImg = getImagePath(product, 'mainImage') ||
+                          getImagePath(product, 'selection_slider_image') ||
+                          product.mainImage || '';
+      // We'll use onerror to fall back if the PNG doesn't exist
+      const displayImage = samplePng;
+
+      // ── Display name: clean stone name ──
+      const displayName = sampleSlug || 'Sample';
+
+      // ── Description ──
+      const description = t(product.stone || product.description || '');
+
+      // ── Color: sample_card_color (preferred) or button_header_color for add-to-cart button bg ──
       var rawColor = product.sample_card_color || product.button_header_color || '';
-      // If color is too light (near white), use a visible fallback
-      var nameColor = rawColor;
-      if (rawColor) {
+      var btnColor = rawColor;
+      // If color is too light (>85% lightness in HSL), use a visible warm grey fallback
+      if (rawColor && rawColor.startsWith('hsl')) {
         var lightMatch = rawColor.match(/hsla?\([^,]*,\s*[\d.]+%?,\s*([\d.]+)%/);
         if (lightMatch && parseFloat(lightMatch[1]) > 85) {
-          nameColor = '#8a8278'; // warm grey fallback for very light colors
+          btnColor = '#8a8278';
         }
       }
-      if (!nameColor) nameColor = '#3c3c3c';
-      var cardBgColor = '#f2f1f0'; // Uniform background matching reference
+      if (!btnColor) btnColor = '#3c3c3c';
+
+      // ── Price ──
       var priceValue = parseFloat((product.price || '0').replace(/[^\d.]/g, '')) || 5;
       var priceDisplay = Math.round(priceValue) + '€';
-      const description = t(product.stone || product.description || '');
-      
-      // Create sample box card
+
+      // ── Build card ──
       const card = document.createElement('div');
       card.className = 'collection-item-5 w-dyn-item';
       card.setAttribute('role', 'listitem');
       card.setAttribute('data-product-id', product.productId || '');
       card.setAttribute('data-variant-id', product.variantId || '');
-      card.style.cursor = 'pointer';
-      
-      card.innerHTML = '<div class="item-wrap_samples" style="background-color:' + cardBgColor + ';">' +
+
+      card.innerHTML =
+        '<div class="item-wrap_samples" style="background-color:#f2f1f0;">' +
+          // Top: name + description on left, price on right
           '<div class="top_titel-wrap">' +
             '<div class="header-wrap_samples">' +
-              '<div class="text-block-65" style="color:' + nameColor + '">' + displayName + '</div>' +
+              '<div class="text-block-65">' + displayName + '</div>' +
               '<div class="description-wrap_samples">' +
-                '<div class="text-block-70" style="color:' + nameColor + '">' + description + '</div>' +
+                '<div class="text-block-70">' + description + '</div>' +
               '</div>' +
             '</div>' +
             '<div class="price-wrap_samples">' +
-              '<div class="text-block-68" style="color:' + nameColor + '">' + priceDisplay + '</div>' +
+              '<div class="text-block-68">' + priceDisplay + '</div>' +
             '</div>' +
           '</div>' +
+          // Stone image — positioned bottom-left via CSS (.img_wrap)
           '<div class="img_wrap">' +
-            '<img alt="' + displayName + '" loading="lazy" width="171" src="' + displayImage + '" class="image-132"' +
-            ' onerror="this.onerror=null; this.src=\'' + (product.mainImage || '') + '\';">' +
+            '<img alt="' + displayName + '" loading="lazy" width="171"' +
+                 ' src="' + displayImage + '"' +
+                 ' onerror="this.onerror=null; this.src=\'' + fallbackImg + '\';"' +
+                 ' class="image-132">' +
           '</div>' +
+          // Bottom: add to cart button
           '<div class="bottom_addtocart-wrap">' +
-            '<div id="item-' + (index + 1) + '" class="add-to-cart">' +
+            '<div id="sample-item-' + (index + 1) + '" class="add-to-cart">' +
               '<form data-node-type="commerce-add-to-cart-form"' +
-                    ' data-commerce-product-id="' + (product.productId || '') + '"' +
-                    ' data-commerce-sku-id="' + (product.variantId || '') + '"' +
-                    ' data-wf-product-id="' + (product.productId || '') + '"' +
-                    ' data-wf-variant-id="' + (product.variantId || '') + '"' +
-                    ' data-loading-text="Adding to cart..."' +
-                    ' class="w-commerce-commerceaddtocartform"' +
-                    ' action="javascript:void(0);" onsubmit="return false;">' +
-                '<div class="addtocart_container" style="background-color:' + nameColor + ';">' +
+                   ' data-commerce-product-id="' + (product.productId || '') + '"' +
+                   ' data-commerce-sku-id="' + (product.variantId || '') + '"' +
+                   ' data-wf-product-id="' + (product.productId || '') + '"' +
+                   ' data-wf-variant-id="' + (product.variantId || '') + '"' +
+                   ' data-loading-text="' + t('Hinzufügen..') + '"' +
+                   ' class="w-commerce-commerceaddtocartform"' +
+                   ' action="javascript:void(0);" onsubmit="return false;">' +
+                '<div class="addtocart_container" style="background-color:' + btnColor + ';">' +
                   '<img src="/images/Large-Arrow-White-Selection.svg" loading="lazy" width="36" alt="" class="image-131">' +
-                  '<input type="submit" data-node-type="commerce-add-to-cart-button"' +
+                  '<input type="submit"' +
+                         ' data-node-type="commerce-add-to-cart-button"' +
                          ' data-loading-text="' + t('Hinzufügen..') + '"' +
                          ' aria-busy="false" aria-haspopup="dialog"' +
                          ' class="w-commerce-commerceaddtocartbutton add-to-cart-button-2"' +
                          ' value="' + t('Warenkorb') + '">' +
                 '</div>' +
               '</form>' +
-              '<div style="display:none" class="w-commerce-commerceaddtocartoutofstock" tabindex="0">' +
+              '<div style="display:none;" class="w-commerce-commerceaddtocartoutofstock" tabindex="0">' +
                 '<div>This product is out of stock.</div>' +
               '</div>' +
             '</div>' +

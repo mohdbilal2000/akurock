@@ -78,6 +78,78 @@
     .js-accordion-body {
       display: none;
     }
+
+    /* ── Sample box card: ensure text is always visible ── */
+    .item-wrap_samples .text-block-65,
+    .item-wrap_samples .text-block-70,
+    .item-wrap_samples .text-block-68 {
+      color: var(--black-stonearts®, #1a1a1a) !important;
+    }
+
+    /* ── Add-to-cart button: text always white, never inherit background ── */
+    .addtocart_container .add-to-cart-button-2,
+    .addtocart_container .w-commerce-commerceaddtocartbutton {
+      color: #ffffff !important;
+      background-color: transparent !important;
+    }
+
+    /* ── Mobile: single column, proper card sizing ── */
+    @media screen and (max-width: 767px) {
+      .sample-grid {
+        grid-template-columns: 1fr !important;
+        grid-column-gap: 1rem !important;
+        grid-row-gap: 1rem !important;
+      }
+      .item-wrap_samples {
+        aspect-ratio: 1 / 1 !important;
+        min-height: 300px;
+      }
+      .text-block-65 {
+        font-size: 2rem !important;
+        line-height: 2.4rem !important;
+      }
+      .addtocart_container {
+        width: 150px !important;
+        height: 44px !important;
+      }
+      .add-to-cart-button-2 {
+        font-size: 0.85rem !important;
+      }
+      /* Collection box responsive */
+      .sample-selection-box_wrap {
+        flex-direction: column !important;
+        min-height: auto !important;
+      }
+      .large-box_container {
+        width: 100% !important;
+        height: 280px !important;
+        position: relative !important;
+        inset: auto !important;
+        padding-top: 0 !important;
+        border-radius: 1rem !important;
+        margin-bottom: 1rem;
+      }
+      .box-addtocart_wrap {
+        min-width: auto !important;
+        width: 100% !important;
+        padding: 24px !important;
+        position: relative !important;
+      }
+      .text-block-69 {
+        font-size: 1.6rem !important;
+        line-height: 1.8rem !important;
+      }
+    }
+
+    /* ── Tablet: 2 column grid ── */
+    @media screen and (min-width: 768px) and (max-width: 991px) {
+      .sample-grid {
+        grid-template-columns: 1fr 1fr !important;
+      }
+      .item-wrap_samples {
+        aspect-ratio: 1 / 1 !important;
+      }
+    }
   </style>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css">
   <link rel="stylesheet" href="/globals.css">
