@@ -111,7 +111,9 @@
       opacity: 1;
       transition: 0.5s ease-in-out;
     }
-    /* Mobile: ensure product gallery swiper shows images even before Swiper JS init */
+    /* ── MOBILE PRODUCT GALLERY — RESPONSIVE FIX ── */
+
+    /* Tablet & mobile (≤991px): show mobile grid, hide desktop grid */
     @media screen and (max-width: 991px) {
       .section.product.top .mobile-selection-grid {
         display: grid !important;
@@ -119,37 +121,86 @@
       .section.product.top .slider-selector_component.is-slider-product.mobile {
         display: block !important;
       }
-      /* Ensure swiper shows first slide even without JS initialization */
-      .swiper.is-swiper-product {
-        overflow: hidden;
-        width: 100%;
-        min-height: 300px;
-      }
-      .swiper.is-swiper-product .swiper-wrapper {
-        display: flex;
-        width: 100%;
-      }
-      .swiper.is-swiper-product .swiper-slide {
-        flex-shrink: 0;
-        width: 100%;
-      }
       .section.product.top .product-selection-grid {
         display: none !important;
       }
+
+      /* Swiper container — explicit height so images aren't squashed */
+      .swiper.is-swiper-product {
+        overflow: hidden !important;
+        width: 100% !important;
+        height: auto !important;
+        min-height: 0 !important;
+      }
+      .swiper.is-swiper-product .swiper-wrapper {
+        display: flex !important;
+        width: 100% !important;
+        height: auto !important;
+      }
+      .swiper.is-swiper-product .swiper-slide {
+        flex-shrink: 0 !important;
+        width: 100% !important;
+        height: auto !important;
+        position: relative !important;
+      }
+
+      /* img-hight: use aspect-ratio instead of fixed padding-top so it scales on all screens */
+      .swiper.is-swiper-product .img-hight {
+        padding-top: 0 !important;
+        position: relative !important;
+        width: 100% !important;
+        aspect-ratio: 1 / 1;
+        overflow: hidden;
+      }
+
+      /* Image fills container, covers properly */
+      .swiper.is-swiper-product .img-hight .img-swiper_img {
+        position: absolute !important;
+        inset: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
+        object-position: center !important;
+        max-width: none !important;
+        display: block !important;
+      }
+
+      /* Slider overflow must not clip images */
+      .slider-selector_overflow {
+        overflow: visible !important;
+        width: 100% !important;
+      }
+      .slider-selector_wrapper.is-slider-product {
+        overflow: hidden !important;
+        width: 100% !important;
+      }
     }
-    /* Force product hero section visible on desktop */
+
+    /* Small phones (≤767px) — slightly taller aspect for portrait images */
+    @media screen and (max-width: 767px) {
+      .swiper.is-swiper-product .img-hight {
+        aspect-ratio: 4 / 5;
+      }
+    }
+
+    /* Very small phones (≤479px) */
+    @media screen and (max-width: 479px) {
+      .swiper.is-swiper-product .img-hight {
+        aspect-ratio: 1 / 1;
+      }
+    }
+
+    /* Desktop (≥992px): show desktop grid, hide mobile slider */
     @media screen and (min-width: 992px) {
       .section.product.top .mobile-selection-grid {
         display: block !important;
       }
-      /* Hide mobile-only components on desktop */
       .section.product.top .slider-selector_component.is-slider-product.mobile {
         display: none !important;
       }
       .section.product.top > .container-products > .mobile-selection-grid > .product_text_wrapper {
         display: none !important;
       }
-      /* Show the desktop product layout grid */
       .section.product.top .product-selection-grid {
         display: grid !important;
         grid-template-columns: 55% 45%;

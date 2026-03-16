@@ -722,10 +722,14 @@
 
   // Initialize all product page Swipers (needed because template <script> tags don't execute via innerHTML)
   function initProductSwipers() {
-    function doInit() {
+    function doInit(attempt) {
+      attempt = attempt || 0;
       if (!window.Swiper || !window.$) {
-        console.warn('populate-cms.js: Swiper or jQuery not ready for product swipers, will retry...');
-        setTimeout(doInit, 500);
+        if (attempt < 10) {
+          setTimeout(function() { doInit(attempt + 1); }, 500);
+        } else {
+          console.error('populate-cms.js: Swiper or jQuery never loaded');
+        }
         return;
       }
       console.log('populate-cms.js: Initializing product page Swipers...');
@@ -744,7 +748,16 @@
       $(".slider-selector_component").each(function(index, element) {
         var $element = $(element);
         var swiperContainer = $element.find(".swiper")[0];
-        if (!swiperContainer || swiperContainer.swiper) return; // Skip if already initialized
+        if (!swiperContainer) return;
+
+        // Destroy and re-init if already initialized (handles re-runs after content update)
+        if (swiperContainer.swiper) {
+          swiperContainer.swiper.update();
+          swiperContainer.swiper.updateSlides();
+          swiperContainer.swiper.updateSize();
+          swiperContainer.swiper.slideTo(0, 0);
+          return;
+        }
 
         var isProductGallery = $element.hasClass('is-slider-product') || swiperContainer.classList.contains('is-swiper-product');
         var productGalleryConfig = isProductGallery ? {
@@ -762,6 +775,10 @@
           grabCursor: true,
           resistance: true,
           resistanceRatio: 0.85,
+          observer: true,
+          observeParents: true,
+          observeSlideChildren: true,
+          updateOnWindowResize: true,
         } : {};
 
         var swiper = new Swiper(swiperContainer, Object.assign({}, swiperConfig, productGalleryConfig, {
@@ -784,12 +801,20 @@
             draggable: true,
             dragClass: "swiper-drag",
             snapOnRelease: true
+          },
+          on: {
+            init: function() {
+              // Force update after init to handle aspect-ratio based heights
+              var self = this;
+              setTimeout(function() {
+                self.update();
+              }, 100);
+            }
           }
         }));
         swiperContainer.swiper = swiper;
         console.log('populate-cms.js: Initialized Swiper for', isProductGallery ? 'product gallery' : 'selector', '(' + index + ')');
 
-        // Handle variant selector click navigation
         if ($element.hasClass('is-slider-selector')) {
           function getInitialSlideIndex() {
             var currentPath = window.location.pathname;
@@ -808,8 +833,9 @@
       });
       console.log('populate-cms.js: Product page Swipers initialized');
     }
-    // Small delay to ensure slides are in the DOM
-    setTimeout(doInit, 100);
+    // Longer delay on mobile to wait for images to load and layout to settle
+    var initDelay = window.innerWidth <= 991 ? 300 : 100;
+    setTimeout(function() { doInit(0); }, initDelay);
   }
 
   // Reinitialize Swiper after content is added
@@ -817,13 +843,14 @@
     if (!container) return;
     retryCount = retryCount || 0;
 
-    // Wait for DOM to update, increase delay on retries
-    var delay = retryCount === 0 ? 300 : 500;
+    // Wait for DOM to update — use longer delay on mobile/first attempt
+    var isMobile = window.innerWidth <= 991;
+    var delay = retryCount === 0 ? (isMobile ? 600 : 300) : (retryCount < 3 ? 700 : 1000);
     setTimeout(function() {
-      // If Swiper library isn't loaded yet, retry up to 5 times
+      // If Swiper library isn't loaded yet, retry up to 8 times
       if (!window.Swiper) {
-        if (retryCount < 5) {
-          console.warn('populate-cms.js: Swiper not loaded yet, retrying... (' + (retryCount + 1) + '/5)');
+        if (retryCount < 8) {
+          console.warn('populate-cms.js: Swiper not loaded yet, retrying... (' + (retryCount + 1) + '/8)');
           reinitSwiper(container, retryCount + 1);
         } else {
           console.error('populate-cms.js: Swiper library never loaded');
