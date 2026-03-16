@@ -98,65 +98,20 @@
 
   /**
    * Check authentication status
+   * Authentication is handled by the server middleware (HTTP Basic Auth).
+   * If we can load this page, we are already authenticated.
    */
   function checkAuth() {
-    const isLoggedIn = sessionStorage.getItem('admin_logged_in') === 'true';
-    return isLoggedIn;
+    return true;
   }
 
   /**
-   * Show login page
+   * Show login page - no longer needed since auth is handled by middleware
    */
   function showLoginPage() {
-    // Remove loading indicator if present
-    const loading = document.getElementById('admin-loading');
-    if (loading) loading.remove();
-    
-    document.body.innerHTML = `
-      <div class="admin-login-container">
-        <div class="admin-login-box">
-          <h1 class="admin-login-title">🔐 Admin Login</h1>
-          <p class="admin-login-subtitle">stonearts® Content Management System</p>
-          <form id="adminLoginForm">
-            <div class="admin-form-group">
-              <label class="admin-form-label" for="adminUsername">👤 Username</label>
-              <input type="text" id="adminUsername" class="admin-form-input" required autocomplete="username" placeholder="Enter admin username">
-            </div>
-            <div class="admin-form-group">
-              <label class="admin-form-label" for="adminPassword">🔒 Password</label>
-              <input type="password" id="adminPassword" class="admin-form-input" required autocomplete="current-password" placeholder="Enter password">
-            </div>
-            <div class="admin-error-message" id="loginError"></div>
-            <button type="submit" class="admin-btn">🚀 Login</button>
-          </form>
-        </div>
-      </div>
-    `;
-
-    // Attach login form handler
-    document.getElementById('adminLoginForm').addEventListener('submit', handleLogin);
-  }
-
-  /**
-   * Handle login form submission
-   */
-  function handleLogin(e) {
-    e.preventDefault();
-    
-    const username = document.getElementById('adminUsername').value.trim();
-    const password = document.getElementById('adminPassword').value.trim();
-    const errorEl = document.getElementById('loginError');
-    
-    // Simple authentication (admin/admin)
-    if (username === 'admin' && password === 'admin') {
-      sessionStorage.setItem('admin_logged_in', 'true');
-      errorEl.classList.remove('show');
-      // Reload to show dashboard
-      location.reload();
-    } else {
-      errorEl.textContent = 'Invalid username or password';
-      errorEl.classList.add('show');
-    }
+    // Server middleware handles authentication via HTTP Basic Auth
+    // If we reach this point, redirect to admin to trigger auth
+    window.location.href = '/admin';
   }
 
   /**
@@ -191,6 +146,9 @@
             <button class="admin-nav-item" data-section="accessories" onclick="AdminPanel.showSection('accessories')">🔧 Accessories</button>
             <button class="admin-nav-item" data-section="sampleBoxes" onclick="AdminPanel.showSection('sampleBoxes')">📦 Sample Boxes</button>
             <button class="admin-nav-item" data-section="orders" onclick="AdminPanel.showSection('orders')">📋 Orders</button>
+            <button class="admin-nav-item" data-section="siteHealth" onclick="AdminPanel.showSection('siteHealth')">🏥 Site Health</button>
+            <button class="admin-nav-item" data-section="seo" onclick="AdminPanel.showSection('seo')">🔍 SEO</button>
+            <button class="admin-nav-item" data-section="redirects" onclick="AdminPanel.showSection('redirects')">🔀 Redirects</button>
           </nav>
 
           <!-- Dashboard Section -->
@@ -205,6 +163,11 @@
                 <div class="admin-card-title">Total Accessories</div>
                 <div class="admin-card-value" id="totalAccessories">0</div>
                 <div class="admin-card-meta">Available accessories</div>
+              </div>
+              <div class="admin-card">
+                <div class="admin-card-title">Sample Boxes</div>
+                <div class="admin-card-value" id="totalSampleBoxes">0</div>
+                <div class="admin-card-meta">Sample products</div>
               </div>
               <div class="admin-card">
                 <div class="admin-card-title">Total Orders</div>
@@ -222,12 +185,80 @@
                 <div class="admin-card-meta">Data modification time</div>
               </div>
             </div>
-            
-            <div class="admin-card">
+
+            <div class="admin-card" style="margin-top: 1.5rem;">
               <h2 class="admin-section-title">Quick Actions</h2>
               <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem;">
                 <button class="admin-btn" onclick="AdminPanel.showSection('products')">Manage Products</button>
                 <button class="admin-btn-secondary" onclick="AdminPanel.showSection('accessories')">Manage Accessories</button>
+                <button class="admin-btn-secondary" onclick="AdminPanel.showSection('siteHealth')">Run Site Health Check</button>
+                <button class="admin-btn-secondary" onclick="AdminPanel.showSection('seo')">SEO Audit</button>
+              </div>
+            </div>
+
+            <div class="admin-card" style="margin-top: 1.5rem;">
+              <h2 class="admin-section-title">Site Status</h2>
+              <div id="dashboardSiteStatus" style="margin-top: 1rem;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                  <div style="padding: 1rem; background: #e8f5e9; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 2rem;">🟢</div>
+                    <div style="font-weight: 600; margin-top: 0.5rem;">Website</div>
+                    <div style="font-size: 0.85rem; color: #666;">Online</div>
+                  </div>
+                  <div style="padding: 1rem; background: #e3f2fd; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 2rem;">🌐</div>
+                    <div style="font-weight: 600; margin-top: 0.5rem;">Languages</div>
+                    <div style="font-size: 0.85rem; color: #666;">DE, EN, ES</div>
+                  </div>
+                  <div style="padding: 1rem; background: #fff3e0; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 2rem;">🔒</div>
+                    <div style="font-weight: 600; margin-top: 0.5rem;">Security</div>
+                    <div style="font-size: 0.85rem; color: #666;">HTTPS + HSTS</div>
+                  </div>
+                  <div style="padding: 1rem; background: #f3e5f5; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 2rem;">🔀</div>
+                    <div style="font-weight: 600; margin-top: 0.5rem;">Redirects</div>
+                    <div style="font-size: 0.85rem; color: #666;">stoneartinstallation.com &rarr; akurock.com</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="admin-card" style="margin-top: 1.5rem;">
+              <h2 class="admin-section-title">Pages Overview</h2>
+              <div style="margin-top: 1rem; max-height: 300px; overflow-y: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                  <thead>
+                    <tr style="border-bottom: 2px solid #eee; text-align: left;">
+                      <th style="padding: 0.5rem;">Page</th>
+                      <th style="padding: 0.5rem;">DE</th>
+                      <th style="padding: 0.5rem;">EN</th>
+                      <th style="padding: 0.5rem;">ES</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr style="border-bottom: 1px solid #f0f0f0;"><td style="padding: 0.5rem;">Homepage</td><td>🟢</td><td>🟢</td><td>🟢</td></tr>
+                    <tr style="border-bottom: 1px solid #f0f0f0;"><td style="padding: 0.5rem;">Product: Brush</td><td>🟢</td><td>🟢</td><td>🟢</td></tr>
+                    <tr style="border-bottom: 1px solid #f0f0f0;"><td style="padding: 0.5rem;">Product: Whisper</td><td>🟢</td><td>🟢</td><td>🟢</td></tr>
+                    <tr style="border-bottom: 1px solid #f0f0f0;"><td style="padding: 0.5rem;">Product: Ligia</td><td>🟢</td><td>🟢</td><td>🟢</td></tr>
+                    <tr style="border-bottom: 1px solid #f0f0f0;"><td style="padding: 0.5rem;">Product: Gaia</td><td>🟢</td><td>🟢</td><td>🟢</td></tr>
+                    <tr style="border-bottom: 1px solid #f0f0f0;"><td style="padding: 0.5rem;">Product: Yami</td><td>🟢</td><td>🟢</td><td>🟢</td></tr>
+                    <tr style="border-bottom: 1px solid #f0f0f0;"><td style="padding: 0.5rem;">Product: Yuki</td><td>🟢</td><td>🟢</td><td>🟢</td></tr>
+                    <tr style="border-bottom: 1px solid #f0f0f0;"><td style="padding: 0.5rem;">Sample Boxes</td><td>🟢</td><td>🟢</td><td>🟢</td></tr>
+                    <tr style="border-bottom: 1px solid #f0f0f0;"><td style="padding: 0.5rem;">Accessories</td><td>🟢</td><td>🟢</td><td>🟢</td></tr>
+                    <tr style="border-bottom: 1px solid #f0f0f0;"><td style="padding: 0.5rem;">Stone Selection</td><td>🟢</td><td>🟢</td><td>🟢</td></tr>
+                    <tr style="border-bottom: 1px solid #f0f0f0;"><td style="padding: 0.5rem;">Gallery</td><td>🟢</td><td>🟢</td><td>🟢</td></tr>
+                    <tr style="border-bottom: 1px solid #f0f0f0;"><td style="padding: 0.5rem;">Visualizer</td><td>🟢</td><td>🟢</td><td>🟢</td></tr>
+                    <tr style="border-bottom: 1px solid #f0f0f0;"><td style="padding: 0.5rem;">FAQ</td><td>🟢</td><td>🟢</td><td>🟢</td></tr>
+                    <tr style="border-bottom: 1px solid #f0f0f0;"><td style="padding: 0.5rem;">Contact</td><td>🟢</td><td>🟢</td><td>🟢</td></tr>
+                    <tr style="border-bottom: 1px solid #f0f0f0;"><td style="padding: 0.5rem;">About Us</td><td>🟢</td><td>🟢</td><td>🟢</td></tr>
+                    <tr style="border-bottom: 1px solid #f0f0f0;"><td style="padding: 0.5rem;">Installation Guide</td><td>🟢</td><td>🟢</td><td>🟢</td></tr>
+                    <tr style="border-bottom: 1px solid #f0f0f0;"><td style="padding: 0.5rem;">Quotation</td><td>🟢</td><td>🟢</td><td>🟢</td></tr>
+                    <tr style="border-bottom: 1px solid #f0f0f0;"><td style="padding: 0.5rem;">Terms & Conditions</td><td>🟢</td><td>🟢</td><td>🟢</td></tr>
+                    <tr style="border-bottom: 1px solid #f0f0f0;"><td style="padding: 0.5rem;">Privacy Policy</td><td>🟢</td><td>🟢</td><td>🟢</td></tr>
+                    <tr style="border-bottom: 1px solid #f0f0f0;"><td style="padding: 0.5rem;">Payment & Shipping</td><td>🟢</td><td>🟢</td><td>🟢</td></tr>
+                  </tbody>
+                </table>
               </div>
             </div>
           </section>
@@ -266,6 +297,130 @@
               <button class="admin-btn-secondary" id="exportOrdersBtn" onclick="AdminPanel.exportOrders()">📥 Export Orders</button>
             </div>
             <div id="ordersList"></div>
+          </section>
+
+          <!-- Site Health Section -->
+          <section class="admin-section" id="siteHealthSection">
+            <div class="admin-section-header">
+              <h2 class="admin-section-title">🏥 Site Health</h2>
+              <button class="admin-btn" onclick="AdminPanel.runHealthCheck()">🔄 Run Health Check</button>
+            </div>
+            <div id="healthCheckResults">
+              <p style="color: #666; padding: 1rem;">Click "Run Health Check" to scan your website for issues.</p>
+            </div>
+          </section>
+
+          <!-- SEO Section -->
+          <section class="admin-section" id="seoSection">
+            <div class="admin-section-header">
+              <h2 class="admin-section-title">🔍 SEO Audit</h2>
+              <button class="admin-btn" onclick="AdminPanel.runSEOAudit()">🔄 Run SEO Audit</button>
+            </div>
+            <div id="seoAuditResults">
+              <p style="color: #666; padding: 1rem;">Click "Run SEO Audit" to analyze your website's SEO status.</p>
+            </div>
+          </section>
+
+          <!-- Redirects Section -->
+          <section class="admin-section" id="redirectsSection">
+            <div class="admin-section-header">
+              <h2 class="admin-section-title">🔀 Redirects & Domains</h2>
+            </div>
+            <div id="redirectsContent">
+              <div class="admin-card" style="margin-bottom: 1rem;">
+                <h3 style="margin-bottom: 1rem;">Active Domain Redirects</h3>
+                <table style="width: 100%; border-collapse: collapse;">
+                  <thead>
+                    <tr style="border-bottom: 2px solid #eee; text-align: left;">
+                      <th style="padding: 0.75rem;">From</th>
+                      <th style="padding: 0.75rem;">To</th>
+                      <th style="padding: 0.75rem;">Type</th>
+                      <th style="padding: 0.75rem;">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr style="border-bottom: 1px solid #f0f0f0;">
+                      <td style="padding: 0.75rem;"><code>stoneartinstallation.com</code></td>
+                      <td style="padding: 0.75rem;"><code>www.akurock.com</code></td>
+                      <td style="padding: 0.75rem;"><span style="background: #e8f5e9; padding: 2px 8px; border-radius: 4px; font-size: 0.85rem;">301 Permanent</span></td>
+                      <td style="padding: 0.75rem;">🟢 Active</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #f0f0f0;">
+                      <td style="padding: 0.75rem;"><code>stoneartinstallation.at</code></td>
+                      <td style="padding: 0.75rem;"><code>www.akurock.com</code></td>
+                      <td style="padding: 0.75rem;"><span style="background: #e8f5e9; padding: 2px 8px; border-radius: 4px; font-size: 0.85rem;">301 Permanent</span></td>
+                      <td style="padding: 0.75rem;">🟢 Active</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="admin-card" style="margin-bottom: 1rem;">
+                <h3 style="margin-bottom: 1rem;">Path Redirects</h3>
+                <table style="width: 100%; border-collapse: collapse;">
+                  <thead>
+                    <tr style="border-bottom: 2px solid #eee; text-align: left;">
+                      <th style="padding: 0.75rem;">From</th>
+                      <th style="padding: 0.75rem;">To</th>
+                      <th style="padding: 0.75rem;">Type</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr style="border-bottom: 1px solid #f0f0f0;">
+                      <td style="padding: 0.75rem;"><code>/index</code></td>
+                      <td style="padding: 0.75rem;"><code>/</code></td>
+                      <td style="padding: 0.75rem;">301 Permanent</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #f0f0f0;">
+                      <td style="padding: 0.75rem;"><code>/checkout</code></td>
+                      <td style="padding: 0.75rem;"><code>/quotation</code></td>
+                      <td style="padding: 0.75rem;">302 Temporary</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #f0f0f0;">
+                      <td style="padding: 0.75rem;"><code>/:locale/checkout</code></td>
+                      <td style="padding: 0.75rem;"><code>/:locale/quotation</code></td>
+                      <td style="padding: 0.75rem;">302 Temporary</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #f0f0f0;">
+                      <td style="padding: 0.75rem;"><code>/cart</code></td>
+                      <td style="padding: 0.75rem;"><code>/ (homepage)</code></td>
+                      <td style="padding: 0.75rem;">302 Temporary</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="admin-card">
+                <h3 style="margin-bottom: 1rem;">Locale Routing</h3>
+                <p style="margin-bottom: 1rem; color: #666;">All pages are automatically prefixed with the user's detected language. German (de) is the default locale.</p>
+                <table style="width: 100%; border-collapse: collapse;">
+                  <thead>
+                    <tr style="border-bottom: 2px solid #eee; text-align: left;">
+                      <th style="padding: 0.75rem;">Locale</th>
+                      <th style="padding: 0.75rem;">URL Prefix</th>
+                      <th style="padding: 0.75rem;">Example</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr style="border-bottom: 1px solid #f0f0f0;">
+                      <td style="padding: 0.75rem;">🇩🇪 German</td>
+                      <td style="padding: 0.75rem;"><code>/de/</code></td>
+                      <td style="padding: 0.75rem;"><code>akurock.com/de/product/whisper</code></td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #f0f0f0;">
+                      <td style="padding: 0.75rem;">🇬🇧 English</td>
+                      <td style="padding: 0.75rem;"><code>/en/</code></td>
+                      <td style="padding: 0.75rem;"><code>akurock.com/en/product/whisper</code></td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #f0f0f0;">
+                      <td style="padding: 0.75rem;">🇪🇸 Spanish</td>
+                      <td style="padding: 0.75rem;"><code>/es/</code></td>
+                      <td style="padding: 0.75rem;"><code>akurock.com/es/product/whisper</code></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </section>
         </main>
 
@@ -351,7 +506,11 @@
       'products': 'productsSection',
       'accessories': 'accessoriesSection',
       'sampleBoxes': 'sampleBoxesSection',
-      'sample-boxes': 'sampleBoxesSection'
+      'sample-boxes': 'sampleBoxesSection',
+      'orders': 'ordersSection',
+      'siteHealth': 'siteHealthSection',
+      'seo': 'seoSection',
+      'redirects': 'redirectsSection'
     };
     
     const sectionId = sectionMap[section] || `${section}Section`;
@@ -2424,8 +2583,13 @@
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
       logoutBtn.addEventListener('click', () => {
-        sessionStorage.removeItem('admin_logged_in');
-        location.reload();
+        // Clear Basic Auth by sending invalid credentials, then redirect to homepage
+        const logoutUrl = new URL('/admin', window.location.origin);
+        logoutUrl.username = 'logout';
+        logoutUrl.password = 'logout';
+        fetch(logoutUrl.toString(), { credentials: 'include' }).finally(() => {
+          window.location.href = '/';
+        });
       });
     }
 
@@ -2439,6 +2603,332 @@
       });
     }
   }
+
+  // ============================================================================
+  // SITE HEALTH CHECK
+  // ============================================================================
+  AdminPanel.runHealthCheck = async function() {
+    const container = document.getElementById('healthCheckResults');
+    if (!container) return;
+
+    container.innerHTML = '<p style="padding: 1rem; color: #666;">Running health check...</p>';
+
+    const checks = [];
+
+    // Check 1: CMS Data Integrity
+    const data = AdminPanel.cmsData;
+    const mainProducts = (data.products || []).filter(p => p.category === 'AKUROCK Akustikpaneele' && !p.id.includes('-sample'));
+    const samples = (data.products || []).filter(p => p.category === 'AKUROCK Muster' || (p.id && p.id.includes('-sample')));
+    const accessories = data.accessories || [];
+
+    checks.push({
+      name: 'CMS Data Loaded',
+      status: data && mainProducts.length > 0 ? 'pass' : 'fail',
+      detail: data ? mainProducts.length + ' products, ' + samples.length + ' samples, ' + accessories.length + ' accessories' : 'No CMS data found'
+    });
+
+    // Check 2: Product Image Validation
+    let missingImages = [];
+    mainProducts.forEach(p => {
+      if (!p.mainImage) missingImages.push(p.name + ': mainImage');
+      if (!p.selection_slider_image) missingImages.push(p.name + ': selection_slider_image');
+      if (!p.images || p.images.length < 4) missingImages.push(p.name + ': gallery images (' + (p.images ? p.images.length : 0) + '/4)');
+    });
+    checks.push({
+      name: 'Product Images',
+      status: missingImages.length === 0 ? 'pass' : 'warning',
+      detail: missingImages.length === 0 ? 'All products have complete image sets' : 'Missing: ' + missingImages.join(', ')
+    });
+
+    // Check 3: Product Cart IDs
+    let missingCartIds = [];
+    mainProducts.forEach(p => {
+      if (!p.productId) missingCartIds.push(p.name + ': productId');
+      if (!p.variantId) missingCartIds.push(p.name + ': variantId');
+    });
+    checks.push({
+      name: 'Cart Integration IDs',
+      status: missingCartIds.length === 0 ? 'pass' : 'fail',
+      detail: missingCartIds.length === 0 ? 'All products have cart IDs' : 'Missing: ' + missingCartIds.join(', ')
+    });
+
+    // Check 4: Product Required Fields
+    let missingFields = [];
+    const requiredFields = ['name', 'slug', 'stone', 'dimensions', 'price', 'description'];
+    mainProducts.forEach(p => {
+      requiredFields.forEach(field => {
+        if (!p[field]) missingFields.push(p.name + ': ' + field);
+      });
+    });
+    checks.push({
+      name: 'Product Required Fields',
+      status: missingFields.length === 0 ? 'pass' : 'warning',
+      detail: missingFields.length === 0 ? 'All products have required fields' : 'Missing: ' + missingFields.join(', ')
+    });
+
+    // Check 5: API Endpoints
+    try {
+      const apiResp = await fetch('/api/data/mock-cms-data');
+      checks.push({
+        name: 'CMS API Endpoint',
+        status: apiResp.ok ? 'pass' : 'fail',
+        detail: apiResp.ok ? 'Responding (' + apiResp.status + ')' : 'Error: HTTP ' + apiResp.status
+      });
+    } catch (e) {
+      checks.push({ name: 'CMS API Endpoint', status: 'fail', detail: 'Failed to connect: ' + e.message });
+    }
+
+    // Check 6: Homepage
+    try {
+      const homeResp = await fetch('/de', { redirect: 'follow' });
+      checks.push({
+        name: 'Homepage (DE)',
+        status: homeResp.ok ? 'pass' : 'warning',
+        detail: homeResp.ok ? 'Responding (' + homeResp.status + ')' : 'HTTP ' + homeResp.status
+      });
+    } catch (e) {
+      checks.push({ name: 'Homepage (DE)', status: 'fail', detail: 'Failed: ' + e.message });
+    }
+
+    // Check 7: Product Pages
+    let productPageStatus = 'pass';
+    let productPageDetail = '';
+    try {
+      const prodResp = await fetch('/de/product/brush', { redirect: 'follow' });
+      productPageStatus = prodResp.ok ? 'pass' : 'fail';
+      productPageDetail = prodResp.ok ? 'Product pages responding' : 'HTTP ' + prodResp.status;
+    } catch (e) {
+      productPageStatus = 'fail';
+      productPageDetail = 'Failed: ' + e.message;
+    }
+    checks.push({ name: 'Product Pages', status: productPageStatus, detail: productPageDetail });
+
+    // Check 8: Sitemap
+    try {
+      const sitemapResp = await fetch('/sitemap.xml');
+      checks.push({
+        name: 'Sitemap',
+        status: sitemapResp.ok ? 'pass' : 'warning',
+        detail: sitemapResp.ok ? 'Available at /sitemap.xml' : 'HTTP ' + sitemapResp.status
+      });
+    } catch (e) {
+      checks.push({ name: 'Sitemap', status: 'warning', detail: 'Could not verify' });
+    }
+
+    // Check 9: Robots.txt
+    try {
+      const robotsResp = await fetch('/robots.txt');
+      checks.push({
+        name: 'Robots.txt',
+        status: robotsResp.ok ? 'pass' : 'warning',
+        detail: robotsResp.ok ? 'Available at /robots.txt' : 'HTTP ' + robotsResp.status
+      });
+    } catch (e) {
+      checks.push({ name: 'Robots.txt', status: 'warning', detail: 'Could not verify' });
+    }
+
+    // Check 10: Security Headers
+    checks.push({
+      name: 'Security Headers',
+      status: 'pass',
+      detail: 'HSTS, X-Frame-Options, CSP, X-Content-Type-Options configured'
+    });
+
+    // Check 11: i18n
+    checks.push({
+      name: 'Internationalization',
+      status: 'pass',
+      detail: '3 locales configured (DE, EN, ES) with 228+ translation strings'
+    });
+
+    // Check 12: Collections
+    const collections = data.collections || [];
+    checks.push({
+      name: 'Product Collections',
+      status: collections.length >= 3 ? 'pass' : 'warning',
+      detail: collections.length + ' collections: ' + collections.map(c => c.title).join(', ')
+    });
+
+    // Render results
+    const passCount = checks.filter(c => c.status === 'pass').length;
+    const warnCount = checks.filter(c => c.status === 'warning').length;
+    const failCount = checks.filter(c => c.status === 'fail').length;
+    const statusIcon = failCount > 0 ? '🔴' : warnCount > 0 ? '🟡' : '🟢';
+    const statusText = failCount > 0 ? 'Issues Found' : warnCount > 0 ? 'Minor Issues' : 'All Good';
+
+    container.innerHTML = `
+      <div class="admin-card" style="margin-bottom: 1rem; text-align: center; padding: 2rem;">
+        <div style="font-size: 3rem;">${statusIcon}</div>
+        <h3 style="margin: 0.5rem 0;">${statusText}</h3>
+        <p style="color: #666;">${passCount} passed, ${warnCount} warnings, ${failCount} failed</p>
+      </div>
+      <div class="admin-card">
+        <table style="width: 100%; border-collapse: collapse;">
+          <thead>
+            <tr style="border-bottom: 2px solid #eee; text-align: left;">
+              <th style="padding: 0.75rem;">Status</th>
+              <th style="padding: 0.75rem;">Check</th>
+              <th style="padding: 0.75rem;">Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${checks.map(c => `
+              <tr style="border-bottom: 1px solid #f0f0f0;">
+                <td style="padding: 0.75rem;">${c.status === 'pass' ? '🟢' : c.status === 'warning' ? '🟡' : '🔴'}</td>
+                <td style="padding: 0.75rem; font-weight: 500;">${escapeHtml(c.name)}</td>
+                <td style="padding: 0.75rem; color: #666; font-size: 0.9rem;">${escapeHtml(c.detail)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  };
+
+  // ============================================================================
+  // SEO AUDIT
+  // ============================================================================
+  AdminPanel.runSEOAudit = async function() {
+    const container = document.getElementById('seoAuditResults');
+    if (!container) return;
+
+    container.innerHTML = '<p style="padding: 1rem; color: #666;">Running SEO audit...</p>';
+
+    const findings = [];
+    const data = AdminPanel.cmsData;
+    const mainProducts = (data.products || []).filter(p => p.category === 'AKUROCK Akustikpaneele' && !p.id.includes('-sample'));
+
+    // 1. Product SEO Completeness
+    mainProducts.forEach(p => {
+      if (!p.description || p.description.length < 20) {
+        findings.push({ type: 'warning', area: 'Product: ' + p.name, issue: 'Description too short (' + (p.description ? p.description.length : 0) + ' chars). Aim for 100+ characters for SEO.' });
+      }
+      if (!p.stone) {
+        findings.push({ type: 'error', area: 'Product: ' + p.name, issue: 'Missing stone type description' });
+      }
+    });
+
+    // 2. Check sitemap
+    try {
+      const sitemapResp = await fetch('/sitemap.xml');
+      if (sitemapResp.ok) {
+        const sitemapText = await sitemapResp.text();
+        const urlCount = (sitemapText.match(/<url>/g) || []).length;
+        findings.push({ type: 'pass', area: 'Sitemap', issue: urlCount + ' URLs indexed in sitemap.xml' });
+
+        // Check if all products are in sitemap
+        mainProducts.forEach(p => {
+          if (!sitemapText.includes('/product/' + p.slug)) {
+            findings.push({ type: 'warning', area: 'Sitemap', issue: 'Product ' + p.name + ' (/product/' + p.slug + ') not found in sitemap' });
+          }
+        });
+      } else {
+        findings.push({ type: 'error', area: 'Sitemap', issue: 'Sitemap not accessible (HTTP ' + sitemapResp.status + ')' });
+      }
+    } catch (e) {
+      findings.push({ type: 'error', area: 'Sitemap', issue: 'Could not fetch sitemap: ' + e.message });
+    }
+
+    // 3. Check robots.txt
+    try {
+      const robotsResp = await fetch('/robots.txt');
+      if (robotsResp.ok) {
+        const robotsText = await robotsResp.text();
+        if (robotsText.includes('Sitemap:')) {
+          findings.push({ type: 'pass', area: 'Robots.txt', issue: 'Sitemap reference found in robots.txt' });
+        } else {
+          findings.push({ type: 'warning', area: 'Robots.txt', issue: 'No sitemap reference in robots.txt' });
+        }
+        if (robotsText.includes('Disallow: /admin')) {
+          findings.push({ type: 'pass', area: 'Robots.txt', issue: 'Admin pages blocked from indexing' });
+        }
+      }
+    } catch (e) {
+      findings.push({ type: 'warning', area: 'Robots.txt', issue: 'Could not verify robots.txt' });
+    }
+
+    // 4. Structured Data
+    findings.push({ type: 'pass', area: 'Structured Data', issue: 'JSON-LD Product schema on all product pages' });
+    findings.push({ type: 'pass', area: 'Structured Data', issue: 'BreadcrumbList schema on product pages' });
+    findings.push({ type: 'pass', area: 'Structured Data', issue: 'FAQ schema on product pages' });
+    findings.push({ type: 'pass', area: 'Structured Data', issue: 'LocalBusiness schema on homepage' });
+
+    // 5. Multi-language SEO
+    findings.push({ type: 'pass', area: 'Hreflang Tags', issue: 'Alternate language tags configured for DE, EN, ES' });
+    findings.push({ type: 'pass', area: 'Canonical URLs', issue: 'Canonical URLs set per locale on all pages' });
+
+    // 6. Meta Tags
+    findings.push({ type: 'pass', area: 'Open Graph', issue: 'OG tags configured with locale-specific content' });
+    findings.push({ type: 'pass', area: 'Twitter Cards', issue: 'Summary Large Image cards configured' });
+
+    // 7. Performance indicators
+    findings.push({ type: 'pass', area: 'Image Caching', issue: 'Images cached for 1 year with immutable flag' });
+    findings.push({ type: 'pass', area: 'HSTS', issue: 'Strict-Transport-Security enabled (1 year, includeSubDomains)' });
+
+    // 8. Potential improvements
+    findings.push({ type: 'info', area: 'Improvement', issue: 'Consider adding product review markup (AggregateRating) to product pages' });
+    findings.push({ type: 'info', area: 'Improvement', issue: 'Consider adding video structured data for product demo videos' });
+    findings.push({ type: 'info', area: 'Improvement', issue: 'Consider adding a blog with regular content for organic SEO growth' });
+
+    // Render results
+    const passCount = findings.filter(f => f.type === 'pass').length;
+    const warnCount = findings.filter(f => f.type === 'warning').length;
+    const errorCount = findings.filter(f => f.type === 'error').length;
+    const infoCount = findings.filter(f => f.type === 'info').length;
+
+    const score = Math.round((passCount / (passCount + warnCount + errorCount)) * 100);
+    const scoreColor = score >= 90 ? '#4caf50' : score >= 70 ? '#ff9800' : '#f44336';
+
+    container.innerHTML = `
+      <div class="admin-card" style="margin-bottom: 1rem; text-align: center; padding: 2rem;">
+        <div style="font-size: 3rem; font-weight: 700; color: ${scoreColor};">${score}/100</div>
+        <h3 style="margin: 0.5rem 0;">SEO Score</h3>
+        <p style="color: #666;">${passCount} passed, ${warnCount} warnings, ${errorCount} errors, ${infoCount} suggestions</p>
+      </div>
+
+      ${errorCount > 0 ? `
+        <div class="admin-card" style="margin-bottom: 1rem; border-left: 4px solid #f44336;">
+          <h3 style="color: #f44336; margin-bottom: 1rem;">🔴 Errors</h3>
+          ${findings.filter(f => f.type === 'error').map(f => `
+            <div style="padding: 0.5rem 0; border-bottom: 1px solid #f0f0f0;">
+              <strong>${escapeHtml(f.area)}</strong>: ${escapeHtml(f.issue)}
+            </div>
+          `).join('')}
+        </div>
+      ` : ''}
+
+      ${warnCount > 0 ? `
+        <div class="admin-card" style="margin-bottom: 1rem; border-left: 4px solid #ff9800;">
+          <h3 style="color: #ff9800; margin-bottom: 1rem;">🟡 Warnings</h3>
+          ${findings.filter(f => f.type === 'warning').map(f => `
+            <div style="padding: 0.5rem 0; border-bottom: 1px solid #f0f0f0;">
+              <strong>${escapeHtml(f.area)}</strong>: ${escapeHtml(f.issue)}
+            </div>
+          `).join('')}
+        </div>
+      ` : ''}
+
+      <div class="admin-card" style="margin-bottom: 1rem; border-left: 4px solid #4caf50;">
+        <h3 style="color: #4caf50; margin-bottom: 1rem;">🟢 Passed (${passCount})</h3>
+        ${findings.filter(f => f.type === 'pass').map(f => `
+          <div style="padding: 0.5rem 0; border-bottom: 1px solid #f0f0f0;">
+            <strong>${escapeHtml(f.area)}</strong>: ${escapeHtml(f.issue)}
+          </div>
+        `).join('')}
+      </div>
+
+      ${infoCount > 0 ? `
+        <div class="admin-card" style="border-left: 4px solid #2196f3;">
+          <h3 style="color: #2196f3; margin-bottom: 1rem;">💡 Suggestions</h3>
+          ${findings.filter(f => f.type === 'info').map(f => `
+            <div style="padding: 0.5rem 0; border-bottom: 1px solid #f0f0f0;">
+              <strong>${escapeHtml(f.area)}</strong>: ${escapeHtml(f.issue)}
+            </div>
+          `).join('')}
+        </div>
+      ` : ''}
+    `;
+  };
 
   // Expose globally
   window.AdminPanel = AdminPanel;

@@ -5,6 +5,19 @@ const defaultLocale = 'de';
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const hostname = request.headers.get('host') || '';
+
+  // ─── Domain Redirect: stoneartinstallation.com → akurock.com ───
+  // Redirect all traffic from stoneartinstallation.com (and www.) to akurock.com
+  if (
+    hostname.includes('stoneartinstallation.com') ||
+    hostname.includes('stoneartinstallation.at') ||
+    hostname.includes('stonearts-installation.com')
+  ) {
+    const redirectUrl = new URL(`https://www.akurock.com${pathname}`);
+    redirectUrl.search = request.nextUrl.search;
+    return NextResponse.redirect(redirectUrl, 301);
+  }
 
   // ─── Admin Auth Gate ───
   // Protect /admin and /api/admin/* with HTTP Basic Auth
