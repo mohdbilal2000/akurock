@@ -275,6 +275,16 @@ const de = {
   'product.faq.installAnswer': 'Nein. Die Paneele können geklebt oder verschraubt werden – ganz ohne Fachbetrieb. Die meisten Kunden installieren ihr Akurock an einem halben Tag.',
   'product.faq.composition': 'Woraus besteht das Akurock-Akustikpaneel?',
   'product.faq.compositionAnswer': 'Das Paneel besteht aus einem 9 mm starken Akustikfilz aus recyceltem PET-Kunststoff, auf dem MDF-Lamellen mit echter Steinfurnieroberfläche befestigt sind. Unser Holz stammt ausschließlich aus nachhaltiger Forstwirtschaft.',
+  'product.faq.soundClass': 'Welche Schallabsorptionsklasse hat Akurock?',
+  'product.faq.soundClassAnswer': 'Akurock erreicht Schallabsorptionsklasse A – die höchste Klasse. Der Akustikfilz aus recyceltem PET absorbiert Schall effektiv und reduziert den Nachhall im Raum deutlich.',
+  'product.faq.weight': 'Wie schwer ist ein Akurock-Paneel?',
+  'product.faq.weightAnswer': 'Ein Akurock-Paneel wiegt ca. 7,5 kg bei den Maßen 240 × 60 × 2,3 cm (1,44 m²). Damit ist es leicht genug für die Wandmontage per Kleber oder Schrauben.',
+  'product.faq.maintenance': 'Wie pflege ich meine Akurock-Paneele?',
+  'product.faq.maintenanceAnswer': 'Die Natursteinoberfläche ist pflegeleicht. Staub mit einem trockenen Tuch abwischen. Für zusätzlichen Schutz empfehlen wir unsere Nano-Versiegelung.',
+  'product.faq.fireRating': 'Sind Akurock-Paneele feuerfest?',
+  'product.faq.fireRatingAnswer': 'Akurock-Paneele sind nach B-s1-d0 klassifiziert – schwer entflammbar mit geringer Rauchentwicklung. Sie eignen sich daher auch für gewerbliche Räume.',
+  'product.faq.madeInAustria': 'Wo werden Akurock-Paneele hergestellt?',
+  'product.faq.madeInAustriaAnswer': 'Jedes Akurock-Paneel wird in Wien, Österreich von stonearts® GmbH handgefertigt. Die Natursteine stammen aus Indien, die Veredelung erfolgt ausschließlich in Österreich.',
 
   // PRODUCT PAGE - Captions & Buttons
   'product.slatsDesign': 'Lamellen-Design.',

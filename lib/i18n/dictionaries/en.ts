@@ -277,6 +277,16 @@ const en: Dictionary = {
   'product.faq.installAnswer': 'Not at all. Panels can be glued or screwed – no tradespeople required. Most customers complete their installation in half a day.',
   'product.faq.composition': 'What is the Akurock acoustic panel made of?',
   'product.faq.compositionAnswer': 'The panel consists of a 9 mm acoustic felt made from recycled PET plastic, onto which MDF slats with a genuine stone veneer surface are attached. All timber is sourced from certified sustainable forestry.',
+  'product.faq.soundClass': 'What sound absorption class does Akurock achieve?',
+  'product.faq.soundClassAnswer': 'Akurock achieves Sound Absorption Class A – the highest class. The recycled PET acoustic felt effectively absorbs sound and significantly reduces room reverberation.',
+  'product.faq.weight': 'How heavy is an Akurock panel?',
+  'product.faq.weightAnswer': 'An Akurock panel weighs approximately 7.5 kg with dimensions of 240 × 60 × 2.3 cm (1.44 m²). Light enough for wall mounting with adhesive or screws.',
+  'product.faq.maintenance': 'How do I clean and maintain my Akurock panels?',
+  'product.faq.maintenanceAnswer': 'The natural stone surface is low-maintenance. Simply wipe dust with a dry cloth. For extra protection, we recommend our Nano-Sealing product.',
+  'product.faq.fireRating': 'Are Akurock panels fire-rated?',
+  'product.faq.fireRatingAnswer': 'Akurock panels are classified B-s1-d0 – low flammability with minimal smoke development. Suitable for commercial and residential spaces.',
+  'product.faq.madeInAustria': 'Where are Akurock panels made?',
+  'product.faq.madeInAustriaAnswer': 'Every Akurock panel is handcrafted in Vienna, Austria by stonearts® GmbH. Natural stones are sourced from India; all finishing is done exclusively in Austria.',
 
   // PRODUCT PAGE - Captions & Buttons
   'product.slatsDesign': 'Slat design.',

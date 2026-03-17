@@ -61,6 +61,13 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // ─── www Redirect: akurock.com → www.akurock.com ───
+  if (hostname === 'akurock.com') {
+    const redirectUrl = new URL(`https://www.akurock.com${pathname}`);
+    redirectUrl.search = request.nextUrl.search;
+    return NextResponse.redirect(redirectUrl, 301);
+  }
+
   // ─── Static File / API Skip ───
   if (
     pathname.startsWith('/api') ||

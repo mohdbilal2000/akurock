@@ -277,6 +277,16 @@ const es: Dictionary = {
   'product.faq.installAnswer': 'La instalación de los paneles acústicos stonearts® es sorprendentemente fácil. Están diseñados para pegarse directamente sobre superficies o atornillarse a través del fieltro acústico, ofreciendo opciones de montaje flexibles y sencillas.',
   'product.faq.composition': '¿De qué está hecho el panel acústico AKUROCK?',
   'product.faq.compositionAnswer': 'El panel acústico consta de un fieltro acústico de 9 mm de grosor al que se fijan las lamas. El fieltro se fabrica a partir de plástico PET reciclado, principalmente de botellas de plástico. Las lamas son de MDF con una superficie real de chapa de piedra. Toda nuestra madera proviene de silvicultura sostenible, asegurando que crezcan más árboles de los que se talan.',
+  'product.faq.soundClass': '¿Qué clase de absorción acústica tiene Akurock?',
+  'product.faq.soundClassAnswer': 'Akurock alcanza la Clase de Absorción Acústica A – la clase más alta. El fieltro acústico de PET reciclado absorbe el sonido eficazmente y reduce significativamente la reverberación.',
+  'product.faq.weight': '¿Cuánto pesa un panel Akurock?',
+  'product.faq.weightAnswer': 'Un panel Akurock pesa aproximadamente 7,5 kg con dimensiones de 240 × 60 × 2,3 cm (1,44 m²). Suficientemente ligero para montaje en pared con adhesivo o tornillos.',
+  'product.faq.maintenance': '¿Cómo cuido mis paneles Akurock?',
+  'product.faq.maintenanceAnswer': 'La superficie de piedra natural requiere poco mantenimiento. Simplemente limpie el polvo con un paño seco. Para protección adicional, recomendamos nuestro producto de Nano-Sellado.',
+  'product.faq.fireRating': '¿Los paneles Akurock son resistentes al fuego?',
+  'product.faq.fireRatingAnswer': 'Los paneles Akurock están clasificados como B-s1-d0 – baja inflamabilidad con desarrollo mínimo de humo. Aptos para espacios comerciales y residenciales.',
+  'product.faq.madeInAustria': '¿Dónde se fabrican los paneles Akurock?',
+  'product.faq.madeInAustriaAnswer': 'Cada panel Akurock se fabrica a mano en Viena, Austria por stonearts® GmbH. Las piedras naturales provienen de India; todo el acabado se realiza exclusivamente en Austria.',
 
   // PRODUCT PAGE - Captions & Buttons
   'product.slatsDesign': 'Diseño de Lamas.',

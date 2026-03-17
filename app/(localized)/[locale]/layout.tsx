@@ -225,6 +225,42 @@ export default async function LocalizedLayout({
               },
               {
                 "@context": "https://schema.org",
+                "@type": "LocalBusiness",
+                "@id": "https://www.akurock.com/#localbusiness",
+                name: "stonearts® GmbH — Akurock Showroom",
+                image: "https://www.akurock.com/images/stonearts-og-image.webp",
+                url: "https://www.akurock.com",
+                telephone: "+43 660 855 10 01",
+                email: "office@stonearts.at",
+                priceRange: "€€",
+                address: {
+                  "@type": "PostalAddress",
+                  streetAddress: "Spohrstraße 29/23/1",
+                  addressLocality: "Wien",
+                  addressRegion: "Wien",
+                  postalCode: "1130",
+                  addressCountry: "AT",
+                },
+                geo: {
+                  "@type": "GeoCoordinates",
+                  latitude: 48.1765,
+                  longitude: 16.2845,
+                },
+                openingHoursSpecification: {
+                  "@type": "OpeningHoursSpecification",
+                  dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+                  opens: "09:00",
+                  closes: "17:00",
+                },
+                sameAs: [
+                  "https://www.instagram.com/stonearts_official/",
+                  "https://www.youtube.com/channel/UCpdPxE-_gXMg9hG_p3hvrkw",
+                  "https://www.tiktok.com/@stonearts_official",
+                  "https://www.facebook.com/stoneartsglobal",
+                ],
+              },
+              {
+                "@context": "https://schema.org",
                 "@type": "WebSite",
                 "@id": "https://www.akurock.com/#website",
                 url: "https://www.akurock.com",
@@ -242,6 +278,27 @@ export default async function LocalizedLayout({
                 },
               },
             ]),
+          }}
+        />
+        {/* SpeakableSpecification for voice search / AI assistants */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebPage",
+              speakable: {
+                "@type": "SpeakableSpecification",
+                cssSelector: [
+                  ".hero-description",
+                  ".product-description",
+                  ".faq-answer",
+                  ".heading-157",
+                  ".heading-158",
+                  ".pd-heading",
+                ],
+              },
+            }),
           }}
         />
         <script src="https://embedsocial.com/cdn/rsh2.js"></script>
@@ -275,6 +332,8 @@ export default async function LocalizedLayout({
         {locales.map((l) => (
           <link key={l} rel="alternate" hrefLang={l === 'de' ? 'de-AT' : l === 'en' ? 'en' : 'es'} href={`https://www.akurock.com/${l}`} />
         ))}
+        <link key="de-DE" rel="alternate" hrefLang="de-DE" href="https://www.akurock.com/de" />
+        <link key="de-CH" rel="alternate" hrefLang="de-CH" href="https://www.akurock.com/de" />
         <link rel="alternate" hrefLang="x-default" href={`https://www.akurock.com/${defaultLocale}`} />
       </head>
       <body>
