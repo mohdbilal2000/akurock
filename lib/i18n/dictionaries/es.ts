@@ -2,8 +2,8 @@ import type { Dictionary } from './de';
 
 const es: Dictionary = {
   // META
-  'meta.title': 'stonearts® Paneles Acústicos de Piedra Natural, Paredes de Listones y Paneles de Pared',
-  'meta.description': 'Descubre la variedad de paneles acústicos de piedra natural hechos a mano que reducen el ruido y crean una acústica saludable con estilo.',
+  'meta.title': 'Akurock Paneles Acústicos de Piedra Natural | Hechos a Mano en Austria | stonearts®',
+  'meta.description': 'Paneles acústicos Akurock de piedra natural 100% auténtica – reducen el ruido, mejoran la acústica y transforman cualquier pared en una obra de arte. Hechos a mano en Austria. Desde €220.',
 
   // NAV
   'nav.shop': 'Tienda',
@@ -272,7 +272,7 @@ const es: Dictionary = {
 
   // PRODUCT PAGE - FAQ
   'product.faq.naturalSurface': '¿Es realmente una superficie de piedra natural?',
-  'product.faq.naturalSurfaceAnswer': '¡Sí! Nuestros paneles acústicos stonearts® tienen una superficie de piedra 100% natural. Cada panel es único y cada superficie cuenta una historia de millones de años \u{1F60A}',
+  'product.faq.naturalSurfaceAnswer': 'Sí. Cada panel acústico Akurock cuenta con una superficie de piedra natural 100% auténtica – sin impresión, sin laminado. Cada pieza es única, su textura moldeada por millones de años de historia geológica.',
   'product.faq.installDifficult': '¿Es difícil instalar los paneles acústicos stonearts®?',
   'product.faq.installAnswer': 'La instalación de los paneles acústicos stonearts® es sorprendentemente fácil. Están diseñados para pegarse directamente sobre superficies o atornillarse a través del fieltro acústico, ofreciendo opciones de montaje flexibles y sencillas.',
   'product.faq.composition': '¿De qué está hecho el panel acústico AKUROCK?',

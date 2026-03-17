@@ -322,115 +322,126 @@ export default async function ContentPage({
   const pageJsonLd: object[] = [breadcrumbJsonLd];
 
   if (canonicalSlug === 'faq') {
+    const faqByLocale: Record<string, Array<{ q: string; a: string }>> = {
+      de: [
+        { q: 'Ist die Oberfläche wirklich echter Naturstein?', a: 'Ja. Jedes Akurock-Paneel trägt eine 100% echte Natursteinoberfläche – kein Druck, kein Laminat. Jedes Stück ist ein Unikat, geformt durch Millionen Jahre Erdgeschichte.' },
+        { q: 'Ist die Montage der Akurock-Paneele schwierig?', a: 'Nein. Die Paneele können geklebt oder verschraubt werden – ganz ohne Fachbetrieb. Die meisten Kunden installieren ihr Akurock an einem halben Tag.' },
+        { q: 'Woraus besteht das Akurock-Akustikpaneel?', a: '9 mm Akustikfilz aus recyceltem PET-Kunststoff + MDF-Lamellen mit echter Steinfurnieroberfläche. Holz aus nachhaltiger Forstwirtschaft.' },
+        { q: 'Wie lange dauert die Lieferung?', a: 'Alle vorrätigen Produkte werden innerhalb von 5–10 Werktagen versandt. Du erhältst eine Versandbestätigung und Sendungsverfolgungsnummer per E-Mail.' },
+        { q: 'Welche Schallklasse erreicht Akurock?', a: 'Akurock-Akustikpaneele erreichen Schallklasse A – die höchste Bewertung nach EN ISO 11654. Sie reduzieren Nachhall und Lärm messbar.' },
+      ],
+      en: [
+        { q: 'Is the surface really natural stone?', a: 'Yes. Every Akurock panel features a 100% genuine natural stone surface – no printing, no laminate. Each piece is unique, shaped by millions of years of geological history.' },
+        { q: 'Is installing Akurock panels difficult?', a: 'Not at all. Panels can be glued or screwed to the wall – no tradespeople required. Most customers complete their installation in half a day.' },
+        { q: 'What is the Akurock acoustic panel made of?', a: '9 mm acoustic felt made from recycled PET plastic + MDF slats with a genuine stone veneer surface. All timber is sourced from certified sustainable forestry.' },
+        { q: 'How long does delivery take?', a: 'All in-stock products are dispatched within 5–10 business days. You will receive a shipping confirmation and tracking number by email.' },
+        { q: 'What sound class does Akurock achieve?', a: 'Akurock acoustic panels achieve Sound Class A – the highest rating under EN ISO 11654. They measurably reduce reverberation and noise.' },
+      ],
+      es: [
+        { q: '¿Es realmente una superficie de piedra natural?', a: 'Sí. Cada panel Akurock cuenta con una superficie de piedra natural 100% auténtica – sin impresión, sin laminado. Cada pieza es única, moldeada por millones de años de historia geológica.' },
+        { q: '¿Es difícil instalar los paneles Akurock?', a: 'No. Los paneles se pueden pegar o atornillar a la pared – sin necesidad de especialistas. La mayoría de los clientes completan la instalación en medio día.' },
+        { q: '¿De qué está hecho el panel acústico Akurock?', a: 'Fieltro acústico de 9 mm de PET reciclado + listones de MDF con superficie de chapa de piedra auténtica. Toda la madera proviene de silvicultura sostenible certificada.' },
+        { q: '¿Cuánto tarda la entrega?', a: 'Todos los productos en stock se envían en 5–10 días hábiles. Recibirás una confirmación de envío y número de seguimiento por correo electrónico.' },
+        { q: '¿Qué clase de sonido alcanza Akurock?', a: 'Los paneles acústicos Akurock alcanzan la Clase de Sonido A – la calificación más alta según EN ISO 11654. Reducen de forma medible la reverberación y el ruido.' },
+      ],
+    };
+    const faqs = faqByLocale[locale] || faqByLocale.de;
     pageJsonLd.push({
       '@context': 'https://schema.org',
       '@type': 'FAQPage',
-      mainEntity: [
-        {
-          '@type': 'Question',
-          name: 'Ist die Oberfläche wirklich echter Naturstein?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'Ja. Jedes Akurock-Paneel trägt eine 100% echte Natursteinoberfläche – kein Druck, kein Laminat. Jedes Stück ist ein Unikat, geformt durch Millionen Jahre Erdgeschichte.',
-          },
-        },
-        {
-          '@type': 'Question',
-          name: 'Ist die Montage der Akurock-Paneele schwierig?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'Nein. Die Paneele können geklebt oder verschraubt werden – ganz ohne Fachbetrieb. Die meisten Kunden installieren ihr Akurock an einem halben Tag.',
-          },
-        },
-        {
-          '@type': 'Question',
-          name: 'Woraus besteht das Akurock-Akustikpaneel?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: '9 mm Akustikfilz aus recyceltem PET-Kunststoff + MDF-Lamellen mit echter Steinfurnieroberfläche. Holz aus nachhaltiger Forstwirtschaft.',
-          },
-        },
-        {
-          '@type': 'Question',
-          name: 'Wie lange dauert die Lieferung?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'Alle vorrätigen Produkte werden innerhalb von 5–10 Werktagen versandt. Du erhältst eine Versandbestätigung und Sendungsverfolgungsnummer per E-Mail.',
-          },
-        },
-        {
-          '@type': 'Question',
-          name: 'Welche Schallklasse erreicht Akurock?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'Akurock-Akustikpaneele erreichen Schallklasse A – die höchste Bewertung nach EN ISO 11654. Sie reduzieren Nachhall und Lärm messbar.',
-          },
-        },
-      ],
+      mainEntity: faqs.map(({ q, a }) => ({
+        '@type': 'Question',
+        name: q,
+        acceptedAnswer: { '@type': 'Answer', text: a },
+      })),
     });
   }
 
   if (canonicalSlug === 'installation-and-guide') {
+    const howToByLocale: Record<string, { name: string; description: string; supplies: string[]; tools: string[]; steps: Array<{ name: string; text: string }> }> = {
+      de: {
+        name: 'Akurock Akustikpaneele installieren',
+        description: 'Schritt-für-Schritt-Anleitung zur Installation von Akurock Naturstein-Akustikpaneelen. Kleben oder verschrauben – keine Fachkräfte nötig.',
+        supplies: ['Akurock Akustikpaneele', 'Wandkleber oder Schrauben', 'Wasserwaage'],
+        tools: ['Säge oder Cutter', 'Schraubenzieher oder Bohrmaschine'],
+        steps: [
+          { name: 'Wand vorbereiten', text: 'Wand reinigen, trocknen und auf Ebenheit prüfen. Bei starken Unebenheiten vorher ausgleichen.' },
+          { name: 'Paneele ausmessen', text: 'Wandfläche messen und Paneele entsprechend zuschneiden. Akurock-Paneele lassen sich mit einer feinen Säge oder einem Cutter schneiden.' },
+          { name: 'Kleben oder Schrauben', text: 'Wandkleber auf die Rückseite des Akustikfilzes auftragen und Paneel andrücken. Alternativ durch den Akustikfilz hindurch in die Wand schrauben.' },
+          { name: 'Fertigstellung', text: 'Fugen prüfen, Paneele ausrichten und ggf. fixieren bis der Kleber abbindet.' },
+        ],
+      },
+      en: {
+        name: 'How to Install Akurock Acoustic Panels',
+        description: 'Step-by-step guide to installing Akurock natural stone acoustic panels. Glue or screw – no specialists needed.',
+        supplies: ['Akurock acoustic panels', 'Wall adhesive or screws', 'Spirit level'],
+        tools: ['Fine saw or cutter', 'Screwdriver or drill'],
+        steps: [
+          { name: 'Prepare the wall', text: 'Clean the wall, ensure it is dry and level. Even out any major irregularities beforehand.' },
+          { name: 'Measure and cut panels', text: 'Measure the wall area and cut panels to size. Akurock panels can be cut with a fine saw or utility knife.' },
+          { name: 'Glue or screw', text: 'Apply wall adhesive to the back of the acoustic felt and press the panel into place. Alternatively, screw through the acoustic felt into the wall.' },
+          { name: 'Finishing', text: 'Check joints, align panels and secure until the adhesive has set.' },
+        ],
+      },
+      es: {
+        name: 'Cómo instalar paneles acústicos Akurock',
+        description: 'Guía paso a paso para instalar paneles acústicos Akurock de piedra natural. Pegar o atornillar – sin necesidad de especialistas.',
+        supplies: ['Paneles acústicos Akurock', 'Adhesivo de pared o tornillos', 'Nivel de burbuja'],
+        tools: ['Sierra fina o cúter', 'Destornillador o taladro'],
+        steps: [
+          { name: 'Preparar la pared', text: 'Limpiar la pared, asegurarse de que esté seca y nivelada. Igualar cualquier irregularidad importante previamente.' },
+          { name: 'Medir y cortar paneles', text: 'Medir la superficie de la pared y cortar los paneles a medida. Los paneles Akurock se pueden cortar con una sierra fina o un cúter.' },
+          { name: 'Pegar o atornillar', text: 'Aplicar adhesivo en la parte trasera del fieltro acústico y presionar el panel en su lugar. Alternativamente, atornillar a través del fieltro acústico a la pared.' },
+          { name: 'Acabado', text: 'Revisar juntas, alinear paneles y fijar hasta que el adhesivo haya fraguado.' },
+        ],
+      },
+    };
+    const howTo = howToByLocale[locale] || howToByLocale.de;
     pageJsonLd.push({
       '@context': 'https://schema.org',
       '@type': 'HowTo',
-      name: 'Akurock Akustikpaneele installieren',
-      description: 'Schritt-für-Schritt-Anleitung zur Installation von Akurock Naturstein-Akustikpaneelen. Kleben oder verschrauben – keine Fachkräfte nötig.',
+      name: howTo.name,
+      description: howTo.description,
       totalTime: 'PT4H',
       estimatedCost: { '@type': 'MonetaryAmount', currency: 'EUR', value: '0' },
-      supply: [
-        { '@type': 'HowToSupply', name: 'Akurock Akustikpaneele' },
-        { '@type': 'HowToSupply', name: 'Wandkleber oder Schrauben' },
-        { '@type': 'HowToSupply', name: 'Wasserwaage' },
-      ],
-      tool: [
-        { '@type': 'HowToTool', name: 'Säge oder Cutter' },
-        { '@type': 'HowToTool', name: 'Schraubenzieher oder Bohrmaschine' },
-      ],
-      step: [
-        {
-          '@type': 'HowToStep',
-          position: 1,
-          name: 'Wand vorbereiten',
-          text: 'Wand reinigen, trocknen und auf Ebenheit prüfen. Bei starken Unebenheiten vorher ausgleichen.',
-        },
-        {
-          '@type': 'HowToStep',
-          position: 2,
-          name: 'Paneele ausmessen',
-          text: 'Wandfläche messen und Paneele entsprechend zuschneiden. Akurock-Paneele lassen sich mit einer feinen Säge oder einem Cutter schneiden.',
-        },
-        {
-          '@type': 'HowToStep',
-          position: 3,
-          name: 'Kleben oder Schrauben',
-          text: 'Wandkleber auf die Rückseite des Akustikfilzes auftragen und Paneel andrücken. Alternativ durch den Akustikfilz hindurch in die Wand schrauben.',
-        },
-        {
-          '@type': 'HowToStep',
-          position: 4,
-          name: 'Fertigstellung',
-          text: 'Fugen prüfen, Paneele ausrichten und ggf. fixieren bis der Kleber abbindet.',
-        },
-      ],
+      supply: howTo.supplies.map(name => ({ '@type': 'HowToSupply', name })),
+      tool: howTo.tools.map(name => ({ '@type': 'HowToTool', name })),
+      step: howTo.steps.map((s, i) => ({ '@type': 'HowToStep', position: i + 1, name: s.name, text: s.text })),
     });
   }
 
   if (canonicalSlug === 'akurock-muster') {
+    const sampleByLocale: Record<string, { name: string; description: string; stones: string[] }> = {
+      de: {
+        name: 'Akurock Musterbox – Naturstein Akustikpaneele',
+        description: 'Teste alle 6 Akurock Steinsorten an deiner Wand. Jeder Stein kostet 5€.',
+        stones: ['Akurock Brush – Cremefarbener Sandstein', 'Akurock Whisper – Weißer Sandstein', 'Akurock Ligia – Silbergrauer Glimmerschiefer', 'Akurock Gaia – Roter Schiefer', 'Akurock Yami – Schwarzer Schiefer', 'Akurock Yuki – Weißer Kristallmarmor'],
+      },
+      en: {
+        name: 'Akurock Sample Box – Natural Stone Acoustic Panels',
+        description: 'Try all 6 Akurock stone varieties on your wall. Each stone sample just €5.',
+        stones: ['Akurock Brush – Cream Sandstone', 'Akurock Whisper – White Sandstone', 'Akurock Ligia – Silver-Grey Mica Schist', 'Akurock Gaia – Red Slate', 'Akurock Yami – Black Slate', 'Akurock Yuki – White Crystal Marble'],
+      },
+      es: {
+        name: 'Caja de Muestras Akurock – Paneles Acústicos de Piedra Natural',
+        description: 'Prueba las 6 variedades de piedra Akurock en tu pared. Cada muestra por solo 5€.',
+        stones: ['Akurock Brush – Arenisca Crema', 'Akurock Whisper – Arenisca Blanca', 'Akurock Ligia – Micaesquisto Gris Plata', 'Akurock Gaia – Pizarra Roja', 'Akurock Yami – Pizarra Negra', 'Akurock Yuki – Mármol Cristalino Blanco'],
+      },
+    };
+    const sample = sampleByLocale[locale] || sampleByLocale.de;
+    const productSlugs = ['brush', 'whisper', 'ligia', 'gaia', 'yami', 'yuki'];
     pageJsonLd.push({
       '@context': 'https://schema.org',
       '@type': 'ItemList',
-      name: 'Akurock Musterbox – Naturstein Akustikpaneele',
-      description: 'Teste alle 6 Akurock Steinsorten an deiner Wand. Jeder Stein kostet 5€.',
+      name: sample.name,
+      description: sample.description,
       numberOfItems: 6,
-      itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Akurock Brush – Cremefarbener Sandstein', url: 'https://www.akurock.com/de/product/brush' },
-        { '@type': 'ListItem', position: 2, name: 'Akurock Whisper – Weißer Sandstein', url: 'https://www.akurock.com/de/product/whisper' },
-        { '@type': 'ListItem', position: 3, name: 'Akurock Ligia – Silbergrauer Glimmerschiefer', url: 'https://www.akurock.com/de/product/ligia' },
-        { '@type': 'ListItem', position: 4, name: 'Akurock Gaia – Roter Schiefer', url: 'https://www.akurock.com/de/product/gaia' },
-        { '@type': 'ListItem', position: 5, name: 'Akurock Yami – Schwarzer Schiefer', url: 'https://www.akurock.com/de/product/yami' },
-        { '@type': 'ListItem', position: 6, name: 'Akurock Yuki – Weißer Kristallmarmor', url: 'https://www.akurock.com/de/product/yuki' },
-      ],
+      itemListElement: sample.stones.map((name, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        name,
+        url: `https://www.akurock.com/${locale}/product/${productSlugs[i]}`,
+      })),
     });
   }
 

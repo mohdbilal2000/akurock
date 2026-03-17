@@ -100,11 +100,21 @@ export async function generateMetadata({
   const productName = product?.name || 'Akurock';
   const siteName = 'stonearts®';
   // SEO-optimised title: includes stone name, category keyword, brand, and locale hint
-  const localeSuffix = locale === 'de' ? ' | Österreich' : locale === 'es' ? ' | Austria' : ' | Austria';
-  const title = product?.seoTitle || `Akurock ${productName} – Naturstein Akustikpaneel | ${siteName}${localeSuffix}`;
+  const localeSuffix = locale === 'de' ? ' | Österreich' : locale === 'es' ? ' | España' : '';
+  const titleByLocale: Record<string, string> = {
+    de: `Akurock ${productName} – Naturstein Akustikpaneel | ${siteName}${localeSuffix}`,
+    en: `Akurock ${productName} – Natural Stone Acoustic Panel | ${siteName}`,
+    es: `Akurock ${productName} – Panel Acústico de Piedra Natural | ${siteName}${localeSuffix}`,
+  };
+  const title = product?.seoTitle || titleByLocale[locale] || titleByLocale.en;
+  const descByLocale: Record<string, string> = {
+    de: `Akurock ${productName} – ${product?.description || ''} Handgefertigtes Naturstein-Akustikpaneel, 240×60 cm, ab ${product?.price || '€220'}. ✓ Schallklasse A ✓ DIY-Montage.`,
+    en: `Akurock ${productName} – handcrafted natural stone acoustic panel, 240×60 cm, from ${product?.price || '€220'}. ✓ Sound Class A ✓ DIY installation. Made in Austria.`,
+    es: `Akurock ${productName} – panel acústico de piedra natural hecho a mano, 240×60 cm, desde ${product?.price || '€220'}. ✓ Clase de Sonido A ✓ Instalación DIY. Hecho en Austria.`,
+  };
   const description = product?.seoDescription ||
     (product?.description && product?.stone
-      ? `Akurock ${productName} – ${product.description} Handgefertigtes Naturstein-Akustikpaneel, 240×60 cm, ab ${product.price}. ✓ Schallklasse A ✓ DIY-Montage.`
+      ? descByLocale[locale] || descByLocale.en
       : dict['meta.description']);
   const canonicalUrl = `https://www.akurock.com/${locale}/product/${slug}`;
 
@@ -120,7 +130,7 @@ export async function generateMetadata({
     openGraph: {
       title,
       description,
-      type: 'article',
+      type: 'website',
       url: canonicalUrl,
       siteName,
       images: product?.image ? [{ url: product.image, width: 1200, height: 630, alt: productName }] : [],
