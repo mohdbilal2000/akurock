@@ -722,10 +722,14 @@
 
   // Initialize all product page Swipers (needed because template <script> tags don't execute via innerHTML)
   function initProductSwipers() {
-    function doInit() {
+    function doInit(attempt) {
+      attempt = attempt || 0;
       if (!window.Swiper || !window.$) {
-        console.warn('populate-cms.js: Swiper or jQuery not ready for product swipers, will retry...');
-        setTimeout(doInit, 500);
+        if (attempt < 10) {
+          setTimeout(function() { doInit(attempt + 1); }, 500);
+        } else {
+          console.error('populate-cms.js: Swiper or jQuery never loaded');
+        }
         return;
       }
       console.log('populate-cms.js: Initializing product page Swipers...');
@@ -744,7 +748,16 @@
       $(".slider-selector_component").each(function(index, element) {
         var $element = $(element);
         var swiperContainer = $element.find(".swiper")[0];
-        if (!swiperContainer || swiperContainer.swiper) return; // Skip if already initialized
+        if (!swiperContainer) return;
+
+        // Destroy and re-init if already initialized (handles re-runs after content update)
+        if (swiperContainer.swiper) {
+          swiperContainer.swiper.update();
+          swiperContainer.swiper.updateSlides();
+          swiperContainer.swiper.updateSize();
+          swiperContainer.swiper.slideTo(0, 0);
+          return;
+        }
 
         var isProductGallery = $element.hasClass('is-slider-product') || swiperContainer.classList.contains('is-swiper-product');
         var productGalleryConfig = isProductGallery ? {
@@ -762,6 +775,10 @@
           grabCursor: true,
           resistance: true,
           resistanceRatio: 0.85,
+          observer: true,
+          observeParents: true,
+          observeSlideChildren: true,
+          updateOnWindowResize: true,
         } : {};
 
         var swiper = new Swiper(swiperContainer, Object.assign({}, swiperConfig, productGalleryConfig, {
@@ -784,12 +801,20 @@
             draggable: true,
             dragClass: "swiper-drag",
             snapOnRelease: true
+          },
+          on: {
+            init: function() {
+              // Force update after init to handle aspect-ratio based heights
+              var self = this;
+              setTimeout(function() {
+                self.update();
+              }, 100);
+            }
           }
         }));
         swiperContainer.swiper = swiper;
         console.log('populate-cms.js: Initialized Swiper for', isProductGallery ? 'product gallery' : 'selector', '(' + index + ')');
 
-        // Handle variant selector click navigation
         if ($element.hasClass('is-slider-selector')) {
           function getInitialSlideIndex() {
             var currentPath = window.location.pathname;
@@ -808,8 +833,9 @@
       });
       console.log('populate-cms.js: Product page Swipers initialized');
     }
-    // Small delay to ensure slides are in the DOM
-    setTimeout(doInit, 100);
+    // Longer delay on mobile to wait for images to load and layout to settle
+    var initDelay = window.innerWidth <= 991 ? 300 : 100;
+    setTimeout(function() { doInit(0); }, initDelay);
   }
 
   // Reinitialize Swiper after content is added
@@ -817,13 +843,14 @@
     if (!container) return;
     retryCount = retryCount || 0;
 
-    // Wait for DOM to update, increase delay on retries
-    var delay = retryCount === 0 ? 300 : 500;
+    // Wait for DOM to update — use longer delay on mobile/first attempt
+    var isMobile = window.innerWidth <= 991;
+    var delay = retryCount === 0 ? (isMobile ? 600 : 300) : (retryCount < 3 ? 700 : 1000);
     setTimeout(function() {
-      // If Swiper library isn't loaded yet, retry up to 5 times
+      // If Swiper library isn't loaded yet, retry up to 8 times
       if (!window.Swiper) {
-        if (retryCount < 5) {
-          console.warn('populate-cms.js: Swiper not loaded yet, retrying... (' + (retryCount + 1) + '/5)');
+        if (retryCount < 8) {
+          console.warn('populate-cms.js: Swiper not loaded yet, retrying... (' + (retryCount + 1) + '/8)');
           reinitSwiper(container, retryCount + 1);
         } else {
           console.error('populate-cms.js: Swiper library never loaded');
@@ -2544,77 +2571,88 @@
 
     sampleBoxes.forEach((product, index) => {
       console.log(`🔄 populate-cms.js: Creating card ${index + 1}/${sampleBoxes.length} for:`, product.name);
-      // Try local images first, fallback to CDN URLs
-      const displayImage = getImagePath(product, 'mainImage') || 
-                          getImagePath(product, 'selection_slider_image') ||
-                          product.mainImage || 
-                          product.selection_slider_image ||
-                          (product.images && product.images.length > 0 ? product.images[0].url : '') ||
-                          '';
-      
-      // Clean display name - remove "-Sample" suffix if present
-      const displayName = (product.name || '').replace(/-Sample$/i, '').trim() || product.special_field_slogan || 'Sample';
 
-      // Use sample_card_color if available, otherwise button_header_color with visibility check
+      // ── Image: prefer dedicated sample PNG, fallback to main image ──
+      const sampleSlug = (product.special_field_slogan || product.name || '').replace(/-Sample$/i, '').trim();
+      const samplePng = '/images/' + sampleSlug + '_sample.png';
+      const fallbackImg = getImagePath(product, 'mainImage') ||
+                          getImagePath(product, 'selection_slider_image') ||
+                          product.mainImage || '';
+      // We'll use onerror to fall back if the PNG doesn't exist
+      const displayImage = samplePng;
+
+      // ── Display name: clean stone name ──
+      const displayName = sampleSlug || 'Sample';
+
+      // ── Description ──
+      const description = t(product.stone || product.description || '');
+
+      // ── Color: sample_card_color (preferred) or button_header_color for add-to-cart button bg ──
       var rawColor = product.sample_card_color || product.button_header_color || '';
-      // If color is too light (near white), use a visible fallback
-      var nameColor = rawColor;
-      if (rawColor) {
+      var btnColor = rawColor;
+      // If color is too light (>85% lightness in HSL), use a visible warm grey fallback
+      if (rawColor && rawColor.startsWith('hsl')) {
         var lightMatch = rawColor.match(/hsla?\([^,]*,\s*[\d.]+%?,\s*([\d.]+)%/);
         if (lightMatch && parseFloat(lightMatch[1]) > 85) {
-          nameColor = '#8a8278'; // warm grey fallback for very light colors
+          btnColor = '#8a8278';
         }
       }
-      if (!nameColor) nameColor = '#3c3c3c';
-      var cardBgColor = '#f2f1f0'; // Uniform background matching reference
+      if (!btnColor) btnColor = '#3c3c3c';
+
+      // ── Price ──
       var priceValue = parseFloat((product.price || '0').replace(/[^\d.]/g, '')) || 5;
       var priceDisplay = Math.round(priceValue) + '€';
-      const description = t(product.stone || product.description || '');
-      
-      // Create sample box card
+
+      // ── Build card ──
       const card = document.createElement('div');
       card.className = 'collection-item-5 w-dyn-item';
       card.setAttribute('role', 'listitem');
       card.setAttribute('data-product-id', product.productId || '');
       card.setAttribute('data-variant-id', product.variantId || '');
-      card.style.cursor = 'pointer';
-      
-      card.innerHTML = '<div class="item-wrap_samples" style="background-color:' + cardBgColor + ';">' +
+
+      card.innerHTML =
+        '<div class="item-wrap_samples" style="background-color:#f2f1f0;">' +
+          // Top: name + description on left, price on right
           '<div class="top_titel-wrap">' +
             '<div class="header-wrap_samples">' +
-              '<div class="text-block-65" style="color:' + nameColor + '">' + displayName + '</div>' +
+              '<div class="text-block-65">' + displayName + '</div>' +
               '<div class="description-wrap_samples">' +
-                '<div class="text-block-70" style="color:' + nameColor + '">' + description + '</div>' +
+                '<div class="text-block-70">' + description + '</div>' +
               '</div>' +
             '</div>' +
             '<div class="price-wrap_samples">' +
-              '<div class="text-block-68" style="color:' + nameColor + '">' + priceDisplay + '</div>' +
+              '<div class="text-block-68">' + priceDisplay + '</div>' +
             '</div>' +
           '</div>' +
+          // Stone image — positioned bottom-left via CSS (.img_wrap)
           '<div class="img_wrap">' +
-            '<img alt="' + displayName + '" loading="lazy" width="171" src="' + displayImage + '" class="image-132"' +
-            ' onerror="this.onerror=null; this.src=\'' + (product.mainImage || '') + '\';">' +
+            '<img alt="' + displayName + '" loading="lazy" width="171"' +
+                 ' src="' + displayImage + '"' +
+                 ' onerror="this.onerror=null; this.src=\'' + fallbackImg + '\';"' +
+                 ' class="image-132">' +
           '</div>' +
+          // Bottom: add to cart button
           '<div class="bottom_addtocart-wrap">' +
-            '<div id="item-' + (index + 1) + '" class="add-to-cart">' +
+            '<div id="sample-item-' + (index + 1) + '" class="add-to-cart">' +
               '<form data-node-type="commerce-add-to-cart-form"' +
-                    ' data-commerce-product-id="' + (product.productId || '') + '"' +
-                    ' data-commerce-sku-id="' + (product.variantId || '') + '"' +
-                    ' data-wf-product-id="' + (product.productId || '') + '"' +
-                    ' data-wf-variant-id="' + (product.variantId || '') + '"' +
-                    ' data-loading-text="Adding to cart..."' +
-                    ' class="w-commerce-commerceaddtocartform"' +
-                    ' action="javascript:void(0);" onsubmit="return false;">' +
-                '<div class="addtocart_container" style="background-color:' + nameColor + ';">' +
+                   ' data-commerce-product-id="' + (product.productId || '') + '"' +
+                   ' data-commerce-sku-id="' + (product.variantId || '') + '"' +
+                   ' data-wf-product-id="' + (product.productId || '') + '"' +
+                   ' data-wf-variant-id="' + (product.variantId || '') + '"' +
+                   ' data-loading-text="' + t('Hinzufügen..') + '"' +
+                   ' class="w-commerce-commerceaddtocartform"' +
+                   ' action="javascript:void(0);" onsubmit="return false;">' +
+                '<div class="addtocart_container" style="background-color:' + btnColor + ';">' +
                   '<img src="/images/Large-Arrow-White-Selection.svg" loading="lazy" width="36" alt="" class="image-131">' +
-                  '<input type="submit" data-node-type="commerce-add-to-cart-button"' +
+                  '<input type="submit"' +
+                         ' data-node-type="commerce-add-to-cart-button"' +
                          ' data-loading-text="' + t('Hinzufügen..') + '"' +
                          ' aria-busy="false" aria-haspopup="dialog"' +
                          ' class="w-commerce-commerceaddtocartbutton add-to-cart-button-2"' +
                          ' value="' + t('Warenkorb') + '">' +
                 '</div>' +
               '</form>' +
-              '<div style="display:none" class="w-commerce-commerceaddtocartoutofstock" tabindex="0">' +
+              '<div style="display:none;" class="w-commerce-commerceaddtocartoutofstock" tabindex="0">' +
                 '<div>This product is out of stock.</div>' +
               '</div>' +
             '</div>' +

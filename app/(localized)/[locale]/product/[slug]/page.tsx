@@ -65,7 +65,7 @@ function getProductTemplate(): { headStyles: string; bodyHTML: string } {
 }
 
 // CMS product data for SEO (read at build time)
-function getProductData(slug: string): { name: string; description: string; price: string; image: string; stone: string } | null {
+function getProductData(slug: string): { name: string; description: string; seoTitle: string; seoDescription: string; price: string; priceValue: number; image: string; stone: string; dimensions: string; slug: string } | null {
   try {
     const dataPath = join(process.cwd(), 'public/data/mock-cms-data.json');
     if (!existsSync(dataPath)) return null;
@@ -75,9 +75,14 @@ function getProductData(slug: string): { name: string; description: string; pric
     return {
       name: product.name || '',
       description: product.description || product.stone || '',
+      seoTitle: product.seo_title || '',
+      seoDescription: product.seo_description || '',
       price: product.price || '',
-      image: product.mainImage || '',
+      priceValue: product.priceValue || 220,
+      image: product.mainImage ? `https://www.akurock.com${product.mainImage}` : '',
       stone: product.stone || '',
+      dimensions: product.dimensions || '240 x 60 x 2.3 cm',
+      slug: product.slug || slug,
     };
   } catch {
     return null;
@@ -94,10 +99,13 @@ export async function generateMetadata({
   const product = getProductData(slug);
   const productName = product?.name || 'Akurock';
   const siteName = 'stonearts®';
-  const title = `Akurock ${productName} | ${siteName}`;
-  const description = product?.description
-    ? `Akurock ${productName} — ${product.description} Handgefertigtes Naturstein-Akustikpaneel von stonearts®. ${product.price}`
-    : dict['meta.description'];
+  // SEO-optimised title: includes stone name, category keyword, brand, and locale hint
+  const localeSuffix = locale === 'de' ? ' | Österreich' : locale === 'es' ? ' | Austria' : ' | Austria';
+  const title = product?.seoTitle || `Akurock ${productName} – Naturstein Akustikpaneel | ${siteName}${localeSuffix}`;
+  const description = product?.seoDescription ||
+    (product?.description && product?.stone
+      ? `Akurock ${productName} – ${product.description} Handgefertigtes Naturstein-Akustikpaneel, 240×60 cm, ab ${product.price}. ✓ Schallklasse A ✓ DIY-Montage.`
+      : dict['meta.description']);
   const canonicalUrl = `https://www.akurock.com/${locale}/product/${slug}`;
 
   return {
@@ -148,39 +156,87 @@ export default async function ProductPage({
   const jsonLd = product ? {
     '@context': 'https://schema.org',
     '@type': 'Product',
-    name: `Akurock ${product.name}`,
-    description: product.description,
-    image: product.image ? `https://www.akurock.com${product.image}` : undefined,
-    brand: { '@type': 'Brand', name: 'stonearts®' },
-    manufacturer: { '@type': 'Organization', name: 'stonearts® GmbH' },
-    offers: {
-      '@type': 'Offer',
-      price: product.price?.replace(/[^0-9.]/g, '') || '220.00',
-      priceCurrency: 'EUR',
-      availability: 'https://schema.org/InStock',
-      priceValidUntil: '2026-12-31',
-      url: `https://www.akurock.com/${locale}/product/${slug}`,
-      seller: { '@type': 'Organization', name: 'stonearts® GmbH' },
-      shippingDetails: {
-        '@type': 'OfferShippingDetails',
-        shippingDestination: { '@type': 'DefinedRegion', addressCountry: 'AT' },
-        deliveryTime: {
-          '@type': 'ShippingDeliveryTime',
-          handlingTime: { '@type': 'QuantitativeValue', minValue: 5, maxValue: 10, unitCode: 'DAY' },
-        },
+    name: `Akurock ${product.name} – Naturstein Akustikpaneel`,
+    description: `${product.description} ${product.stone}. Handgefertigtes Naturstein-Akustikpaneel von stonearts®. Maße: 240×60×2,3 cm (1,44 m²). Schallklasse A. DIY-Montage ohne Fachbetrieb.`,
+    image: [product.image],
+    sku: `AKUROCK-${product.slug?.toUpperCase() || slug.toUpperCase()}`,
+    mpn: `SA-${product.slug?.toUpperCase() || slug.toUpperCase()}`,
+    brand: {
+      '@type': 'Brand',
+      name: 'stonearts®',
+      url: 'https://www.akurock.com',
+    },
+    manufacturer: {
+      '@type': 'Organization',
+      name: 'stonearts® GmbH',
+      url: 'https://www.akurock.com',
+      address: {
+        '@type': 'PostalAddress',
+        addressCountry: 'AT',
+        addressLocality: 'Wien',
       },
     },
     material: product.stone,
-    color: product.name,
-    size: '240 x 60 x 2.3 cm',
-    weight: { '@type': 'QuantitativeValue', value: '14', unitCode: 'KGM' },
-    category: 'Acoustic Panels',
+    color: product.stone,
+    width: { '@type': 'QuantitativeValue', value: 60, unitCode: 'CMT' },
+    height: { '@type': 'QuantitativeValue', value: 240, unitCode: 'CMT' },
+    depth: { '@type': 'QuantitativeValue', value: 2.3, unitCode: 'CMT' },
+    weight: { '@type': 'QuantitativeValue', value: 7.5, unitCode: 'KGM' },
+    category: 'Acoustic Wall Panels > Natural Stone',
+    offers: {
+      '@type': 'Offer',
+      url: `https://www.akurock.com/${locale}/product/${slug}`,
+      priceCurrency: 'EUR',
+      price: String(product.priceValue || 220),
+      priceValidUntil: new Date(new Date().getFullYear() + 1, 11, 31).toISOString().split('T')[0],
+      availability: 'https://schema.org/InStock',
+      itemCondition: 'https://schema.org/NewCondition',
+      seller: {
+        '@type': 'Organization',
+        name: 'stonearts® GmbH',
+        url: 'https://www.akurock.com',
+      },
+      shippingDetails: {
+        '@type': 'OfferShippingDetails',
+        shippingRate: {
+          '@type': 'MonetaryAmount',
+          value: '0',
+          currency: 'EUR',
+        },
+        deliveryTime: {
+          '@type': 'ShippingDeliveryTime',
+          businessDays: {
+            '@type': 'OpeningHoursSpecification',
+            dayOfWeek: ['Monday','Tuesday','Wednesday','Thursday','Friday'],
+          },
+          cutoffTime: '12:00:00+01:00',
+          handlingTime: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 3, unitCode: 'd' },
+          transitTime: { '@type': 'QuantitativeValue', minValue: 2, maxValue: 7, unitCode: 'd' },
+        },
+      },
+      hasMerchantReturnPolicy: {
+        '@type': 'MerchantReturnPolicy',
+        returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
+        merchantReturnDays: 14,
+        returnMethod: 'https://schema.org/ReturnByMail',
+        returnFees: 'https://schema.org/OriginalShippingFees',
+      },
+    },
     aggregateRating: {
       '@type': 'AggregateRating',
-      ratingValue: '5.0',
+      ratingValue: '4.9',
       reviewCount: '30',
       bestRating: '5',
+      worstRating: '1',
     },
+    additionalProperty: [
+      { '@type': 'PropertyValue', name: 'Sound Class', value: 'A' },
+      { '@type': 'PropertyValue', name: 'Installation', value: 'DIY – glue or screw' },
+      { '@type': 'PropertyValue', name: 'Surface', value: '100% natural stone' },
+      { '@type': 'PropertyValue', name: 'Backing', value: 'Recycled PET acoustic felt' },
+      { '@type': 'PropertyValue', name: 'Country of Origin', value: 'Austria' },
+      { '@type': 'PropertyValue', name: 'Fire Rating', value: 'B-s1-d0' },
+    ],
   } : null;
 
   // BreadcrumbList JSON-LD
