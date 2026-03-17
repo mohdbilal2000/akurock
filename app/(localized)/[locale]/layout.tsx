@@ -139,48 +139,109 @@ export default async function LocalizedLayout({
             __html: `!function(e,t){e[t]=new Proxy(e[t]||{},{get:(e,o)=>new Proxy(e[o]||function(){},{apply:(n,r,a)=>{const c=()=>e[o](...a);"complete"===document.readyState?c():document.addEventListener("readystatechange",(n=>{"complete"===n.target.readyState&&(e?.[o]?c():console.error(\`\${t}.\${o} is not a function. Did it load correctly from the CDN? If not, did you use the correct name.\`))}))}})})}(globalThis,"CodeCrumbs");`,
           }}
         />
+        {/* Organization + WebSite + BreadcrumbList JSON-LD */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "LocalBusiness",
-              "@id": "https://www.akurock.com",
-              name: "stonearts® GmbH",
-              description: "Handcrafted natural stone acoustic panels, slat walls & wall panels",
-              url: "https://www.akurock.com",
-              logo: "https://www.akurock.com/images/stonearts%C2%AE-logo-black-long.svg",
-              image: "https://www.akurock.com/images/stonearts-og-image.webp",
-              telephone: "+43 660 855 10 01",
-              email: "office@stonearts.at",
-              address: {
-                "@type": "PostalAddress",
-                streetAddress: "Spohrstraße 29/23/1",
-                addressLocality: "Wien",
-                addressRegion: "Wien",
-                postalCode: "1130",
-                addressCountry: "AT",
+            __html: JSON.stringify([
+              {
+                "@context": "https://schema.org",
+                "@type": ["Organization", "Brand"],
+                "@id": "https://www.akurock.com/#organization",
+                name: "stonearts® GmbH",
+                legalName: "stonearts® GmbH",
+                alternateName: ["stonearts", "Akurock", "AKUROCK"],
+                description: "Austrian manufacturer of handcrafted natural stone acoustic panels. Akurock panels feature 100% real stone surfaces, Sound Class A absorption, and DIY installation.",
+                url: "https://www.akurock.com",
+                logo: {
+                  "@type": "ImageObject",
+                  url: "https://www.akurock.com/images/stonearts%C2%AE-logo-black-long.svg",
+                  width: 300,
+                  height: 60,
+                },
+                image: {
+                  "@type": "ImageObject",
+                  url: "https://www.akurock.com/images/stonearts-og-image.webp",
+                  width: 1200,
+                  height: 630,
+                },
+                telephone: "+43 660 855 10 01",
+                email: "office@stonearts.at",
+                foundingDate: "2021",
+                foundingLocation: {
+                  "@type": "Place",
+                  address: {
+                    "@type": "PostalAddress",
+                    addressCountry: "AT",
+                    addressLocality: "Wien",
+                  },
+                },
+                address: {
+                  "@type": "PostalAddress",
+                  streetAddress: "Spohrstraße 29/23/1",
+                  addressLocality: "Wien",
+                  addressRegion: "Wien",
+                  postalCode: "1130",
+                  addressCountry: "AT",
+                },
+                geo: {
+                  "@type": "GeoCoordinates",
+                  latitude: 48.1765,
+                  longitude: 16.2845,
+                },
+                aggregateRating: {
+                  "@type": "AggregateRating",
+                  ratingValue: "4.9",
+                  reviewCount: "30",
+                  bestRating: "5",
+                  worstRating: "1",
+                },
+                sameAs: [
+                  "https://www.instagram.com/stonearts_official/",
+                  "https://www.youtube.com/channel/UCpdPxE-_gXMg9hG_p3hvrkw",
+                  "https://www.tiktok.com/@stonearts_official",
+                  "https://at.pinterest.com/17qo2x7ctqzuy3hlhny50ia1rfuphi/",
+                  "https://www.facebook.com/stoneartsglobal",
+                ],
+                knowsAbout: [
+                  "Acoustic panels",
+                  "Natural stone wall panels",
+                  "Sound absorption",
+                  "Interior design",
+                  "Sustainable building materials",
+                ],
+                hasOfferCatalog: {
+                  "@type": "OfferCatalog",
+                  name: "Akurock Natural Stone Acoustic Panels",
+                  itemListElement: [
+                    { "@type": "Offer", itemOffered: { "@type": "Product", name: "Akurock Brush" } },
+                    { "@type": "Offer", itemOffered: { "@type": "Product", name: "Akurock Whisper" } },
+                    { "@type": "Offer", itemOffered: { "@type": "Product", name: "Akurock Ligia" } },
+                    { "@type": "Offer", itemOffered: { "@type": "Product", name: "Akurock Gaia" } },
+                    { "@type": "Offer", itemOffered: { "@type": "Product", name: "Akurock Yami" } },
+                    { "@type": "Offer", itemOffered: { "@type": "Product", name: "Akurock Yuki" } },
+                  ],
+                },
               },
-              geo: {
-                "@type": "GeoCoordinates",
-                latitude: 48.1765,
-                longitude: 16.2845,
+              {
+                "@context": "https://schema.org",
+                "@type": "WebSite",
+                "@id": "https://www.akurock.com/#website",
+                url: "https://www.akurock.com",
+                name: "stonearts® Akurock",
+                description: "Akurock natural stone acoustic wall panels – handcrafted in Austria",
+                publisher: { "@id": "https://www.akurock.com/#organization" },
+                inLanguage: ["de-AT", "en", "es"],
+                potentialAction: {
+                  "@type": "SearchAction",
+                  target: {
+                    "@type": "EntryPoint",
+                    urlTemplate: "https://www.akurock.com/de/stein-selektion?q={search_term_string}",
+                  },
+                  "query-input": "required name=search_term_string",
+                },
               },
-              aggregateRating: {
-                "@type": "AggregateRating",
-                ratingValue: 5.0,
-                reviewCount: 30,
-                bestRating: 5,
-              },
-              sameAs: [
-                "https://www.instagram.com/stonearts_official/",
-                "https://www.youtube.com/@stonearts",
-                "https://www.tiktok.com/@stonearts",
-                "https://www.pinterest.com/stonearts/",
-                "https://www.facebook.com/stonearts/",
-              ],
-              priceRange: "€€",
-            }),
+            ]),
           }}
         />
         <script src="https://embedsocial.com/cdn/rsh2.js"></script>

@@ -8,7 +8,7 @@
       "slug": "brush",
       "handle": "brush",
       "type": "Physical",
-      "description": "Cremefarbener Sandsteinfelsen aus den sonnigen Landschaften Rajasthans.",
+      "description": "Cremefarbener Sandsteinfelsen aus den sonnigen Landschaften Rajasthans. Der Brush-Stein besticht durch seine warme, beige-goldene Oberfläche mit feiner Körnung – ideal für Wohnräume im Japandi- und Skandinavien-Stil.",
       "stone": "Cremefarbener Sandstein",
       "alt_text": "240 x 60 x 2.3 cm",
       "category": "AKUROCK Akustikpaneele",
@@ -69,7 +69,10 @@
       "requiresShipping": true,
       "createdOn": "Fri Jul 14 2023 09:11:56 GMT+0000",
       "updatedOn": "Thu Dec 04 2025 09:11:55 GMT+0000",
-      "publishedOn": "Thu Dec 04 2025 09:12:06 GMT+0000"
+      "publishedOn": "Thu Dec 04 2025 09:12:06 GMT+0000",
+      "seo_title": "Akurock Brush – Cremefarbener Sandstein Akustikpaneel | stonearts®",
+      "seo_description": "Akurock Brush – Naturstein-Akustikpaneel aus cremefarbenem Sandstein aus Rajasthan. 240×60 cm, Schallklasse A, DIY-Montage. Ab €220. Handgefertigt in Österreich.",
+      "alt_text_main": "Akurock Brush – Nahaufnahme cremefarbener Sandstein Akustikpaneel mit warmer Körnung"
     },
     {
       "id": "whisper",
@@ -79,7 +82,7 @@
       "slug": "whisper",
       "handle": "whisper",
       "type": "Physical",
-      "description": "Weißer Sandsteinfelsen vom Fuß des Aravalligebirges.",
+      "description": "Weißer Sandsteinfelsen vom Fuß des Aravalligebirges. Whisper vereint eine nahezu weiße, hauchzarte Steinoberfläche mit minimalistischem Charakter – perfekt für moderne und helle Interieurs.",
       "stone": "Weißer Sandstein",
       "alt_text": "240 x 60 x 2.3 cm",
       "category": "AKUROCK Akustikpaneele",
@@ -140,7 +143,10 @@
       "requiresShipping": true,
       "createdOn": "Fri Jul 14 2023 09:04:14 GMT+0000",
       "updatedOn": "Thu Jul 11 2024 10:50:51 GMT+0000",
-      "publishedOn": "Thu Jul 11 2024 10:52:12 GMT+0000"
+      "publishedOn": "Thu Jul 11 2024 10:52:12 GMT+0000",
+      "seo_title": "Akurock Whisper – Weißer Sandstein Akustikpaneel | stonearts®",
+      "seo_description": "Akurock Whisper – weißes Naturstein-Akustikpaneel aus Sandstein, Aravalli-Gebirge. 240×60 cm, Schallklasse A. Ab €220. Für helle, minimalistische Räume.",
+      "alt_text_main": "Akurock Whisper – weißes Sandstein Akustikpaneel an moderner Wohnzimmerwand"
     },
     {
       "id": "ligia",
@@ -150,7 +156,7 @@
       "slug": "ligia",
       "handle": "ligia",
       "type": "Physical",
-      "description": "Silbergrauer Glimmerschiefer aus einer der ältesten Gebirgsketten der Erde.",
+      "description": "Silbergrauer Glimmerschiefer aus einer der ältesten Gebirgsketten der Erde. Die metallisch schimmernden Glimmerpartikel verleihen Ligia einen einzigartigen, lebendigen Charakter unter wechselndem Licht.",
       "stone": "Silbergrauer Glimmerschiefer",
       "alt_text": "240 x 60 x 2.3 cm",
       "category": "AKUROCK Akustikpaneele",
@@ -211,7 +217,10 @@
       "requiresShipping": true,
       "createdOn": "Fri Jul 14 2023 09:17:32 GMT+0000",
       "updatedOn": "Wed Aug 07 2024 12:42:12 GMT+0000",
-      "publishedOn": "Wed Aug 07 2024 13:08:42 GMT+0000"
+      "publishedOn": "Wed Aug 07 2024 13:08:42 GMT+0000",
+      "seo_title": "Akurock Ligia – Silbergrauer Glimmerschiefer Akustikpaneel | stonearts®",
+      "seo_description": "Akurock Ligia – Naturstein-Akustikpaneel aus silbergrauem Glimmerschiefer. 240×60 cm, Schallklasse A. Ab €220. Metallischer Glanz für moderne Interieurs.",
+      "alt_text_main": "Akurock Ligia – silbergrauer Glimmerschiefer Akustikpaneel mit metallischem Glanz"
     },
     {
       "id": "gaia",
@@ -221,7 +230,7 @@
       "slug": "gaia",
       "handle": "gaia",
       "type": "Physical",
-      "description": "Roter Schieferstein gebildet aus Sedimenten urzeitlicher Meere.",
+      "description": "Roter Schieferstein, gebildet aus Sedimenten urzeitlicher Meere. Gaia trägt die lebhaften Rottöne und natürlichen Schichtungen von Jahrmillionen – ein starkes Statement in jedem Raum.",
       "stone": "Roter Schiefer",
       "alt_text": "240 x 60 x 2.3 cm",
       "category": "AKUROCK Akustikpaneele",
@@ -282,7 +291,10 @@
       "requiresShipping": true,
       "createdOn": "Fri Jul 14 2023 09:15:37 GMT+0000",
       "updatedOn": "Tue Jun 25 2024 19:25:35 GMT+0000",
-      "publishedOn": "Tue Jun 25 2024 19:26:46 GMT+0000"
+      "publishedOn": "Tue Jun 25 2024 19:26:46 GMT+0000",
+      "seo_title": "Akurock Gaia – Roter Schiefer Akustikpaneel | stonearts®",
+      "seo_description": "Akurock Gaia – Naturstein-Akustikpaneel aus rotem Schiefer, geformt durch urzeitliche Meere. 240×60 cm, Schallklasse A. Ab €220. Markanter Akzent für jede Wand.",
+      "alt_text_main": "Akurock Gaia – roter Schiefer Akustikpaneel mit natürlichen Schichtungslinien"
     },
     {
       "id": "yami",
@@ -292,7 +304,7 @@
       "slug": "yami",
       "handle": "yami",
       "type": "Physical",
-      "description": "Schwarzer Schieferstein aus den reichhaltigen Bergen Südindiens.",
+      "description": "Schwarzer Schieferstein aus den reichhaltigen Bergen Südindiens. Yamis tiefschwarz-anthrazitfarbene Oberfläche mit feiner Schieferstruktur verleiht jedem Raum Tiefe und Dramatik.",
       "stone": "Schwarzer Schiefer",
       "alt_text": "240 x 60 x 2.3 cm",
       "category": "AKUROCK Akustikpaneele",
@@ -353,7 +365,10 @@
       "requiresShipping": true,
       "createdOn": "Fri Jul 14 2023 09:14:18 GMT+0000",
       "updatedOn": "Wed Jul 03 2024 08:21:33 GMT+0000",
-      "publishedOn": "Wed Jul 03 2024 08:21:42 GMT+0000"
+      "publishedOn": "Wed Jul 03 2024 08:21:42 GMT+0000",
+      "seo_title": "Akurock Yami – Schwarzer Schiefer Akustikpaneel | stonearts®",
+      "seo_description": "Akurock Yami – Naturstein-Akustikpaneel aus schwarzem Schiefer, Südindien. 240×60 cm, Schallklasse A. Ab €220. Dramatische Wandgestaltung in Schwarz-Anthrazit.",
+      "alt_text_main": "Akurock Yami – schwarzer Schiefer Akustikpaneel mit tiefer Anthrazitstruktur"
     },
     {
       "id": "yuki",
@@ -363,7 +378,7 @@
       "slug": "yuki",
       "handle": "yuki",
       "type": "Physical",
-      "description": "Weißer Kristallmarmorstein aus den Hügellandschaften Udaipurs.",
+      "description": "Weißer Kristallmarmorstein aus den Hügellandschaften Udaipurs. Yukis strahlend weiße Marmoroberfläche mit zarten kristallinen Einschlüssen schafft eine luxuriöse, zeitlose Ästhetik.",
       "stone": "Weißer Kristallmarmor",
       "alt_text": "240 x 60 x 2.3 cm",
       "category": "AKUROCK Akustikpaneele",
@@ -424,7 +439,10 @@
       "requiresShipping": true,
       "createdOn": "Wed Jun 19 2024 11:53:29 GMT+0000",
       "updatedOn": "Tue Jun 25 2024 19:26:07 GMT+0000",
-      "publishedOn": "Tue Jun 25 2024 19:26:46 GMT+0000"
+      "publishedOn": "Tue Jun 25 2024 19:26:46 GMT+0000",
+      "seo_title": "Akurock Yuki – Weißer Kristallmarmor Akustikpaneel | stonearts®",
+      "seo_description": "Akurock Yuki – Naturstein-Akustikpaneel aus weißem Kristallmarmor, Udaipur. 240×60 cm, Schallklasse A. Ab €220. Luxuriöse weiße Marmoroberfläche für edle Räume.",
+      "alt_text_main": "Akurock Yuki – weißer Kristallmarmor Akustikpaneel mit zarten kristallinen Einschlüssen"
     },
     {
       "id": "brush-sample",

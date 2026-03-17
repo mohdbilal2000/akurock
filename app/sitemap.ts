@@ -3,26 +3,23 @@ import type { MetadataRoute } from 'next';
 const BASE_URL = 'https://www.akurock.com';
 const locales = ['de', 'en', 'es'] as const;
 
-// Canonical German slugs for all content pages
+// Indexable content pages only (no cart, legal, or utility pages)
 const CONTENT_PAGES = [
-  'akurock-muster',
-  'akustik',
-  'cart',
-  'allgemeine-geschaeftsbedingungen',
-  'blog-news',
-  'cookie-und-datschenschutzerklaerung',
-  'faq',
-  'galerie',
-  'impressum',
-  'installation-and-guide',
-  'kontaktier-uns',
-  'stein-selektion',
-  'stoneskin',
-  'uber-uns',
-  'verantwortung',
-  'visualizer',
-  'zahlung-und-versand',
-  'zubehoer',
+  'akurock-muster',      // priority: sample box — high commercial intent
+  'akustik',             // how acoustic panels work — educational, high AEO value
+  'faq',                 // FAQs — rich snippet eligible
+  'galerie',             // gallery — visual discovery
+  'installation-and-guide', // HowTo — rich snippet eligible
+  'kontaktier-uns',      // contact
+  'stein-selektion',     // stone selection — product discovery
+  'stoneskin',           // technology page — brand/AEO value
+  'uber-uns',            // about us — trust/E-E-A-T signal
+  'verantwortung',       // sustainability — E-E-A-T signal
+  'visualizer',          // visualizer tool
+  'zahlung-und-versand', // payment & shipping
+  'zubehoer',            // accessories
+  'blog-news',           // blog
+  // Excluded: cart, quotation, legal pages, privacy policy, impressum
 ];
 
 // Localized slug aliases (matches [...slug]/page.tsx CANONICAL_TO_LOCALIZED)
@@ -81,11 +78,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
   for (const slug of CONTENT_PAGES) {
     for (const locale of locales) {
       const localizedSlug = getLocalizedSlug(slug, locale);
+      // Priority by page type
+      const HIGH_PRIORITY = ['akurock-muster', 'akustik', 'faq', 'stein-selektion', 'installation-and-guide'];
+      const pagePriority = HIGH_PRIORITY.includes(slug) ? 0.8 : 0.6;
+      const pageFreq = slug === 'blog-news' ? 'weekly' : 'monthly';
       entries.push({
         url: `${BASE_URL}/${locale}/${localizedSlug}`,
         lastModified: new Date(),
-        changeFrequency: 'monthly',
-        priority: 0.7,
+        changeFrequency: pageFreq,
+        priority: pagePriority,
         alternates: buildAlternates(l => `/${l}/${getLocalizedSlug(slug, l)}`),
       });
     }
@@ -104,16 +105,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     }
   }
 
-  // Quotation page per locale
-  for (const locale of locales) {
-    entries.push({
-      url: `${BASE_URL}/${locale}/quotation`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.5,
-      alternates: buildAlternates(l => `/${l}/quotation`),
-    });
-  }
+  // Quotation/cart pages intentionally excluded from sitemap (noindex via robots.txt)
 
   return entries;
 }
