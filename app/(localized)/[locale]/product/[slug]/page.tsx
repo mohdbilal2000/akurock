@@ -96,7 +96,7 @@ export async function generateMetadata({
   const siteName = 'stonearts®';
   const title = `Akurock ${productName} | ${siteName}`;
   const description = product?.description
-    ? `${productName} - ${product.description}. ${product.price}`
+    ? `Akurock ${productName} — ${product.description} Handgefertigtes Naturstein-Akustikpaneel von stonearts®. ${product.price}`
     : dict['meta.description'];
   const canonicalUrl = `https://www.akurock.com/${locale}/product/${slug}`;
 
@@ -112,7 +112,7 @@ export async function generateMetadata({
     openGraph: {
       title,
       description,
-      type: 'website',
+      type: 'article',
       url: canonicalUrl,
       siteName,
       images: product?.image ? [{ url: product.image, width: 1200, height: 630, alt: productName }] : [],
@@ -150,16 +150,37 @@ export default async function ProductPage({
     '@type': 'Product',
     name: `Akurock ${product.name}`,
     description: product.description,
-    image: product.image,
+    image: product.image ? `https://www.akurock.com${product.image}` : undefined,
     brand: { '@type': 'Brand', name: 'stonearts®' },
+    manufacturer: { '@type': 'Organization', name: 'stonearts® GmbH' },
     offers: {
       '@type': 'Offer',
       price: product.price?.replace(/[^0-9.]/g, '') || '220.00',
       priceCurrency: 'EUR',
       availability: 'https://schema.org/InStock',
+      priceValidUntil: '2026-12-31',
       url: `https://www.akurock.com/${locale}/product/${slug}`,
+      seller: { '@type': 'Organization', name: 'stonearts® GmbH' },
+      shippingDetails: {
+        '@type': 'OfferShippingDetails',
+        shippingDestination: { '@type': 'DefinedRegion', addressCountry: 'AT' },
+        deliveryTime: {
+          '@type': 'ShippingDeliveryTime',
+          handlingTime: { '@type': 'QuantitativeValue', minValue: 5, maxValue: 10, unitCode: 'DAY' },
+        },
+      },
     },
     material: product.stone,
+    color: product.name,
+    size: '240 x 60 x 2.3 cm',
+    weight: { '@type': 'QuantitativeValue', value: '14', unitCode: 'KGM' },
+    category: 'Acoustic Panels',
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: '5.0',
+      reviewCount: '30',
+      bestRating: '5',
+    },
   } : null;
 
   // BreadcrumbList JSON-LD

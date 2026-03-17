@@ -295,12 +295,14 @@
       div.setAttribute('data-product-id', item.productId);
       div.setAttribute('data-variant-id', item.variantId);
 
-      // Format dimensions for display (e.g., "240x60cm")
-      let dimensionsDisplay = item.dimensions || '';
-      // Convert "240 x 60 x 2.3 cm" to "240x60cm"
-      dimensionsDisplay = dimensionsDisplay.replace(/ x \d+\.?\d* x \d+\.?\d* cm/g, '').replace(/ x /g, 'x').replace(/cm/g, 'cm').trim();
-      if (!dimensionsDisplay.includes('cm') && dimensionsDisplay) {
-        dimensionsDisplay += 'cm';
+      // Format dimensions for display (e.g., "240 x 60 cm")
+      let dimensionsDisplay = '';
+      if (item.dimensions && item.dimensions.includes('x')) {
+        // Extract first two dimensions: "240 x 60 x 2.3 cm (1.44m²)" -> "240 x 60 cm"
+        const parts = item.dimensions.split('x').map(s => s.trim());
+        if (parts.length >= 2) {
+          dimensionsDisplay = parts[0].trim() + ' x ' + parts[1].replace(/[^0-9.]/g, '').trim() + ' cm';
+        }
       }
 
       // Normalize image path
@@ -554,6 +556,13 @@
     // Attach event listeners for cart interactions
     attachEventListeners: function() {
       const self = this;
+
+      // Close cart on Escape key
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          self.closeCart();
+        }
+      });
 
       // Delegate events for dynamically created elements
       document.addEventListener('click', function(e) {

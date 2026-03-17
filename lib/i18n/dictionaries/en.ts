@@ -133,7 +133,7 @@ const en: Dictionary = {
   'footer.aboutUs': 'About Us',
   'footer.responsibility': 'Responsibility',
   'footer.weMoveMountains': 'we move mountains',
-  'footer.allRights': '© 2025 stonearts® all rights reserved',
+  'footer.allRights': '© 2026 stonearts® all rights reserved',
   'footer.terms': 'Terms',
   'footer.privacy': 'Privacy',
   'footer.imprint': 'Imprint',

@@ -131,7 +131,7 @@ const de = {
   'footer.aboutUs': 'Über uns',
   'footer.responsibility': 'Verantwortung',
   'footer.weMoveMountains': 'wir versetzen berge',
-  'footer.allRights': '© 2025 stonearts® all rights reserved',
+  'footer.allRights': '© 2026 stonearts® all rights reserved',
   'footer.terms': 'AGBs',
   'footer.privacy': 'Datenschutz',
   'footer.imprint': 'Impressum',
