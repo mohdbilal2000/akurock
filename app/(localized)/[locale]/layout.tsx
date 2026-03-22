@@ -26,9 +26,13 @@ export async function generateMetadata({
     metadataBase: new URL('https://www.akurock.com'),
     alternates: {
       canonical: canonicalUrl,
-      languages: Object.fromEntries(
-        locales.map(l => [l, `/${l}`])
-      ),
+      languages: {
+        ...Object.fromEntries(locales.map(l => [l, `/${l}`])),
+        'de-AT': '/de',
+        'de-DE': '/de',
+        'de-CH': '/de',
+        'x-default': `/${defaultLocale}`,
+      },
     },
     openGraph: {
       title: dict['meta.title'],
@@ -225,6 +229,42 @@ export default async function LocalizedLayout({
               },
               {
                 "@context": "https://schema.org",
+                "@type": "LocalBusiness",
+                "@id": "https://www.akurock.com/#localbusiness",
+                name: "stonearts® GmbH — Akurock Showroom",
+                image: "https://www.akurock.com/images/stonearts-og-image.webp",
+                url: "https://www.akurock.com",
+                telephone: "+43 660 855 10 01",
+                email: "office@stonearts.at",
+                priceRange: "€€",
+                address: {
+                  "@type": "PostalAddress",
+                  streetAddress: "Spohrstraße 29/23/1",
+                  addressLocality: "Wien",
+                  addressRegion: "Wien",
+                  postalCode: "1130",
+                  addressCountry: "AT",
+                },
+                geo: {
+                  "@type": "GeoCoordinates",
+                  latitude: 48.1765,
+                  longitude: 16.2845,
+                },
+                openingHoursSpecification: {
+                  "@type": "OpeningHoursSpecification",
+                  dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+                  opens: "09:00",
+                  closes: "17:00",
+                },
+                sameAs: [
+                  "https://www.instagram.com/stonearts_official/",
+                  "https://www.youtube.com/channel/UCpdPxE-_gXMg9hG_p3hvrkw",
+                  "https://www.tiktok.com/@stonearts_official",
+                  "https://www.facebook.com/stoneartsglobal",
+                ],
+              },
+              {
+                "@context": "https://schema.org",
                 "@type": "WebSite",
                 "@id": "https://www.akurock.com/#website",
                 url: "https://www.akurock.com",
@@ -242,6 +282,27 @@ export default async function LocalizedLayout({
                 },
               },
             ]),
+          }}
+        />
+        {/* SpeakableSpecification for voice search / AI assistants */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebPage",
+              speakable: {
+                "@type": "SpeakableSpecification",
+                cssSelector: [
+                  ".hero-description",
+                  ".product-description",
+                  ".faq-answer",
+                  ".heading-157",
+                  ".heading-158",
+                  ".pd-heading",
+                ],
+              },
+            }),
           }}
         />
         <script src="https://embedsocial.com/cdn/rsh2.js"></script>
@@ -272,9 +333,15 @@ export default async function LocalizedLayout({
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css" />
         <script async src="https://cdn.jsdelivr.net/npm/@finsweet/attributes-cmsload@1/cmsload.js"></script>
         {/* Hreflang tags for SEO - per-locale alternate links */}
-        {locales.map((l) => (
-          <link key={l} rel="alternate" hrefLang={l === 'de' ? 'de-AT' : l === 'en' ? 'en' : 'es'} href={`https://www.akurock.com/${l}`} />
-        ))}
+        {/* Base language tags */}
+        <link key="de" rel="alternate" hrefLang="de" href="https://www.akurock.com/de" />
+        <link key="en" rel="alternate" hrefLang="en" href="https://www.akurock.com/en" />
+        <link key="es" rel="alternate" hrefLang="es" href="https://www.akurock.com/es" />
+        {/* DACH region-specific variants */}
+        <link key="de-AT" rel="alternate" hrefLang="de-AT" href="https://www.akurock.com/de" />
+        <link key="de-DE" rel="alternate" hrefLang="de-DE" href="https://www.akurock.com/de" />
+        <link key="de-CH" rel="alternate" hrefLang="de-CH" href="https://www.akurock.com/de" />
+        {/* x-default fallback */}
         <link rel="alternate" hrefLang="x-default" href={`https://www.akurock.com/${defaultLocale}`} />
       </head>
       <body>
@@ -298,218 +365,8 @@ export default async function LocalizedLayout({
         <script src="/js/whatsapp-widget.js" type="text/javascript" defer></script>
         <script src="/js/social-share.js" type="text/javascript" defer></script>
         <script src="/js/newsletter-handler.js" type="text/javascript" defer></script>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-          (globalThis.CodeCrumbs = globalThis.CodeCrumbs || {}).QuantityButtons = function(options) {
-            const {
-              quantityGroupClass: groupClass = "q-group",
-              quantityIncrementButtonClass: incClass = "q-inc",
-              quantityDecrementButtonClass: decClass = "q-dec",
-              quantityNumberFieldClass: numFieldClass = "q-num",
-              disableDecrementAtOne: disableAtOne = true
-            } = options;
-            function updateDecrementButton(input, decButton) {
-              const disable = disableAtOne && parseInt(input.value, 10) <= 1;
-              decButton.toggleAttribute("disabled", disable);
-              decButton.classList.toggle("disabled", disable);
-            }
-            function init() {
-              document.querySelectorAll(\`.\${groupClass}\`).forEach(group => {
-                const input = group.querySelector(\`.\${numFieldClass}\`);
-                const decButton = group.querySelector(\`.\${decClass}\`);
-                if (input && decButton) {
-                  updateDecrementButton(input, decButton);
-                }
-              });
-            }
-            if (document.readyState !== "loading") {
-              init();
-            } else {
-              document.addEventListener("DOMContentLoaded", init);
-            }
-            document.addEventListener("click", function(event) {
-              let target = event.target;
-              while (target && target.nodeType === Node.ELEMENT_NODE && (!target.classList || (!target.classList.contains(incClass) && !target.classList.contains(decClass)))) {
-                target = target.parentNode;
-              }
-              if (target && target instanceof Element) {
-                const group = target.closest(\`.\${groupClass}\`);
-                const input = group.querySelector(\`.\${numFieldClass}\`);
-                const decButton = group.querySelector(\`.\${decClass}\`);
-                let value = parseInt(input.value, 10);
-                if (target.classList.contains(incClass)) {
-                  input.value = value + 1;
-                } else if (target.classList.contains(decClass)) {
-                  input.value = Math.max(value - 1, 1);
-                }
-                updateDecrementButton(input, decButton);
-                input.dispatchEvent(new Event('change', { bubbles: true }));
-              }
-            });
-            new MutationObserver((mutations) => {
-              mutations.forEach(mutation => {
-                if (mutation.type === "attributes" && mutation.attributeName === "value") {
-                  init();
-                }
-              });
-            }).observe(document, {
-              attributes: true,
-              subtree: true,
-              attributeFilter: ["value"]
-            });
-          };
-          document.addEventListener('DOMContentLoaded', function() {
-            window.CodeCrumbs.QuantityButtons({
-              quantityGroupClass: 'q-group',
-              quantityIncrementButtonClass: 'q-inc',
-              quantityDecrementButtonClass: 'q-dec',
-              quantityNumberFieldClass: 'q-num',
-              disableDecrementAtOne: true,
-            });
-          });
-        `,
-          }}
-        />
-        <script src="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.js" defer></script>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-          $(document).ready(function() {
-            $(".slider-main_component").each(function(index) {
-              let loopMode = false;
-              if ($(this).attr("loop-mode") === "true") {
-                loopMode = true;
-              }
-              let sliderDuration = 300;
-              if ($(this).attr("slider-duration") !== undefined) {
-                sliderDuration = +$(this).attr("slider-duration");
-              }
-              const swiper = new Swiper($(this).find(".swiper")[0], {
-                speed: sliderDuration,
-                loop: loopMode,
-                autoHeight: false,
-                centeredSlides: false,
-                followFinger: true,
-                freeMode: false,
-                slideToClickedSlide: false,
-                slidesPerView: 1.3,
-                spaceBetween: "4%",
-                rewind: false,
-                watchOverflow: true,
-                touchEventsTarget: 'container',
-                touchStartPreventDefault: false,
-                touchMoveStopPropagation: false,
-                simulateTouch: true,
-                allowTouchMove: true,
-                touchRatio: 1,
-                touchAngle: 45,
-                grabCursor: true,
-                mousewheel: {
-                  forceToAxis: true
-                },
-                keyboard: {
-                  enabled: false,
-                  onlyInViewport: false
-                },
-                breakpoints: {
-                  480: {
-                    slidesPerView: 1,
-                    spaceBetween: "3%"
-                  },
-                  768: {
-                    slidesPerView: 2,
-                    spaceBetween: "4%"
-                  },
-                  992: {
-                    slidesPerView: 3.2,
-                    spaceBetween: "1%"
-                  }
-                },
-                pagination: {
-                  el: $(this).find(".swiper-bullet-wrapper")[0],
-                  bulletActiveClass: "is-active",
-                  bulletClass: "swiper-bullet",
-                  bulletElement: "button",
-                  clickable: true
-                },
-                navigation: {
-                  nextEl: $(this).find(".swiper-next")[0],
-                  prevEl: $(this).find(".swiper-prev")[0],
-                  disabledClass: "is-disabled"
-                },
-                scrollbar: {
-                  el: $(this).find(".swiper-drag-wrapper")[0],
-                  draggable: true,
-                  dragClass: "swiper-drag",
-                  snapOnRelease: true
-                },
-                slideActiveClass: "is-active",
-                slideDuplicateActiveClass: "is-active"
-              });
-            });
-          });
-        `,
-          }}
-        />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-          $(document).ready(function() {
-            const accSettings = {
-              speed: 300,
-              oneOpen: true,
-              offsetAnchor: true,
-              offsetFromTop: 180,
-              scrollTopDelay: 400,
-              classes: {
-                accordion: 'js-accordion',
-                header: 'js-accordion-header',
-                item: 'js-accordion-item',
-                body: 'js-accordion-body',
-                icon: 'js-accordion-icon',
-                active: 'active',
-              }
-            };
-            const prefix = accSettings.classes;
-            const accordionElem = $(\`.\${prefix.accordion}\`);
-            const accordionHeader = accordionElem.find(\`.\${prefix.header}\`);
-            const accordionItem = $(\`.\${prefix.item}\`);
-            const accordionBody = $(\`.\${prefix.body}\`);
-            const accordionIcon = $(\`.\${prefix.icon}\`);
-            const activeClass = prefix.active;
-            const accordion = {
-              init: function(settings) {
-                $.extend(accSettings, settings);
-                accordionHeader.on('click', function() {
-                  accordion.toggle($(this));
-                  if (accSettings.offsetAnchor) {
-                    setTimeout(() => {
-                      $('html, body').animate({
-                        scrollTop: $(this).offset().top - accSettings.offsetFromTop
-                      }, accSettings.speed);
-                    }, accSettings.scrollTopDelay);
-                  }
-                });
-                if (accSettings.oneOpen && $(\`.\${prefix.item}.\${activeClass}\`).length > 1) {
-                  $(\`.\${prefix.item}.\${activeClass}:not(:first)\`).removeClass(activeClass).find(\`.\${prefix.header} > .\${prefix.icon}\`).removeClass(activeClass);
-                }
-                $(\`.\${prefix.item}.\${activeClass}\`).find(\`> .\${prefix.body}\`).show();
-              },
-              toggle: function($this) {
-                if (accSettings.oneOpen && $this[0] != $this.closest(accordionElem).find(\`> .\${prefix.item}.\${activeClass} > .\${prefix.header}\`)[0]) {
-                  $this.closest(accordionElem).find(\`> .\${prefix.item}\`).removeClass(activeClass).find(accordionBody).slideUp(accSettings.speed);
-                  $this.closest(accordionElem).find(\`> .\${prefix.item}\`).find(\`> .\${prefix.header} > .\${prefix.icon}\`).removeClass(activeClass);
-                }
-                $this.closest(accordionItem).toggleClass(\`\${activeClass}\`).find(\`> .\${prefix.header} > .\${prefix.icon}\`).toggleClass(activeClass);
-                $this.next().stop().slideToggle(accSettings.speed);
-              }
-            };
-            accordion.init(accSettings);
-          });
-        `,
-          }}
-        />
+        <script src="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.js"></script>
+        <script src="/js/inline-scripts.js" type="text/javascript"></script>
       </body>
     </html>
   );

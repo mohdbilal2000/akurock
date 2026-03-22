@@ -60,6 +60,31 @@ function buildAlternates(pathBuilder: (locale: string) => string) {
   };
 }
 
+// Static last-modified dates (update when content actually changes)
+const LAST_MODIFIED: Record<string, string> = {
+  _homepage: '2025-12-04',
+  'akurock-muster': '2025-07-11',
+  'akustik': '2025-06-25',
+  'faq': '2025-06-25',
+  'galerie': '2025-06-25',
+  'installation-and-guide': '2025-06-25',
+  'kontaktier-uns': '2025-06-25',
+  'stein-selektion': '2025-12-04',
+  'stoneskin': '2025-06-25',
+  'uber-uns': '2025-06-25',
+  'verantwortung': '2025-06-25',
+  'visualizer': '2025-06-25',
+  'zahlung-und-versand': '2025-06-25',
+  'zubehoer': '2025-07-11',
+  'blog-news': '2025-12-04',
+  _product: '2025-12-04',
+};
+
+function getLastModified(key: string): Date {
+  const dateStr = LAST_MODIFIED[key] || LAST_MODIFIED._homepage;
+  return new Date(dateStr);
+}
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const entries: MetadataRoute.Sitemap = [];
 
@@ -67,7 +92,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   for (const locale of locales) {
     entries.push({
       url: `${BASE_URL}/${locale}`,
-      lastModified: new Date(),
+      lastModified: getLastModified('_homepage'),
       changeFrequency: 'weekly',
       priority: 1.0,
       alternates: buildAlternates(l => `/${l}`),
@@ -84,7 +109,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       const pageFreq = slug === 'blog-news' ? 'weekly' : 'monthly';
       entries.push({
         url: `${BASE_URL}/${locale}/${localizedSlug}`,
-        lastModified: new Date(),
+        lastModified: getLastModified(slug),
         changeFrequency: pageFreq,
         priority: pagePriority,
         alternates: buildAlternates(l => `/${l}/${getLocalizedSlug(slug, l)}`),
@@ -97,7 +122,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     for (const locale of locales) {
       entries.push({
         url: `${BASE_URL}/${locale}/product/${slug}`,
-        lastModified: new Date(),
+        lastModified: getLastModified('_product'),
         changeFrequency: 'weekly',
         priority: 0.9,
         alternates: buildAlternates(l => `/${l}/product/${slug}`),

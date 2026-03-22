@@ -1,6 +1,6 @@
-import { redirect } from 'next/navigation';
+import { permanentRedirect } from 'next/navigation';
 
-// Root page redirects to default locale
+// Root page redirects to default locale (308 permanent)
 export default function RootPage() {
-  redirect('/de');
+  permanentRedirect('/de');
 }
