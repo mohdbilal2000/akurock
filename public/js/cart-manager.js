@@ -331,14 +331,14 @@
             </div>
             <div class="cart-item-controls">
               <div class="cart-quantity-controls">
-                <button type="button" class="q-dec cart-qty-btn" data-action="decrease" data-product-id="${item.productId}" data-variant-id="${item.variantId}" aria-label="Decrease quantity">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16">
+                <button type="button" class="q-dec cart-qty-btn" data-action="decrease" data-product-id="${item.productId}" data-variant-id="${item.variantId}" aria-label="Decrease quantity" style="min-width:44px;min-height:44px;width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18">
                     <path d="M19 13H5v-2h14v2z" fill="currentColor"></path>
                   </svg>
                 </button>
-                <input type="number" class="cart-quantity-input" value="${item.quantity}" min="1" data-product-id="${item.productId}" data-variant-id="${item.variantId}" aria-label="Quantity">
-                <button type="button" class="q-inc cart-qty-btn" data-action="increase" data-product-id="${item.productId}" data-variant-id="${item.variantId}" aria-label="Increase quantity">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16">
+                <input type="number" class="cart-quantity-input" value="${item.quantity}" min="1" data-product-id="${item.productId}" data-variant-id="${item.variantId}" aria-label="Quantity" style="font-size:16px;min-height:44px;">
+                <button type="button" class="q-inc cart-qty-btn" data-action="increase" data-product-id="${item.productId}" data-variant-id="${item.variantId}" aria-label="Increase quantity" style="min-width:44px;min-height:44px;width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18">
                     <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="currentColor"></path>
                   </svg>
                 </button>
@@ -425,6 +425,10 @@
         // Remove any inline style that might hide it first
         container.removeAttribute('style');
         
+        // Lock body scroll when cart is open
+        document.body.style.overflow = 'hidden';
+        document.documentElement.style.overflow = 'hidden';
+
         // Set ALL styles directly with !important
         container.style.cssText = `
           display: flex !important;
@@ -436,7 +440,7 @@
           bottom: 0 !important;
           width: 100% !important;
           height: 100vh !important;
-          z-index: 99999 !important;
+          z-index: 1001 !important;
           background-color: rgba(0, 0, 0, 0.5) !important;
           opacity: 1 !important;
           pointer-events: auto !important;
@@ -461,15 +465,17 @@
         
         if (cartBox) {
           // Set up the cart box with forced styles
+          var cartMaxWidth = window.innerWidth <= 479 ? '100%' : '480px';
           cartBox.style.cssText = `
             position: absolute !important;
             top: 0 !important;
             right: 0 !important;
             width: 100% !important;
-            max-width: 480px !important;
+            max-width: ${cartMaxWidth} !important;
             height: 100% !important;
             background-color: #fff !important;
             overflow-y: auto !important;
+            -webkit-overflow-scrolling: touch !important;
             box-shadow: -2px 0 8px rgba(0, 0, 0, 0.15) !important;
             transform: translateX(100%) !important;
             transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
@@ -518,6 +524,10 @@
     // Close cart sidebar — searches all possible selectors
     closeCart: function() {
       console.log('CartManager.closeCart: Starting...');
+
+      // Unlock body scroll
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
 
       // Collect all possible cart containers
       const selectors = [

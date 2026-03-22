@@ -2440,7 +2440,7 @@ blockquote {
 }
 
 .navbar-7 {
-  z-index: 99999999;
+  z-index: 1000;
   background-color: var(--background-stonearts®);
   font-family: Acumin Pro;
   position: fixed;
@@ -5229,6 +5229,7 @@ blockquote {
 }
 
 .nav-stonearts {
+  z-index: 1000;
   background-color: var(--background-stonearts®);
   position: fixed;
   inset: 0% 0% auto;
@@ -9767,7 +9768,7 @@ blockquote {
   }
 
   .menu-text-block {
-    font-size: .5rem;
+    font-size: .7rem;
   }
 
   .basic-grid-section.product {
@@ -10975,8 +10976,8 @@ blockquote {
 
   .nav-mobile-drop {
     background-color: var(--background-stonearts®);
-    flex-flow: row;
-    justify-content: center;
+    flex-flow: column;
+    justify-content: flex-start;
     align-items: center;
     width: 100%;
     height: 100vh;
@@ -10985,7 +10986,10 @@ blockquote {
     display: none;
     position: fixed;
     inset: 0%;
-    overflow: hidden;
+    z-index: 1002;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
   }
 
   .mobile-nav-container-90 {
@@ -12155,7 +12159,7 @@ blockquote {
   }
 
   .paragraph-107 {
-    font-size: .5rem;
+    font-size: .7rem;
   }
 
   .image-210 {
@@ -13337,11 +13341,15 @@ blockquote {
   .nav-mobile-drop {
     width: 100%;
     display: none;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
   }
 
   .menu-mobile-block {
     align-items: center;
     height: 55px;
+    min-height: 44px;
     margin-top: 0;
     margin-bottom: 0;
     padding-left: 5px;
@@ -14276,12 +14284,12 @@ blockquote {
 
 @media screen and (max-width: 479px) {
   a {
-    font-size: .9rem;
+    font-size: 1rem;
   }
 
   ul {
-    font-size: .9rem;
-    line-height: 1.3em;
+    font-size: 1rem;
+    line-height: 1.5em;
   }
 
   img {
@@ -14289,7 +14297,7 @@ blockquote {
   }
 
   strong {
-    font-size: .9rem;
+    font-size: 1rem;
   }
 
   .hero-section {
@@ -14311,7 +14319,7 @@ blockquote {
   .button-outline-black {
     width: 191px;
     margin-top: 15px;
-    font-size: .8rem;
+    font-size: .875rem;
   }
 
   .button-outline-black.taps.cell-2.mobile.is-datenblatt {
@@ -14865,8 +14873,8 @@ blockquote {
   }
 
   .footer-links {
-    font-size: .8rem;
-    line-height: 8px;
+    font-size: .875rem;
+    line-height: 1.4em;
   }
 
   .image-100 {
@@ -14901,8 +14909,8 @@ blockquote {
 
   .heading-149 {
     margin-top: 9px;
-    font-size: .5rem;
-    line-height: .5rem;
+    font-size: .75rem;
+    line-height: .9rem;
   }
 
   .social-media-icon_wrapper {
@@ -14962,8 +14970,8 @@ blockquote {
   }
 
   .footer-padding {
-    padding-left: 10px;
-    padding-right: 10px;
+    padding-left: 20px;
+    padding-right: 20px;
   }
 
   .image-101 {
@@ -14981,12 +14989,12 @@ blockquote {
     grid-row-gap: 1rem;
     grid-template-rows: auto auto auto auto;
     grid-template-columns: 1fr;
-    padding: 35px 10px 0;
+    padding: 35px 20px 0;
   }
 
   .checkbox-label {
-    font-size: .7rem;
-    line-height: .9rem;
+    font-size: .8rem;
+    line-height: 1.1rem;
   }
 
   .footer-main_container {
@@ -15010,15 +15018,15 @@ blockquote {
   }
 
   .heading-153.blog {
-    font-size: .6rem;
-    line-height: .8rem;
+    font-size: .75rem;
+    line-height: 1rem;
   }
 
   .heading-154.blog {
     font-family: acumin-pro;
-    font-size: .5rem;
+    font-size: .7rem;
     font-weight: 400;
-    line-height: .7rem;
+    line-height: .9rem;
   }
 
   .slider-main_image-2 {
@@ -15871,10 +15879,13 @@ blockquote {
 
   .nav-mobile-drop {
     flex-flow: column;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
     height: 100vh;
     display: none;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
   }
 
   .mobile-nav-container-90 {
@@ -15917,7 +15928,8 @@ blockquote {
   }
 
   .menu-mobile-block {
-    height: 39px;
+    height: 44px;
+    min-height: 44px;
     padding-left: 5px;
   }
 
@@ -16096,8 +16108,8 @@ blockquote {
   }
 
   .rich-text-block-6 {
-    font-size: .6rem;
-    line-height: .9rem;
+    font-size: .8rem;
+    line-height: 1.2rem;
   }
 
   .accordion-img_container {
@@ -16938,7 +16950,7 @@ blockquote {
   }
 
   .text-block-80 {
-    font-size: .6rem;
+    font-size: .75rem;
   }
 
   .text-block-81 {
@@ -17634,7 +17646,7 @@ blockquote {
   }
 
   .paragraph-107 {
-    font-size: .5rem;
+    font-size: .7rem;
   }
 
   .faq-wrapper, .image-210 {
@@ -18096,12 +18108,12 @@ blockquote {
   }
 
   .update-button {
-    height: 1rem;
-    font-size: .6rem;
+    height: 1.5rem;
+    font-size: .75rem;
   }
 
   .text-block-129, .text-block-130 {
-    font-size: .6rem;
+    font-size: .75rem;
   }
 
   .bg-video-main-2, .background_video_product {

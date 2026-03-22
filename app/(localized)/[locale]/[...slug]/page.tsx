@@ -329,6 +329,11 @@ export default async function ContentPage({
         { q: 'Woraus besteht das Akurock-Akustikpaneel?', a: '9 mm Akustikfilz aus recyceltem PET-Kunststoff + MDF-Lamellen mit echter Steinfurnieroberfläche. Holz aus nachhaltiger Forstwirtschaft.' },
         { q: 'Wie lange dauert die Lieferung?', a: 'Alle vorrätigen Produkte werden innerhalb von 5–10 Werktagen versandt. Du erhältst eine Versandbestätigung und Sendungsverfolgungsnummer per E-Mail.' },
         { q: 'Welche Schallklasse erreicht Akurock?', a: 'Akurock-Akustikpaneele erreichen Schallklasse A – die höchste Bewertung nach EN ISO 11654. Sie reduzieren Nachhall und Lärm messbar.' },
+        { q: 'Wie lange dauert die Lieferung der Akustikpaneele?', a: 'Standardlieferung innerhalb Österreichs dauert 5–10 Werktage. Für Deutschland und die Schweiz rechne mit 7–14 Werktagen. Du erhältst vorab eine Sendungsverfolgung per E-Mail.' },
+        { q: 'Kann ich die Akurock Paneele selbst montieren?', a: 'Absolut. Akurock ist als DIY-Produkt konzipiert. Du brauchst nur Wandkleber oder Schrauben und eine Wasserwaage. Eine Schritt-für-Schritt-Anleitung und ein Video-Tutorial liegen bei.' },
+        { q: 'Welche Schallschutzklasse erreichen die Paneele?', a: 'Akurock erreicht Schallabsorptionsklasse A nach EN ISO 11654 – die höchstmögliche Bewertung. Die 9 mm dicke Akustikfilzschicht aus recyceltem PET sorgt für eine Nachhallreduzierung von bis zu 70%.' },
+        { q: 'Sind die Naturstein-Paneele für Feuchträume geeignet?', a: 'Die Standardpaneele sind für trockene Innenräume konzipiert. Für Badezimmer oder Küchen empfehlen wir unseren Nano-Versiegeler als Zusatzschutz. Kontaktiere uns für eine individuelle Beratung.' },
+        { q: 'Wie pflege ich meine Akustikpaneele?', a: 'Akurock-Paneele sind sehr pflegeleicht. Einfach mit einem trockenen oder leicht feuchten Tuch abstauben. Keine aggressiven Reinigungsmittel verwenden – die Natursteinoberfläche bleibt so jahrelang schön.' },
       ],
       en: [
         { q: 'Is the surface really natural stone?', a: 'Yes. Every Akurock panel features a 100% genuine natural stone surface – no printing, no laminate. Each piece is unique, shaped by millions of years of geological history.' },
@@ -336,6 +341,11 @@ export default async function ContentPage({
         { q: 'What is the Akurock acoustic panel made of?', a: '9 mm acoustic felt made from recycled PET plastic + MDF slats with a genuine stone veneer surface. All timber is sourced from certified sustainable forestry.' },
         { q: 'How long does delivery take?', a: 'All in-stock products are dispatched within 5–10 business days. You will receive a shipping confirmation and tracking number by email.' },
         { q: 'What sound class does Akurock achieve?', a: 'Akurock acoustic panels achieve Sound Class A – the highest rating under EN ISO 11654. They measurably reduce reverberation and noise.' },
+        { q: 'How long does shipping of acoustic panels take?', a: 'Standard delivery within Austria takes 5–10 business days. For Germany and Switzerland, allow 7–14 business days. You will receive a tracking link by email before dispatch.' },
+        { q: 'Can I install Akurock panels myself?', a: 'Absolutely. Akurock is designed as a DIY product. All you need is wall adhesive or screws and a spirit level. A step-by-step guide and video tutorial are included with every order.' },
+        { q: 'What sound absorption class do the panels achieve?', a: 'Akurock achieves Sound Absorption Class A under EN ISO 11654 – the highest possible rating. The 9 mm recycled PET acoustic felt layer reduces reverberation by up to 70%.' },
+        { q: 'Are the natural stone panels suitable for wet rooms?', a: 'The standard panels are designed for dry interior spaces. For bathrooms or kitchens, we recommend our nano sealer as additional protection. Contact us for personalised advice.' },
+        { q: 'How do I care for my acoustic panels?', a: 'Akurock panels are very low-maintenance. Simply dust with a dry or slightly damp cloth. Avoid harsh cleaning agents – the natural stone surface will stay beautiful for years.' },
       ],
       es: [
         { q: '¿Es realmente una superficie de piedra natural?', a: 'Sí. Cada panel Akurock cuenta con una superficie de piedra natural 100% auténtica – sin impresión, sin laminado. Cada pieza es única, moldeada por millones de años de historia geológica.' },
@@ -343,6 +353,11 @@ export default async function ContentPage({
         { q: '¿De qué está hecho el panel acústico Akurock?', a: 'Fieltro acústico de 9 mm de PET reciclado + listones de MDF con superficie de chapa de piedra auténtica. Toda la madera proviene de silvicultura sostenible certificada.' },
         { q: '¿Cuánto tarda la entrega?', a: 'Todos los productos en stock se envían en 5–10 días hábiles. Recibirás una confirmación de envío y número de seguimiento por correo electrónico.' },
         { q: '¿Qué clase de sonido alcanza Akurock?', a: 'Los paneles acústicos Akurock alcanzan la Clase de Sonido A – la calificación más alta según EN ISO 11654. Reducen de forma medible la reverberación y el ruido.' },
+        { q: '¿Cuánto tarda el envío de los paneles acústicos?', a: 'La entrega estándar en Austria tarda 5–10 días hábiles. Para Alemania y Suiza, calcula 7–14 días hábiles. Recibirás un enlace de seguimiento por correo electrónico antes del envío.' },
+        { q: '¿Puedo instalar los paneles Akurock yo mismo?', a: 'Por supuesto. Akurock está diseñado como producto DIY. Solo necesitas adhesivo de pared o tornillos y un nivel de burbuja. Cada pedido incluye una guía paso a paso y un videotutorial.' },
+        { q: '¿Qué clase de absorción acústica alcanzan los paneles?', a: 'Akurock alcanza la Clase de Absorción Acústica A según EN ISO 11654 – la calificación más alta posible. La capa de fieltro acústico de PET reciclado de 9 mm reduce la reverberación hasta un 70%.' },
+        { q: '¿Son los paneles de piedra natural aptos para zonas húmedas?', a: 'Los paneles estándar están diseñados para interiores secos. Para baños o cocinas, recomendamos nuestro sellador nano como protección adicional. Contáctanos para asesoramiento personalizado.' },
+        { q: '¿Cómo cuido mis paneles acústicos?', a: 'Los paneles Akurock requieren muy poco mantenimiento. Simplemente limpia el polvo con un paño seco o ligeramente húmedo. Evita productos de limpieza agresivos – la superficie de piedra natural se mantendrá bella durante años.' },
       ],
     };
     const faqs = faqByLocale[locale] || faqByLocale.de;

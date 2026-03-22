@@ -26,9 +26,13 @@ export async function generateMetadata({
     metadataBase: new URL('https://www.akurock.com'),
     alternates: {
       canonical: canonicalUrl,
-      languages: Object.fromEntries(
-        locales.map(l => [l, `/${l}`])
-      ),
+      languages: {
+        ...Object.fromEntries(locales.map(l => [l, `/${l}`])),
+        'de-AT': '/de',
+        'de-DE': '/de',
+        'de-CH': '/de',
+        'x-default': `/${defaultLocale}`,
+      },
     },
     openGraph: {
       title: dict['meta.title'],
@@ -329,11 +333,15 @@ export default async function LocalizedLayout({
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css" />
         <script async src="https://cdn.jsdelivr.net/npm/@finsweet/attributes-cmsload@1/cmsload.js"></script>
         {/* Hreflang tags for SEO - per-locale alternate links */}
-        {locales.map((l) => (
-          <link key={l} rel="alternate" hrefLang={l === 'de' ? 'de-AT' : l === 'en' ? 'en' : 'es'} href={`https://www.akurock.com/${l}`} />
-        ))}
+        {/* Base language tags */}
+        <link key="de" rel="alternate" hrefLang="de" href="https://www.akurock.com/de" />
+        <link key="en" rel="alternate" hrefLang="en" href="https://www.akurock.com/en" />
+        <link key="es" rel="alternate" hrefLang="es" href="https://www.akurock.com/es" />
+        {/* DACH region-specific variants */}
+        <link key="de-AT" rel="alternate" hrefLang="de-AT" href="https://www.akurock.com/de" />
         <link key="de-DE" rel="alternate" hrefLang="de-DE" href="https://www.akurock.com/de" />
         <link key="de-CH" rel="alternate" hrefLang="de-CH" href="https://www.akurock.com/de" />
+        {/* x-default fallback */}
         <link rel="alternate" hrefLang="x-default" href={`https://www.akurock.com/${defaultLocale}`} />
       </head>
       <body>
