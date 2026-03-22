@@ -3289,7 +3289,9 @@
           populateAccessoriesPage();
           // Initialize cart integration IMMEDIATELY
           initCartIntegration();
-        } else if (pathname === '/' || filename === 'index.html' || filename === '' || filename.includes('index')) {
+        } else if (pathname === '/' || filename === 'index.html' || filename === '' || filename.includes('index') ||
+                   /^\/(de|en|es)\/?$/.test(pathname) ||
+                   document.querySelector('.slider-main_component')) {
           console.log('populate-cms.js: Detected homepage');
           populateHomePageSlider();
           populateMarketingContent();

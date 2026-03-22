@@ -264,12 +264,32 @@
     }
   }
 
-  // Run after DOM is ready
+  // Run after DOM is ready AND jQuery is available
+  function waitForJQueryAndInit() {
+    if (typeof jQuery !== 'undefined' || typeof $ !== 'undefined') {
+      initAll();
+    } else {
+      // jQuery not ready yet — poll until available (max 5s)
+      var jqAttempts = 0;
+      var jqCheck = setInterval(function () {
+        jqAttempts++;
+        if (typeof jQuery !== 'undefined' || typeof $ !== 'undefined') {
+          clearInterval(jqCheck);
+          initAll();
+        } else if (jqAttempts > 50) {
+          clearInterval(jqCheck);
+          // Initialize what we can without jQuery (QuantityButtons)
+          initQuantityButtons();
+        }
+      }, 100);
+    }
+  }
+
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initAll);
+    document.addEventListener('DOMContentLoaded', waitForJQueryAndInit);
   } else {
     // DOM already loaded, but wait a tick for other scripts
-    setTimeout(initAll, 100);
+    setTimeout(waitForJQueryAndInit, 100);
   }
 
   // Also re-initialize after CMS data updates (populate-cms.js triggers this)

@@ -329,7 +329,7 @@ export default async function LocalizedLayout({
             />
           </>
         )}
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js" defer></script>
+        {/* jQuery is loaded as blocking script in body via Webflow CDN (line 355) — do not duplicate here */}
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css" />
         <script async src="https://cdn.jsdelivr.net/npm/@finsweet/attributes-cmsload@1/cmsload.js"></script>
         {/* Hreflang tags for SEO - per-locale alternate links */}
