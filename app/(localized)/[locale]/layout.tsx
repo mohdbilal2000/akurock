@@ -4,6 +4,7 @@ import { getDictionary } from "@/lib/i18n/get-dictionary";
 import "../../../styles/normalize.css";
 import "../../../styles/webflow.css";
 import "../../../styles/stonearts-r-webshop.webflow.css";
+import "../../../styles/nextjs-overrides.css";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));

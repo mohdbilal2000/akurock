@@ -241,11 +241,51 @@
   }
 
   // ==========================================
+  // 4. MOBILE NAV TOGGLE
+  // ==========================================
+  function initMobileNav() {
+    var menuButton = document.querySelector('.menu-button');
+    var navDrop = document.querySelector('.nav-mobile-drop');
+
+    if (!menuButton || !navDrop) return;
+    if (menuButton.dataset.navInit) return;
+    menuButton.dataset.navInit = 'true';
+
+    function openMenu() {
+      navDrop.style.display = 'flex';
+      menuButton.classList.add('is-open');
+      document.body.classList.add('nav-open');
+    }
+
+    function closeMenu() {
+      navDrop.style.display = 'none';
+      menuButton.classList.remove('is-open');
+      document.body.classList.remove('nav-open');
+    }
+
+    menuButton.addEventListener('click', function () {
+      if (menuButton.classList.contains('is-open')) {
+        closeMenu();
+      } else {
+        openMenu();
+      }
+    });
+
+    // Close when tapping any link inside the mobile menu
+    navDrop.addEventListener('click', function (e) {
+      if (e.target.tagName === 'A' || e.target.closest('a')) {
+        setTimeout(closeMenu, 100);
+      }
+    });
+  }
+
+  // ==========================================
   // INITIALIZATION
   // ==========================================
   function initAll() {
     initQuantityButtons();
     initAccordion();
+    initMobileNav();
     // Swiper may need a slight delay for DOM readiness
     if (typeof Swiper !== 'undefined') {
       initSwipers();

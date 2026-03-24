@@ -1,0 +1,152 @@
+/**
+ * Next.js Mobile / Responsive Overrides for stonearts® Webflow Migration
+ *
+ * Applied AFTER Webflow CSS files to patch specific responsive issues that
+ * the Webflow export misses or that are broken in the Next.js context.
+ */
+
+/* ============================================================
+   GLOBAL: Prevent horizontal overflow
+   ============================================================ */
+html,
+body {
+  overflow-x: hidden;
+}
+
+/* ============================================================
+   MOBILE NAV — hamburger button UX
+   ============================================================ */
+.menu-button {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+/* Body scroll-lock when mobile menu is open */
+body.nav-open {
+  overflow: hidden;
+  height: 100%;
+  position: fixed;
+  width: 100%;
+}
+
+/* ============================================================
+   PRODUCT SELECTION GRID — responsive columns
+   Webflow export keeps these as a 2-column grid with fixed
+   height even on mobile. Force single-column below 768px.
+   ============================================================ */
+@media screen and (max-width: 767px) {
+  /* Override the 2-column grid to 1 column */
+  #w-node-_8a56b42d-4538-38c1-32b4-2089e2f8a556-e2f8a554 {
+    grid-template-rows: auto;
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+
+  /* Reset first tile from 2-row span to 1-row */
+  #w-node-_8a56b42d-4538-38c1-32b4-2089e2f8a557-e2f8a554 {
+    grid-area: span 1 / span 1 / span 1 / span 1;
+  }
+
+  /* Remove fixed 53rem height on the product layout */
+  .quick-stack-4 {
+    height: auto;
+  }
+
+  /* Minimum height for selection tile images */
+  .selection-tile_img-wrapper {
+    min-height: 260px;
+  }
+}
+
+@media screen and (max-width: 479px) {
+  .selection-tile_img-wrapper {
+    min-height: 220px;
+  }
+}
+
+/* ============================================================
+   SWIPER SLIDER — mobile overflow & touch
+   ============================================================ */
+
+/* Ensure the overflow container allows partial slide visibility */
+.slider-main_overflow {
+  overflow: visible;
+}
+
+/* Swiper containers: allow overflow for partial next-slide preview */
+.swiper.nocollection,
+.swiper.is-slider-main {
+  overflow: visible;
+}
+
+/* Page-level clip so overflow doesn't scroll the whole page */
+.page_wrap {
+  overflow: clip;
+}
+
+/* On mobile the arrows can overlap; keep them above slides */
+.slider-main_arrow {
+  z-index: 10;
+}
+
+/* ============================================================
+   SWIPER SCROLLBAR — full width on mobile
+   ============================================================ */
+@media screen and (max-width: 479px) {
+  .swiper-drag-wrapper.is-slider-main {
+    width: 100%;
+  }
+}
+
+/* ============================================================
+   FOOTER — mobile padding/layout tweaks
+   ============================================================ */
+@media screen and (max-width: 479px) {
+  .footer-main-grid {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  /* Stack footer grid to single column (Webflow CSS already does
+     4 rows × 1fr, but reinforce here in case of specificity clash) */
+  .footer-grid-main_container {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================================
+   CART DRAWER — full width on very small screens
+   ============================================================ */
+@media screen and (max-width: 479px) {
+  .w-commerce-commercecartcontainer {
+    max-width: 100%;
+    width: 100%;
+  }
+}
+
+/* ============================================================
+   NAVIGATION — ensure desktop nav hidden on mobile
+   ============================================================ */
+@media screen and (max-width: 991px) {
+  .desktop-nav {
+    display: none !important;
+  }
+
+  .mobile-nav {
+    display: flex !important;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+@media screen and (min-width: 992px) {
+  .mobile-nav {
+    display: none !important;
+  }
+
+  .desktop-nav {
+    display: flex;
+  }
+}

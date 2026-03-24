@@ -3289,11 +3289,15 @@
           populateAccessoriesPage();
           // Initialize cart integration IMMEDIATELY
           initCartIntegration();
-        } else if (pathname === '/' || filename === 'index.html' || filename === '' || filename.includes('index')) {
+        } else if (pathname === '/' || pathname === '/de' || pathname === '/en' || pathname === '/es' || pathname.match(/^\/(de|en|es)\/?$/) || filename === 'index.html' || filename === '' || filename.includes('index')) {
           console.log('populate-cms.js: Detected homepage');
           populateHomePageSlider();
           populateMarketingContent();
           populateHomepageProductGrid();
+          // Notify other scripts (e.g. inline-scripts.js Swiper re-init) that CMS data is ready
+          setTimeout(function() {
+            document.dispatchEvent(new CustomEvent('cmsDataUpdated', { detail: { page: 'homepage' } }));
+          }, 200);
           // Initialize cart integration IMMEDIATELY
           initCartIntegration();
         } else if (filename.includes('akurock-muster') || pathname.includes('akurock-muster') ||
