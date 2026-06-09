@@ -125,7 +125,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                       </div>
                     </div>
                     <div class="footer-mega-menu">
-                      <div class="text-block-56">Let´s move mountains.</div>
+                      <div class="text-block-56">Let's move mountains.</div>
                     </div>
                   </div>
                 </nav>
@@ -247,7 +247,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                       </div>
                     </div>
                     <div class="footer-mega-menu">
-                      <div class="text-block-56">Let´s move mountains.</div>
+                      <div class="text-block-56">Let's move mountains.</div>
                     </div>
                   </div>
                 </nav>
