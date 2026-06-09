@@ -1763,14 +1763,17 @@
       setupFormImmediately(form, productId, variantId);
     });
 
-    // Ensure accessories section is visible
-    if (accessoriesList) {
-      const accessoriesSection = accessoriesList.closest('section, .section, [class*="section"]');
+    // Ensure accessories section is visible (mobile + desktop lists)
+    // NOTE: previously referenced an undefined `accessoriesList`, which threw a
+    // ReferenceError and aborted the rest of product-page population.
+    [accessoriesListMobile, accessoriesListDesktop].forEach(function (list) {
+      if (!list) return;
+      const accessoriesSection = list.closest('section, .section, [class*="section"]');
       if (accessoriesSection) {
         accessoriesSection.style.display = '';
       }
       // Also check parent containers
-      let parent = accessoriesList.parentElement;
+      let parent = list.parentElement;
       let depth = 0;
       while (parent && depth < 5) {
         if (parent.style && parent.style.display === 'none') {
@@ -1779,7 +1782,7 @@
         parent = parent.parentElement;
         depth++;
       }
-    }
+    });
 
     // Ensure main product section is visible
     // NOTE: We're NOT hiding any sections automatically - only the ones already marked with inline styles
