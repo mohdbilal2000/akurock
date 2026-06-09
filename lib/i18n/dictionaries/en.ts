@@ -311,6 +311,8 @@ const en: Dictionary = {
   'content.contact.goToFaqs': 'Go to FAQs',
 
   // SAMPLE BOX PAGE
+  'samples.pageHeading': 'Sample Box – Natural Stone Acoustic Panels to Touch & Feel',
+  'samples.pageIntro': 'Choose your natural stone samples and experience the quality of our acoustic panels right on your wall.',
   'samples.heading': 'Sample Box',
   'samples.subheading': 'Choose your stone – and try it directly on your wall.',
   'samples.getCollection': 'Get the complete collection and test all stones on your wall.',

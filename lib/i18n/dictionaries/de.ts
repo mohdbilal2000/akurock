@@ -309,6 +309,8 @@ const de = {
   'content.contact.goToFaqs': 'Zu den FAQs',
 
   // SAMPLE BOX PAGE
+  'samples.pageHeading': 'Musterbox – Naturstein-Akustikpaneele zum Anfassen',
+  'samples.pageIntro': 'Wähle deine Naturstein-Muster und erlebe die Qualität unserer Akustikpaneele direkt an deiner Wand.',
   'samples.heading': 'Musterbox',
   'samples.subheading': 'Wähle deinen Stein – und probiere ihn direkt an deiner Wand aus.',
   'samples.getCollection': 'Hol dir die komplette Kollektion und teste alle Steine an deiner Wand.',

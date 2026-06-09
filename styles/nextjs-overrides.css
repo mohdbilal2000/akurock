@@ -32,6 +32,17 @@ body.nav-open {
 }
 
 /* ============================================================
+   SAMPLE-BOX HEADING — prevent horizontal overflow
+   The long page heading could overflow its container on narrow viewports.
+   Allow it to wrap/hyphenate so it never pushes the layout sideways.
+   ============================================================ */
+.heading-230.is-musterbox {
+  overflow-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
+}
+
+/* ============================================================
    PRODUCT SELECTION GRID — responsive columns
    Webflow export keeps these as a 2-column grid with fixed
    height even on mobile. Force single-column below 768px.
@@ -152,22 +163,28 @@ body.nav-open {
 }
 
 /* ============================================================
-   MOBILE NAV — guaranteed hamburger icon (fallback)
-   The menu icon is a Lottie animation rendered by Webflow's IX2 engine.
-   If that fails to load/render (CDN issue, script error, etc.), the button
-   would be blank and the menu unreachable. This draws a plain CSS hamburger
-   whenever the Lottie hasn't injected its SVG (:empty). Once the Lottie
-   renders, :empty no longer matches and this fallback disappears — so the
-   menu button is NEVER blank.
+   MOBILE NAV — deterministic CSS hamburger (replaces Lottie icon)
+   The menu icon was a Lottie animation rendered by Webflow's IX2 engine. That
+   proved unreliable: when IX2 fails to seek the SVG to frame 0, lottie-svg
+   paints EVERY keyframe at once → 2–3 hamburger/X shapes stacked on top of each
+   other (the "stacked hamburgers" bug). It can also render blank. Rather than
+   depend on that animation at all, we HIDE whatever the Lottie injected and draw
+   one clean, single hamburger ourselves. Fully deterministic — never stacked,
+   never blank — and it animates to an X when the menu is open.
    ============================================================ */
-.menu-button [data-animation-type="lottie"]:empty {
+.menu-button [data-animation-type="lottie"] {
   display: block;
   position: relative;
   width: 26px;
   height: 20px;
+  overflow: hidden;
 }
-.menu-button [data-animation-type="lottie"]:empty::before,
-.menu-button [data-animation-type="lottie"]:empty::after {
+/* Hide the Lottie-rendered SVG (it's the source of the stacked frames). */
+.menu-button [data-animation-type="lottie"] > * {
+  display: none !important;
+}
+.menu-button [data-animation-type="lottie"]::before,
+.menu-button [data-animation-type="lottie"]::after {
   content: "";
   position: absolute;
   left: 0;
@@ -175,13 +192,24 @@ body.nav-open {
   height: 2px;
   border-radius: 2px;
   background: #0d0d0d;
+  transition: transform 0.25s ease, top 0.25s ease, box-shadow 0.15s ease;
 }
-.menu-button [data-animation-type="lottie"]:empty::before {
+.menu-button [data-animation-type="lottie"]::before {
   top: 3px;
   box-shadow: 0 7px 0 #0d0d0d; /* middle bar */
 }
-.menu-button [data-animation-type="lottie"]:empty::after {
+.menu-button [data-animation-type="lottie"]::after {
   top: 17px; /* bottom bar */
+}
+/* Open state → morph the 3 bars into a clean X. */
+.menu-button.is-open [data-animation-type="lottie"]::before {
+  top: 9px;
+  box-shadow: none;
+  transform: rotate(45deg);
+}
+.menu-button.is-open [data-animation-type="lottie"]::after {
+  top: 9px;
+  transform: rotate(-45deg);
 }
 
 /* ============================================================

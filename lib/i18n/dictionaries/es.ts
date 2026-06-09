@@ -311,6 +311,8 @@ const es: Dictionary = {
   'content.contact.goToFaqs': 'Consulta las preguntas frecuentes',
 
   // SAMPLE BOX PAGE
+  'samples.pageHeading': 'Caja de muestras – Paneles acústicos de piedra natural para tocar',
+  'samples.pageIntro': 'Elige tus muestras de piedra natural y descubre la calidad de nuestros paneles acústicos directamente en tu pared.',
   'samples.heading': 'Caja de Muestras',
   'samples.subheading': 'Elige tus muestras y pruébalas en tu pared.',
   'samples.getCollection': 'Obtén la colección completa y pruébalas todas en tu pared.',

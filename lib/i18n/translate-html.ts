@@ -4,6 +4,13 @@ import type { TranslationKey } from './dictionaries/de';
 
 // Pairs of [germanText, dictionaryKey] sorted longest-first to prevent partial matches
 const HTML_REPLACEMENTS: [string, TranslationKey][] = [
+  // ========== SAMPLE-BOX PAGE HEADING + INTRO ==========
+  // Must run before the standalone 'Musterbox'/'Naturstein' fragments below,
+  // otherwise the heading half-translates (e.g. "Sample Box – Natural
+  // Stone-Akustikpaneele zum Anfassen"). Full-phrase entries fix that.
+  ['Musterbox – Naturstein-Akustikpaneele zum Anfassen', 'samples.pageHeading'],
+  ['Wähle deine Naturstein-Muster und erlebe die Qualität unserer Akustikpaneele direkt an deiner Wand.', 'samples.pageIntro'],
+
   // ========== VERY LONG STRINGS (100+ chars) ==========
   ['Bereit, deinen Raum in ein Meisterwerk zu verwandeln? Teile deine Vision mit uns und lasse uns diese gemeinsam verwirklichen!', 'mega.readyToTransform'],
   ['Ja, ich m\u00f6chte den Newsletter von stonearts\u00ae erhalten, und ich akzeptiere die Bedingungen der', 'footer.newsletterConsent'],
