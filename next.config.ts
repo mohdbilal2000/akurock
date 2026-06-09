@@ -13,6 +13,18 @@ const nextConfig: NextConfig = {
     unoptimized: true,
   },
 
+  // These routes read HTML/JSON from /public at runtime via readFileSync. On a
+  // serverless host (Vercel) those files aren't bundled into the function by
+  // default, which would 500 the pages. Trace them into the function bundles.
+  outputFileTracingIncludes: {
+    '/[locale]/[...slug]': ['./public/html/**/*'],
+    '/[locale]/product/[slug]': [
+      './public/detail_product_template.html',
+      './public/data/mock-cms-data.json',
+    ],
+    '/api/data/mock-cms-data': ['./public/data/mock-cms-data.json'],
+  },
+
   async redirects() {
     return [
       {
