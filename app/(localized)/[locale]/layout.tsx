@@ -170,8 +170,8 @@ export default async function LocalizedLayout({
                   width: 1200,
                   height: 630,
                 },
-                telephone: "+43 660 855 10 01",
-                email: "office@stonearts.at",
+                telephone: "+91 90575 97719",
+                email: "aasatali@gmail.com",
                 foundingDate: "2021",
                 foundingLocation: {
                   "@type": "Place",
@@ -235,8 +235,8 @@ export default async function LocalizedLayout({
                 name: "stonearts® GmbH — Akurock Showroom",
                 image: "https://www.akurock.com/images/stonearts-og-image.webp",
                 url: "https://www.akurock.com",
-                telephone: "+43 660 855 10 01",
-                email: "office@stonearts.at",
+                telephone: "+91 90575 97719",
+                email: "aasatali@gmail.com",
                 priceRange: "€€",
                 address: {
                   "@type": "PostalAddress",
