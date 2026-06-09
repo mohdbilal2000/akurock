@@ -199,3 +199,27 @@ body.nav-open {
   transform: rotate(45deg);
   transition: transform 0.2s ease;
 }
+
+/* ============================================================
+   MOBILE MENU OVERLAY — force a reliable full-screen, tappable panel.
+   The Webflow height:100vh wasn't applying consistently, leaving the open
+   drop at height 0 so its items fell behind the hero and weren't tappable.
+   When mobile-nav.js opens the menu it adds body.nav-open; pin the panel to a
+   full-screen overlay above all page content and make it scrollable.
+   ============================================================ */
+body.nav-open .nav-mobile-drop {
+  display: flex !important;
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  z-index: 100000 !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+}
+/* keep the top bar (logo + hamburger to close) tappable above the overlay */
+body.nav-open .nav-top-bar {
+  position: relative;
+  z-index: 100001 !important;
+}
