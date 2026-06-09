@@ -284,8 +284,8 @@
   // ==========================================
   function initAll() {
     initQuantityButtons();
-    initAccordion();
-    initMobileNav();
+    // initAccordion + initMobileNav are now handled by /js/mobile-nav.js
+    // (self-contained vanilla controller) for reliability — see that file.
     // Swiper may need a slight delay for DOM readiness
     if (typeof Swiper !== 'undefined') {
       initSwipers();
@@ -316,7 +316,7 @@
   document.addEventListener('cmsDataUpdated', function () {
     setTimeout(function () {
       initSwipers();
-      initAccordion();
+      // accordion handled by /js/mobile-nav.js (delegated, no re-init needed)
     }, 300);
   });
 
