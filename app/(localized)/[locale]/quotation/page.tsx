@@ -117,7 +117,14 @@ export default function QuotationPage() {
   };
 
   return (
-    <div className="quotation-page" style={{ minHeight: '100vh', backgroundColor: '#f5f5f5', padding: '40px 20px' }}>
+    <div className="quotation-page" style={{ minHeight: '100vh', backgroundColor: '#f5f5f5' }}>
+      {/* Branded header — gives the quotation page site navigation (logo links home) */}
+      <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', backgroundColor: '#faf8f7', borderBottom: '1px solid #ececec', position: 'sticky', top: 0, zIndex: 100 }}>
+        <a href={`/${locale}`} aria-label="stonearts® Akurock — Home" style={{ display: 'inline-flex', alignItems: 'center' }}>
+          <img src="/images/stonearts-logo-black-long.svg" alt="stonearts® Akurock" style={{ height: '26px', width: 'auto' }} />
+        </a>
+        <a href={`/${locale}`} style={{ color: '#0d0d0d', textDecoration: 'none', fontSize: '14px', fontWeight: 500 }}>← {t['nav.shop'] || 'Shop'}</a>
+      </header>
       <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? '24px' : '40px', padding: isMobile ? '20px' : '40px 20px' }}>
         <div>
           <h1 style={{ fontSize: '32px', fontWeight: 600, marginBottom: '8px', color: '#0d0d0d' }}>{t['quotation.title']}</h1>

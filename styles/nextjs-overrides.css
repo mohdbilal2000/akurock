@@ -150,3 +150,36 @@ body.nav-open {
     display: flex;
   }
 }
+
+/* ============================================================
+   MOBILE NAV — guaranteed hamburger icon (fallback)
+   The menu icon is a Lottie animation rendered by Webflow's IX2 engine.
+   If that fails to load/render (CDN issue, script error, etc.), the button
+   would be blank and the menu unreachable. This draws a plain CSS hamburger
+   whenever the Lottie hasn't injected its SVG (:empty). Once the Lottie
+   renders, :empty no longer matches and this fallback disappears — so the
+   menu button is NEVER blank.
+   ============================================================ */
+.menu-button [data-animation-type="lottie"]:empty {
+  display: block;
+  position: relative;
+  width: 26px;
+  height: 20px;
+}
+.menu-button [data-animation-type="lottie"]:empty::before,
+.menu-button [data-animation-type="lottie"]:empty::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  width: 26px;
+  height: 2px;
+  border-radius: 2px;
+  background: #0d0d0d;
+}
+.menu-button [data-animation-type="lottie"]:empty::before {
+  top: 3px;
+  box-shadow: 0 7px 0 #0d0d0d; /* middle bar */
+}
+.menu-button [data-animation-type="lottie"]:empty::after {
+  top: 17px; /* bottom bar */
+}

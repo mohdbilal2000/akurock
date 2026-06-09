@@ -3241,7 +3241,7 @@
         <div class="admin-form">
           <div class="admin-form-row">
             <div class="admin-form-group"><label class="admin-form-label">Company Name</label><input type="text" id="content_company" class="admin-form-input" value="${escapeHtml(content.company_name || 'stonearts® GmbH')}"></div>
-            <div class="admin-form-group"><label class="admin-form-label">Email</label><input type="email" id="content_email" class="admin-form-input" value="${escapeHtml(content.contact_email || 'office@stonearts.at')}"></div>
+            <div class="admin-form-group"><label class="admin-form-label">Email</label><input type="email" id="content_email" class="admin-form-input" value="${escapeHtml(content.contact_email || 'aasatali@gmail.com')}"></div>
           </div>
           <div class="admin-form-row">
             <div class="admin-form-group"><label class="admin-form-label">Phone</label><input type="text" id="content_phone" class="admin-form-input" value="${escapeHtml(content.contact_phone || '')}"></div>
@@ -3383,7 +3383,7 @@
           </div>
           <div class="admin-form-row">
             <div class="admin-form-group"><label class="admin-form-label">Website</label><input type="url" id="settings_website" class="admin-form-input" value="${escapeHtml(settings.website || 'https://www.akurock.com')}"></div>
-            <div class="admin-form-group"><label class="admin-form-label">Support Email</label><input type="email" id="settings_email" class="admin-form-input" value="${escapeHtml(settings.support_email || 'office@stonearts.at')}"></div>
+            <div class="admin-form-group"><label class="admin-form-label">Support Email</label><input type="email" id="settings_email" class="admin-form-input" value="${escapeHtml(settings.support_email || 'aasatali@gmail.com')}"></div>
           </div>
           <div class="admin-form-row">
             <div class="admin-form-group"><label class="admin-form-label">VAT Number</label><input type="text" id="settings_vat" class="admin-form-input" value="${escapeHtml(settings.vat_number || '')}" placeholder="ATU12345678"></div>

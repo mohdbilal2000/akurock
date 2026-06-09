@@ -69,6 +69,12 @@
 </head>
 
 <body>
+  <!-- Floating "back to site" control: the Visualizer is a full-screen embedded
+       tool (its iframe covers the viewport at a very high z-index), so a normal
+       navbar would be hidden behind it. This pill sits above the iframe and
+       always lets the visitor return to the site. href="/" is locale-prefixed
+       at render time (e.g. -> /de). -->
+  <a href="/" aria-label="Zurück zu Akurock" style="position:fixed;top:16px;left:16px;z-index:1000001;display:inline-flex;align-items:center;gap:6px;padding:10px 18px;background:#faf8f7;color:#0d0d0d;border-radius:999px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;text-decoration:none;box-shadow:0 2px 12px rgba(0,0,0,0.18);">&#8592; Akurock</a>
   <div class="page_wrap">
     <div class="page_main">
       <section>

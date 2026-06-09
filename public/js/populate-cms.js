@@ -1174,11 +1174,17 @@
       }
     });
 
-    // Product description - update all instances
+    // Product description - update all instances (locale-aware)
+    // Use the localized description for EN/ES (the German `description` field was
+    // previously shown on every locale because it isn't in the t() dictionary).
+    const localizedDescription =
+      (_locale === 'en' && product.description_en) ? product.description_en :
+      (_locale === 'es' && product.description_es) ? product.description_es :
+      product.description;
     const descriptionEls = document.querySelectorAll('.product-description-wrapper p, .product-description-text');
     descriptionEls.forEach(el => {
-      if (product.description) {
-        el.textContent = t(product.description);
+      if (localizedDescription) {
+        el.textContent = localizedDescription;
       }
     });
 
@@ -1763,14 +1769,17 @@
       setupFormImmediately(form, productId, variantId);
     });
 
-    // Ensure accessories section is visible
-    if (accessoriesList) {
-      const accessoriesSection = accessoriesList.closest('section, .section, [class*="section"]');
+    // Ensure accessories section is visible (mobile + desktop lists)
+    // NOTE: previously referenced an undefined `accessoriesList`, which threw a
+    // ReferenceError and aborted the rest of product-page population.
+    [accessoriesListMobile, accessoriesListDesktop].forEach(function (list) {
+      if (!list) return;
+      const accessoriesSection = list.closest('section, .section, [class*="section"]');
       if (accessoriesSection) {
         accessoriesSection.style.display = '';
       }
       // Also check parent containers
-      let parent = accessoriesList.parentElement;
+      let parent = list.parentElement;
       let depth = 0;
       while (parent && depth < 5) {
         if (parent.style && parent.style.display === 'none') {
@@ -1779,7 +1788,7 @@
         parent = parent.parentElement;
         depth++;
       }
-    }
+    });
 
     // Ensure main product section is visible
     // NOTE: We're NOT hiding any sections automatically - only the ones already marked with inline styles

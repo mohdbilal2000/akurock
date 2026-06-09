@@ -7,7 +7,7 @@
   'use strict';
 
   var locale = (typeof window !== 'undefined' && window.__LOCALE__) || 'de';
-  var phoneNumber = '436608551001'; // +43 660 855 10 01
+  var phoneNumber = '919057597719'; // +91 90575 97719
 
   var messages = {
     de: 'Hallo! Ich habe eine Frage zu den Akurock Akustikpaneelen.',
