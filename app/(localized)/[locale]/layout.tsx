@@ -94,10 +94,15 @@ export default async function LocalizedLayout({
 }>) {
   const { locale } = await params;
 
+  // NOTE: This nested layout must NOT render <html>/<head>/<body> — the root
+  // layout (app/layout.tsx) already provides them. Rendering them here produced
+  // nested <html>/<body>, which the browser strips, causing a React hydration
+  // mismatch (#418) that re-rendered the page and detached the imperatively
+  // attached nav/menu click handlers. React 19 hoists <link>/<meta>/<title>
+  // into <head>; scripts render in order.
   return (
-    <html lang={locale} data-wf-page="64ad4116e38ed7d405f77d2f" data-wf-site="64ad4116e38ed7d405f77d26">
-      <head>
-        <meta charSet="utf-8" />
+    <>
+      <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link href="https://fonts.googleapis.com" rel="preconnect" />
         <link href="https://fonts.gstatic.com" rel="preconnect" crossOrigin="anonymous" />
@@ -344,12 +349,10 @@ export default async function LocalizedLayout({
         <link key="de-CH" rel="alternate" hrefLang="de-CH" href="https://www.akurock.com/de" />
         {/* x-default fallback */}
         <link rel="alternate" hrefLang="x-default" href={`https://www.akurock.com/${defaultLocale}`} />
-      </head>
-      <body>
         {/* Pass locale to client-side JS */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `window.__LOCALE__ = "${locale}";`,
+            __html: `window.__LOCALE__ = "${locale}"; try{document.documentElement.lang="${locale}";}catch(e){}`,
           }}
         />
         {children}
@@ -368,7 +371,6 @@ export default async function LocalizedLayout({
         <script src="/js/newsletter-handler.js" type="text/javascript" defer></script>
         <script src="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.js"></script>
         <script src="/js/inline-scripts.js" type="text/javascript"></script>
-      </body>
-    </html>
+    </>
   );
 }
