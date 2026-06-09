@@ -154,7 +154,9 @@ export async function generateMetadata({
   const canonicalUrl = `https://www.akurock.com/${locale}/product/${slug}`;
 
   return {
-    title,
+    // `title` already ends with "| stonearts®"; use absolute to bypass the
+    // layout's "%s | stonearts®" template and avoid a doubled brand suffix.
+    title: { absolute: title },
     description,
     alternates: {
       canonical: canonicalUrl,
