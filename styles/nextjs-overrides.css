@@ -223,3 +223,12 @@ body.nav-open .nav-top-bar {
   position: relative;
   z-index: 100001 !important;
 }
+/* Webflow's "fade/slide-in on open" interaction leaves menu wrapper elements
+   (e.g. .menu-selection_wrap) at opacity:0 / translated. Our controller opens
+   the menu without firing that interaction, so the whole menu showed up blank.
+   Force the menu content fully visible & untransformed when open. The accordion
+   +/- icon is excluded so it keeps its rotate-on-open state. */
+body.nav-open .nav-mobile-drop *:not(.js-accordion-icon) {
+  opacity: 1 !important;
+  transform: none !important;
+}
