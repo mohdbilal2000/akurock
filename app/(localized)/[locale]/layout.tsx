@@ -160,7 +160,7 @@ export default async function LocalizedLayout({
                 url: "https://www.akurock.com",
                 logo: {
                   "@type": "ImageObject",
-                  url: "https://www.akurock.com/images/stonearts%C2%AE-logo-black-long.svg",
+                  url: "https://www.akurock.com/images/stonearts-logo-black-long.svg",
                   width: 300,
                   height: 60,
                 },
