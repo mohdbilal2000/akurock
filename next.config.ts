@@ -44,6 +44,18 @@ const nextConfig: NextConfig = {
 
   async headers() {
     return [
+      // HTML documents must NOT be cached long-term by the CDN. Otherwise a
+      // redeploy (which changes the hashed asset filenames) leaves the CDN
+      // serving stale HTML that references the OLD, now-deleted CSS/JS chunks →
+      // those 404 → the page renders with no styles. Force revalidation for
+      // page/document routes (everything except hashed static assets, which
+      // keep their own immutable/long-cache headers below).
+      {
+        source: '/((?!_next/|images/|js/|css/|fonts/|videos/|documents/|api/|.*\\.).*)',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=0, must-revalidate' },
+        ],
+      },
       // Security headers for all routes
       {
         source: '/(.*)',
