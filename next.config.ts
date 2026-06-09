@@ -1,9 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Standalone output for Hostinger shared hosting / Node.js deployment
-  // Creates a self-contained build in .next/standalone that can run with just `node server.js`
-  output: 'standalone',
+  // NOTE: 'output: standalone' was removed. With standalone, `next start` does
+  // not serve the /_next/static CSS/JS chunks correctly (they 404), which left
+  // the site rendering with no styles (the "giant unstyled icons" issue) after
+  // every deploy. The default build + `next start` (`npm start`) serves all
+  // assets correctly — the stable setup for a standard Node host like Hostinger.
+  // (Hostinger start command must be `npm start`, NOT node .next/standalone/server.js)
 
   // Image optimization — use unoptimized on shared hosting (no sharp binary)
   images: {
