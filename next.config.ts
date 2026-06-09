@@ -76,8 +76,10 @@ const nextConfig: NextConfig = {
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net",
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: https: blob:",
-              "connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://region1.google-analytics.com",
-              "frame-src 'self'",
+              "connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://region1.google-analytics.com https://www.googletagmanager.com https://embedsocial.com https://*.wizart.ai",
+              // Allow the embedded tools/media that the site actually uses:
+              // Wizart Fitting Room (Visualizer page), YouTube tutorial videos, EmbedSocial reviews
+              "frame-src 'self' https://pim-client.wizart.ai https://*.wizart.ai https://www.youtube.com https://www.youtube-nocookie.com https://embedsocial.com",
               "media-src 'self' https:",
               "object-src 'none'",
               "base-uri 'self'",
