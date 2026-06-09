@@ -1174,11 +1174,17 @@
       }
     });
 
-    // Product description - update all instances
+    // Product description - update all instances (locale-aware)
+    // Use the localized description for EN/ES (the German `description` field was
+    // previously shown on every locale because it isn't in the t() dictionary).
+    const localizedDescription =
+      (_locale === 'en' && product.description_en) ? product.description_en :
+      (_locale === 'es' && product.description_es) ? product.description_es :
+      product.description;
     const descriptionEls = document.querySelectorAll('.product-description-wrapper p, .product-description-text');
     descriptionEls.forEach(el => {
-      if (product.description) {
-        el.textContent = t(product.description);
+      if (localizedDescription) {
+        el.textContent = localizedDescription;
       }
     });
 
