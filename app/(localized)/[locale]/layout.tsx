@@ -365,6 +365,7 @@ export default async function LocalizedLayout({
         <script src="/js/button-click-fix.js" type="text/javascript"></script>
         <script src="/js/i18n-client.js" type="text/javascript"></script>
         <script src="/js/scroll-animations.js" type="text/javascript" defer></script>
+        <script src="/js/mobile-nav.js" type="text/javascript"></script>
         <script src="/js/cookie-consent.js" type="text/javascript" defer></script>
         <script src="/js/whatsapp-widget.js" type="text/javascript" defer></script>
         <script src="/js/social-share.js" type="text/javascript" defer></script>

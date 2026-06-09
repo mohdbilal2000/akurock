@@ -183,3 +183,19 @@ body.nav-open {
 .menu-button [data-animation-type="lottie"]:empty::after {
   top: 17px; /* bottom bar */
 }
+
+/* ============================================================
+   ACCORDION open state — driven by mobile-nav.js (vanilla controller).
+   Applies to the mobile menu (Shop/Inspiration/Kundenservice), FAQ and
+   product-page accordions. The bodies are display:none by default
+   (set in the layout); showing them is keyed off the `active` class.
+   ============================================================ */
+.js-accordion-item.active > .js-accordion-body,
+.js-accordion-item.active > .accordion-body {
+  display: block !important;
+}
+/* flip the +/- icon when open */
+.js-accordion-icon.active {
+  transform: rotate(45deg);
+  transition: transform 0.2s ease;
+}
