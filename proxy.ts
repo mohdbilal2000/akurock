@@ -7,13 +7,16 @@ export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const hostname = request.headers.get('host') || '';
 
-  // ─── Domain Redirect: stoneartinstallation.com → akurock.com ───
-  // Redirect all traffic from stoneartinstallation.com (and www.) to akurock.com
-  if (
-    hostname.includes('stoneartinstallation.com') ||
-    hostname.includes('stoneartinstallation.at') ||
-    hostname.includes('stonearts-installation.com')
-  ) {
+  // ─── Domain consolidation → canonical www.akurock.com ───
+  // All legacy / alternate domains 301 to the canonical host so SEO ranking
+  // signals and the Google Ads landing domain stay consolidated on one URL
+  // (serving the same content on multiple live domains = duplicate content).
+  // NOTE: the previous check matched "stoneartinstallation" (missing the 's')
+  // so the real domain stoneartSinstallation.com never redirected. The regex
+  // below covers every spelling: stoneart(s)(-)installation.(com|at).
+  const host = hostname.toLowerCase().replace(/:\d+$/, ''); // strip any :port
+  const isLegacyDomain = /stoneart[s]?[-]?installation\.(com|at)/.test(host);
+  if (isLegacyDomain) {
     const redirectUrl = new URL(`https://www.akurock.com${pathname}`);
     redirectUrl.search = request.nextUrl.search;
     return NextResponse.redirect(redirectUrl, 301);
