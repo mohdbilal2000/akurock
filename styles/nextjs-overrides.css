@@ -458,18 +458,33 @@ body.nav-open .nav-mobile-drop *:not(.js-accordion-icon) {
     white-space: normal;
   }
 
-  /* footer payment icons: the export shrinks the wrapper to ~18% width but
-     keeps 5 fixed-px icons in a non-wrapping row → they overflow. Let the
-     wrapper take full width and wrap the icons onto multiple lines. */
-  .payment-options-wrapper {
-    width: 100% !important;
-    flex-wrap: wrap;
-  }
-
   /* product page: 500px-wide datasheet/installation image exceeds small
      phone viewports (audited at 500x550 on 390px) */
   .taps-hero-img.installation-downloads {
     max-width: 100%;
     height: auto;
   }
+}
+
+/* ============================================================
+   FOOTER PAYMENT ICONS — compact uniform row (all viewports)
+   Measured in the browser at 390px: the Webflow image rules
+   (.image-103/.image-104 width:100%) inside the ~178px footer column
+   made EACH icon 168px wide, wrapping one-per-line as giant logos, and
+   the Klarna image (.image-134, fixed 74px width, tall source PNG)
+   rendered 74x146 overlapping the watermark text. Cap every icon to a
+   uniform 20px-high, auto-width row.
+   ============================================================ */
+.footer-section .payment-options-wrapper {
+  width: 100% !important;
+  flex-flow: row wrap;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 14px;
+}
+.footer-section .payment-options-wrapper img {
+  width: auto !important;
+  max-width: 64px;
+  height: 20px !important;
+  object-fit: contain;
 }
