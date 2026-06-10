@@ -488,3 +488,13 @@ body.nav-open .nav-mobile-drop *:not(.js-accordion-icon) {
   height: 20px !important;
   object-fit: contain;
 }
+
+/* ============================================================
+   EMPTY CMS IMAGES — blog-news & akurock-muster each ship one
+   Webflow-CMS-bound <img src=""> the migration never populated; an
+   empty src resolves to the page URL and renders a broken-image box.
+   Hide them; if JS later sets a real src the selector stops matching.
+   ============================================================ */
+img[src=""] {
+  display: none !important;
+}
