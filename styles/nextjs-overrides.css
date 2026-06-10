@@ -78,6 +78,85 @@ body.nav-open {
 }
 
 /* ============================================================
+   EMBEDSOCIAL REVIEWS — "powered by" branding logo guard
+   EmbedSocial injects a "powered by EmbedSocial" branding link whose logo image
+   is sized by EmbedSocial's own CDN stylesheet. If that stylesheet is blocked or
+   slow, the raw logo renders at its full natural size (a giant blue logo that
+   bled across the reviews section). Cap it defensively so it can never balloon,
+   regardless of whether the third-party CSS loads.
+   ============================================================ */
+.es-widget-branding img,
+.feed-powered-by-es img {
+  max-height: 22px !important;
+  width: auto !important;
+  display: inline-block !important;
+}
+.es-widget-branding,
+.feed-powered-by-es {
+  text-align: center;
+  height: auto !important;
+}
+
+/* ============================================================
+   PRODUCT DESCRIPTION TABS — mobile responsiveness
+   The Webflow product page uses a 5-item tab menu (Product Details, Key
+   Features, Installation & Downloads, Our Stones, Sustainability) and 2-column
+   content grids. On mobile the tabs wrapped awkwardly and the grids kept their
+   desktop 2-column layout, pushing the right column (images + text) off-screen
+   where it was clipped at the viewport edge ("text cutting off"). Make the tab
+   bar a single horizontally-scrollable row and collapse the content grids to a
+   single column so everything stays within the screen.
+   ============================================================ */
+@media screen and (max-width: 767px) {
+  /* Tab bar → one scrollable row, no wrapping */
+  .tabs-menu.beschreibung,
+  .tabs-menu-3 {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 0.25rem;
+  }
+  .tabs-menu.beschreibung::-webkit-scrollbar,
+  .tabs-menu-3::-webkit-scrollbar {
+    display: none;
+  }
+  .tabs-menu.beschreibung .tab-link,
+  .tabs-menu-3 .w-tab-link {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  /* Collapse 2-column content grids to a single column */
+  .grid-93,
+  .grid-94,
+  .taps-grid-right {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto !important;
+  }
+
+  /* Keep tab panes and their children inside the viewport */
+  .tabs-container-beschreibung,
+  .tabs-content,
+  .w-tab-pane,
+  .taps-wrapper,
+  .taps-left,
+  .taps-right {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  /* Images fluid so they don't force horizontal overflow */
+  .taps-hero-img,
+  .image-152,
+  .image-153 {
+    width: 100% !important;
+    height: auto !important;
+  }
+}
+
+/* ============================================================
    SWIPER SLIDER — mobile overflow & touch
    ============================================================ */
 
