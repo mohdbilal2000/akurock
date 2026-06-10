@@ -6,6 +6,67 @@
  */
 
 /* ============================================================
+   CART DRAWER POLISH
+   The rendered cart qty buttons inherited the product page's circular
+   .q-dec/.q-inc steppers (grey #eee minus vs a different plus colour,
+   3rem circles) on top of .cart-qty-btn — giving the mismatched, oversized
+   look. The .q-dec/.q-inc classes were removed from the markup; this block
+   is the single source of truth for the drawer's controls so both buttons
+   are always identical. Scoped to .cart-quantity-controls so it can't leak
+   onto the product page steppers. (Overlay z-index + reparent-to-body fix
+   live in cart-manager.js openCart.)
+   ============================================================ */
+.cart-quantity-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.cart-quantity-controls .cart-qty-btn {
+  width: 34px !important;
+  height: 34px !important;
+  min-width: 34px;
+  min-height: 34px;
+  padding: 0;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  color: #0d0d0d;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+}
+.cart-quantity-controls .cart-qty-btn:hover {
+  background: #f3f1ef;
+  border-color: rgba(0, 0, 0, 0.35);
+}
+.cart-quantity-controls .cart-qty-btn:active {
+  transform: scale(0.92);
+}
+.cart-quantity-controls .cart-qty-btn svg {
+  width: 16px;
+  height: 16px;
+}
+.cart-quantity-controls .cart-quantity-input {
+  width: 48px;
+  height: 34px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 600;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  background: #fff;
+}
+/* keep the drawer content comfortably padded + delete link tidy */
+.cart-item-controls {
+  margin-top: 12px;
+}
+.cart-delete-link {
+  font-size: 13px;
+}
+
+/* ============================================================
    EMBEDSOCIAL CONTAINMENT
    The embedsocial Instagram-hashtag / review feeds inject third-party
    markup at runtime that is not constrained by the page's layout — wide
