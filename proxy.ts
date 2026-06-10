@@ -15,7 +15,10 @@ export function proxy(request: NextRequest) {
   // so the real domain stoneartSinstallation.com never redirected. The regex
   // below covers every spelling: stoneart(s)(-)installation.(com|at).
   const host = hostname.toLowerCase().replace(/:\d+$/, ''); // strip any :port
-  const isLegacyDomain = /stoneart[s]?[-]?installation\.(com|at)/.test(host);
+  const isLegacyDomain =
+    /stoneart[s]?[-]?installation\.(com|at)/.test(host) ||
+    host === 'akurock.at' ||
+    host === 'www.akurock.at';
   if (isLegacyDomain) {
     const redirectUrl = new URL(`https://www.akurock.com${pathname}`);
     redirectUrl.search = request.nextUrl.search;
