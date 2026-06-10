@@ -927,10 +927,15 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         </div>
       </section>
       <div class="section main social">
-        <div class="container main social">
-          <div bind="858eacac-a120-c74c-6cbf-2c7eb8d66747" class="code-embed-3 w-embed w-script">
-            <div class="embedsocial-hashtag" data-ref="3737eac229ab10ae3d5348681c86ac09bd278a67"></div>
-            <script> (function(d, s, id) { var js; if (d.getElementById(id)) {d.getElementById(id).parentNode.removeChild(d.getElementById(id));} js = d.createElement(s); js.id = id; js.src = "https://embedsocial.com/cdn/ht.js"; d.getElementsByTagName("head")[0].appendChild(js); }(document, "script", "EmbedSocialHashtagScript")); </script>
+        <div class="container main social" style="max-width:1100px;margin:0 auto;padding:64px 24px;text-align:center;">
+          <h2 style="font-family:Inter,sans-serif;font-weight:600;letter-spacing:-0.03em;font-size:2rem;color:#0d0d0d;margin:0 0 8px;">Folge uns</h2>
+          <p style="font-family:Inter,sans-serif;color:#464646;font-size:1rem;margin:0 0 28px;">@stonearts_official — Inspiration, Projekte und Neuigkeiten.</p>
+          <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+            <a href="https://www.instagram.com/stonearts_official/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" style="display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:50%;border:1px solid rgba(13,13,13,0.15);color:#0d0d0d;transition:background-color .15s,border-color .15s;"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.16c3.2 0 3.58.01 4.85.07 1.17.05 1.8.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.42.36 1.06.41 2.23.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.05 1.17-.25 1.8-.41 2.23-.22.56-.48.96-.9 1.38-.42.42-.82.68-1.38.9-.42.16-1.06.36-2.23.41-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.05-1.8-.25-2.23-.41a3.7 3.7 0 0 1-1.38-.9 3.7 3.7 0 0 1-.9-1.38c-.16-.42-.36-1.06-.41-2.23C2.17 15.58 2.16 15.2 2.16 12s.01-3.58.07-4.85c.05-1.17.25-1.8.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.42-.16 1.06-.36 2.23-.41C8.42 2.17 8.8 2.16 12 2.16Zm0 1.62c-3.15 0-3.5.01-4.74.07-1.14.05-1.76.24-2.17.4-.55.21-.94.47-1.35.88-.41.41-.67.8-.88 1.35-.16.41-.35 1.03-.4 2.17-.06 1.24-.07 1.59-.07 4.74s.01 3.5.07 4.74c.05 1.14.24 1.76.4 2.17.21.55.47.94.88 1.35.41.41.8.67 1.35.88.41.16 1.03.35 2.17.4 1.24.06 1.59.07 4.74.07s3.5-.01 4.74-.07c1.14-.05 1.76-.24 2.17-.4.55-.21.94-.47 1.35-.88.41-.41.67-.8.88-1.35.16-.41.35-1.03.4-2.17.06-1.24.07-1.59.07-4.74s-.01-3.5-.07-4.74c-.05-1.14-.24-1.76-.4-2.17a3.6 3.6 0 0 0-.88-1.35 3.6 3.6 0 0 0-1.35-.88c-.41-.16-1.03-.35-2.17-.4-1.24-.06-1.59-.07-4.74-.07Zm0 2.76a5.46 5.46 0 1 1 0 10.92 5.46 5.46 0 0 1 0-10.92Zm0 9a3.54 3.54 0 1 0 0-7.08 3.54 3.54 0 0 0 0 7.08Zm6.96-9.22a1.28 1.28 0 1 1-2.55 0 1.28 1.28 0 0 1 2.55 0Z"/></svg></a>
+            <a href="https://www.facebook.com/stoneartsglobal?_rdr" target="_blank" rel="noopener noreferrer" aria-label="Facebook" style="display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:50%;border:1px solid rgba(13,13,13,0.15);color:#0d0d0d;transition:background-color .15s,border-color .15s;"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M22 12a10 10 0 1 0-11.56 9.88v-6.99H7.9V12h2.54V9.8c0-2.5 1.49-3.89 3.78-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.44 2.89h-2.34v6.99A10 10 0 0 0 22 12Z"/></svg></a>
+            <a href="https://www.tiktok.com/@stonearts_official?is_from_webapp=1&amp;sender_device=pc" target="_blank" rel="noopener noreferrer" aria-label="TikTok" style="display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:50%;border:1px solid rgba(13,13,13,0.15);color:#0d0d0d;transition:background-color .15s,border-color .15s;"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M16.6 5.82a4.28 4.28 0 0 1-1.04-2.82h-3.1v12.42a2.52 2.52 0 0 1-2.52 2.42 2.52 2.52 0 1 1 .7-4.94v-3.16a5.66 5.66 0 0 0-.7-.04 5.64 5.64 0 1 0 5.64 5.64V8.97a7.36 7.36 0 0 0 4.3 1.38V7.25a4.28 4.28 0 0 1-3.28-1.43Z"/></svg></a>
+            <a href="https://at.pinterest.com/17qo2x7ctqzuy3hlhny50ia1rfuphi/" target="_blank" rel="noopener noreferrer" aria-label="Pinterest" style="display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:50%;border:1px solid rgba(13,13,13,0.15);color:#0d0d0d;transition:background-color .15s,border-color .15s;"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-3.65 19.31c-.05-.82-.1-2.08.02-2.98.11-.81.72-3.18.72-3.18s-.18-.37-.18-.92c0-.86.5-1.5 1.12-1.5.53 0 .79.4.79.88 0 .53-.34 1.33-.51 2.07-.15.62.31 1.12.92 1.12 1.1 0 1.95-1.16 1.95-2.84 0-1.48-1.07-2.52-2.59-2.52-1.77 0-2.8 1.32-2.8 2.69 0 .53.2 1.1.46 1.41a.18.18 0 0 1 .04.18l-.17.69c-.03.11-.09.14-.21.08-.78-.36-1.27-1.5-1.27-2.42 0-1.97 1.43-3.78 4.13-3.78 2.17 0 3.85 1.55 3.85 3.61 0 2.16-1.36 3.89-3.24 3.89-.63 0-1.23-.33-1.43-.72l-.39 1.49c-.14.54-.52 1.22-.78 1.63A10 10 0 1 0 12 2Z"/></svg></a>
+            <a href="https://www.youtube.com/channel/UCpdPxE-_gXMg9hG_p3hvrkw" target="_blank" rel="noopener noreferrer" aria-label="YouTube" style="display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:50%;border:1px solid rgba(13,13,13,0.15);color:#0d0d0d;transition:background-color .15s,border-color .15s;"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3.02 3.02 0 0 0-2.12-2.14C19.5 3.55 12 3.55 12 3.55s-7.5 0-9.38.51A3.02 3.02 0 0 0 .5 6.2 31.4 31.4 0 0 0 0 12a31.4 31.4 0 0 0 .5 5.8 3.02 3.02 0 0 0 2.12 2.14c1.88.51 9.38.51 9.38.51s7.5 0 9.38-.51a3.02 3.02 0 0 0 2.12-2.14A31.4 31.4 0 0 0 24 12a31.4 31.4 0 0 0-.5-5.8ZM9.6 15.57V8.43L15.8 12l-6.2 3.57Z"/></svg></a>
           </div>
         </div>
       </div>
@@ -975,16 +980,6 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-      </section>
-      <section class="section-2 review">
-        <div class="w-layout-blockcontainer basic-container social w-container">
-          <div class="review-wrapper">
-            <div bind="7c198a7d-a2a0-8c78-bd8b-2ef291aab7a3" class="code-embed w-embed w-script">
-              <div class="embedsocial-hashtag" data-ref="af23508f8bfa9c29a9c3c2c212383fd16ec59b8b"></div>
-              <script> (function(d, s, id) { var js; if (d.getElementById(id)) {return;} js = d.createElement(s); js.id = id; js.src = "https://embedsocial.com/cdn/ht.js"; d.getElementsByTagName("head")[0].appendChild(js); }(document, "script", "EmbedSocialHashtagScript")); </script>
             </div>
           </div>
         </div>

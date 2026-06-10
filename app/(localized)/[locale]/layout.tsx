@@ -311,7 +311,6 @@ export default async function LocalizedLayout({
             }),
           }}
         />
-        <script src="https://embedsocial.com/cdn/rsh2.js"></script>
         {/* Google Analytics 4 — Consent Mode v2 (denied by default, unlocked by cookie-consent.js) */}
         {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
           <>
