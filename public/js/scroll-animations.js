@@ -102,4 +102,36 @@
     // Small delay to ensure all content has rendered
     setTimeout(init, 100);
   }
+
+  /**
+   * Blank-section safety net.
+   * Webflow's IX2 engine (webflow.js) sets interaction elements to an
+   * initial opacity:0/translated state at runtime, expecting a scroll or
+   * load trigger to reveal them. In the Next.js context some of those
+   * triggers never fire (same failure mode as the mobile-menu blank bug),
+   * leaving whole sections invisible — e.g. blank items on product pages.
+   * A few seconds after load, force any interaction-managed element that
+   * is still fully transparent back to visible. Elements that are hidden
+   * via display:none (closed menus, inactive tabs, drawers) are untouched
+   * because forcing opacity does not reveal display:none content.
+   */
+  function rescueStuckHidden() {
+    document.querySelectorAll('[data-w-id]').forEach(function (el) {
+      var cs = window.getComputedStyle(el);
+      if (parseFloat(cs.opacity) <= 0.05 && cs.display !== 'none') {
+        el.style.setProperty('opacity', '1', 'important');
+        // An invisible element's transform is IX2 offset state, not layout —
+        // clear it so the content doesn't appear shifted out of place.
+        el.style.setProperty('transform', 'none', 'important');
+      }
+    });
+  }
+
+  if (document.readyState === 'complete') {
+    setTimeout(rescueStuckHidden, 3000);
+  } else {
+    window.addEventListener('load', function () {
+      setTimeout(rescueStuckHidden, 3000);
+    });
+  }
 })();

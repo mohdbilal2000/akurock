@@ -260,3 +260,123 @@ body.nav-open .nav-mobile-drop *:not(.js-accordion-icon) {
   opacity: 1 !important;
   transform: none !important;
 }
+
+/* ============================================================
+   OVERSIZED ICON FIXES — defensive size caps
+   Three icon types can render huge ("random big icon") because
+   their sizing never made it into the export:
+
+   1. Slider arrows: the homepage prev/next arrows are inline
+      <svg width="100%" height="100%"> inside a bare .html-embed
+      wrapper — and ONLY the .html-embed.sus variants have a
+      width/height rule. The bare wrapper is unconstrained, so the
+      SVG fills whatever box it lands in. Give it the same 30%/55%
+      sizing as its sized siblings (.html-embed.sus / .arrow-embed),
+      scoped under .slider-main_arrow so other embeds are untouched.
+
+   2. Nav dropdown arrows: .arrow-class (3 per page, every page) is
+      defined in NO stylesheet; the .w-icon-dropdown-toggle glyph is
+      1em×1em so it scales with whatever font-size it inherits.
+      Pin the em basis so it can never balloon.
+
+   3. Mobile menu Lottie: the animation div has no size of its own;
+      if Lottie injects its SVG without explicit dims it can overflow
+      the 3.1rem button. Clamp it to the parent button.
+   ============================================================ */
+.slider-main_arrow .html-embed {
+  width: 30%;
+  height: 55%;
+}
+
+.arrow-class {
+  font-size: 16px;
+}
+
+.menu-button [data-animation-type="lottie"] {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  overflow: hidden;
+}
+
+/* ============================================================
+   RESPONSIVE FIXES — content cut off / not collapsing on mobile.
+   The export leaves a number of fixed px/rem dimensions with no
+   media-query override; below their natural width they clip, force
+   horizontal scroll, or leave huge empty space. All fixes are
+   scoped to mobile/tablet widths so desktop is untouched.
+   ============================================================ */
+
+/* --- Tablet and below (≤991px) --- */
+@media screen and (max-width: 991px) {
+  /* 2-col product grid with min-height 900px never collapses */
+  .product-image-grid {
+    min-height: auto;
+  }
+
+  /* 53rem (848px) fixed heights leave a void on tablet */
+  .selection-tile_img-wrapper._1 {
+    min-height: 350px;
+  }
+  .quick-stack-4 {
+    height: auto;
+  }
+}
+
+/* --- Mobile (≤767px) --- */
+@media screen and (max-width: 767px) {
+  /* stack the 2-col product image grid */
+  .product-image-grid {
+    grid-template-columns: 1fr;
+  }
+  .product-image-grid .collection-item-2 {
+    min-height: 260px;
+  }
+
+  /* fixed 430px-wide heading overflows narrow screens */
+  .heading-174.bento-main._2 {
+    width: auto;
+    max-width: 100%;
+  }
+
+  /* min-width 563px forces horizontal scroll on phones */
+  .img_bento {
+    min-width: 0;
+    width: 100%;
+    padding: 30px 20px;
+  }
+
+  /* fixed 827px / 1079px image sections dwarf the mobile viewport */
+  .image_wrapper.place_holder {
+    height: auto;
+    min-height: 320px;
+  }
+  .image_wrapper.is-stoneskin {
+    height: auto;
+    min-height: 420px;
+    padding-top: 12rem;
+  }
+
+  /* fixed 619px gallery/spec image wider than any phone */
+  .taps-img-container-2.specifications {
+    width: 100%;
+    max-width: 100%;
+  }
+  .taps-img-container-2 {
+    max-width: 100%;
+  }
+}
+
+/* --- Small phones (≤479px) --- */
+@media screen and (max-width: 479px) {
+  /* 120px combined padding leaves no room for content */
+  .long_img_bento {
+    padding: 30px 16px;
+  }
+
+  /* nowrap price can push the cart row off-screen */
+  .w-commerce-commercecartproductprice {
+    white-space: normal;
+  }
+}
