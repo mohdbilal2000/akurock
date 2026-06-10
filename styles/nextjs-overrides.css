@@ -413,4 +413,12 @@ body.nav-open .nav-mobile-drop *:not(.js-accordion-icon) {
   .w-commerce-commercecartproductprice {
     white-space: normal;
   }
+
+  /* footer payment icons: the export shrinks the wrapper to ~18% width but
+     keeps 5 fixed-px icons in a non-wrapping row → they overflow. Let the
+     wrapper take full width and wrap the icons onto multiple lines. */
+  .payment-options-wrapper {
+    width: 100% !important;
+    flex-wrap: wrap;
+  }
 }

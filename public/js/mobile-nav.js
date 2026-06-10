@@ -37,6 +37,15 @@
     function (e) {
       if (!e.target || !e.target.closest) return;
 
+      // 0) Cart icon (lives in the top bar, not in the drop) — if the mobile
+      //    menu is open and the user taps the cart, close the menu so the cart
+      //    drawer isn't hidden behind the full-screen menu overlay. Don't stop
+      //    propagation; CartManager's own handler still opens the cart.
+      if (e.target.closest('[data-node-type="commerce-cart-open-link"]')) {
+        closeMobileMenu();
+        return;
+      }
+
       // 1) Hamburger button — open/close the mobile menu
       var menuBtn = e.target.closest('.menu-button');
       if (menuBtn) {
