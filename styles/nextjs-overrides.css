@@ -6,6 +6,40 @@
  */
 
 /* ============================================================
+   EMBEDSOCIAL CONTAINMENT
+   The embedsocial Instagram-hashtag / review feeds inject third-party
+   markup at runtime that is not constrained by the page's layout — wide
+   image grids / iframes that overflow the viewport and break the UI. The
+   always-on rsh2.js reviews loader (which had no widget to populate) was
+   removed from every page; the remaining .embedsocial-hashtag feeds are
+   clamped here so injected content can never exceed its container. An
+   empty widget (dead/slow feed) collapses instead of reserving space.
+   ============================================================ */
+.embedsocial-hashtag,
+.code-embed,
+.code-embed-2,
+.code-embed-3,
+.code-embed-4 {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+.embedsocial-hashtag *,
+.embedsocial-hashtag img,
+.embedsocial-hashtag iframe,
+.embedsocial-hashtag video {
+  max-width: 100% !important;
+  box-sizing: border-box;
+}
+.embedsocial-hashtag img,
+.embedsocial-hashtag video {
+  height: auto !important;
+}
+/* collapse a feed that injected nothing so it leaves no dead gap */
+.embedsocial-hashtag:empty {
+  display: none;
+}
+
+/* ============================================================
    FONTS: Acumin Pro fallback → Inter
    The Webflow design uses Acumin Pro (an Adobe Fonts / Typekit face)
    on the navbar, menus, buttons, links, form labels and several
