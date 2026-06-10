@@ -106,11 +106,12 @@ export default async function LocalizedLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link href="https://fonts.googleapis.com" rel="preconnect" />
         <link href="https://fonts.gstatic.com" rel="preconnect" crossOrigin="anonymous" />
-        <script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js" type="text/javascript"></script>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `WebFont.load({  google: {    families: ["Playfair Display:regular,500,600,700,800,900"]  }});`,
-          }}
+        {/* Playfair Display via a direct HTTPS stylesheet link. Replaces the old
+            WebFont.load loader, which fetched over http:// (CSP-blocked) and
+            raced ("WebFont is not defined") — this is faster and reliable. */}
+        <link
+          href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&display=swap"
+          rel="stylesheet"
         />
         <script
           dangerouslySetInnerHTML={{

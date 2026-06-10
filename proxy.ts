@@ -11,12 +11,16 @@ export function proxy(request: NextRequest) {
   // All legacy / alternate domains 301 to the canonical host so SEO ranking
   // signals and the Google Ads landing domain stay consolidated on one URL
   // (serving the same content on multiple live domains = duplicate content).
-  // NOTE: the previous check matched "stoneartinstallation" (missing the 's')
-  // so the real domain stoneartSinstallation.com never redirected. The regex
-  // below covers every spelling: stoneart(s)(-)installation.(com|at).
+  // Covered (per the owner's GoDaddy portfolio):
+  //  - stoneartinstallation.com  (real spelling, no 's' — www already CNAMEs
+  //    to Vercel; regex also covers stoneartsinstallation/stonearts-installation)
+  //  - stonearts.at              (old Shopify-era domain)
+  //  - akurock.at                (defensive, if ever connected)
   const host = hostname.toLowerCase().replace(/:\d+$/, ''); // strip any :port
   const isLegacyDomain =
     /stoneart[s]?[-]?installation\.(com|at)/.test(host) ||
+    host === 'stonearts.at' ||
+    host === 'www.stonearts.at' ||
     host === 'akurock.at' ||
     host === 'www.akurock.at';
   if (isLegacyDomain) {
