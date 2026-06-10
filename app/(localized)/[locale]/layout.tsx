@@ -6,6 +6,17 @@ import "../../../styles/webflow.css";
 import "../../../styles/stonearts-r-webshop.webflow.css";
 import "../../../styles/nextjs-overrides.css";
 
+// Cache-buster for the unhashed /public/js scripts. /js/* is served with
+// stale-while-revalidate (7 days), so after a deploy browsers kept running
+// WEEK-OLD copies of cart-manager.js etc. — e.g. the mobile "cart freezes
+// the screen" bug was an old cached script opening the cart underneath the
+// navbar. Versioning the query string by deploy makes every deploy bust
+// every client's cache instantly (the SHA changes per Vercel deployment).
+const ASSET_VERSION =
+  process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 8) ||
+  process.env.NEXT_PUBLIC_BUILD_ID ||
+  '1';
+
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
@@ -357,21 +368,21 @@ export default async function LocalizedLayout({
         />
         {children}
         <script src="https://d3e54v103j8qbb.cloudfront.net/js/jquery-3.5.1.min.dc5e7f18c8.js?site=64ad4116e38ed7d405f77d26" type="text/javascript" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossOrigin="anonymous"></script>
-        <script src="/js/webflow.js" type="text/javascript"></script>
-        <script src="/js/cart-manager.js" type="text/javascript"></script>
-        <script src="/js/populate-cms.js" type="text/javascript"></script>
-        <script src="/js/add-to-cart-handler.js" type="text/javascript"></script>
-        <script src="/js/cart-page-handler.js" type="text/javascript"></script>
-        <script src="/js/button-click-fix.js" type="text/javascript"></script>
-        <script src="/js/i18n-client.js" type="text/javascript"></script>
-        <script src="/js/scroll-animations.js" type="text/javascript" defer></script>
-        <script src="/js/mobile-nav.js" type="text/javascript"></script>
-        <script src="/js/cookie-consent.js" type="text/javascript" defer></script>
-        <script src="/js/whatsapp-widget.js" type="text/javascript" defer></script>
-        <script src="/js/social-share.js" type="text/javascript" defer></script>
-        <script src="/js/newsletter-handler.js" type="text/javascript" defer></script>
+        <script src={`/js/webflow.js?v=${ASSET_VERSION}`} type="text/javascript"></script>
+        <script src={`/js/cart-manager.js?v=${ASSET_VERSION}`} type="text/javascript"></script>
+        <script src={`/js/populate-cms.js?v=${ASSET_VERSION}`} type="text/javascript"></script>
+        <script src={`/js/add-to-cart-handler.js?v=${ASSET_VERSION}`} type="text/javascript"></script>
+        <script src={`/js/cart-page-handler.js?v=${ASSET_VERSION}`} type="text/javascript"></script>
+        <script src={`/js/button-click-fix.js?v=${ASSET_VERSION}`} type="text/javascript"></script>
+        <script src={`/js/i18n-client.js?v=${ASSET_VERSION}`} type="text/javascript"></script>
+        <script src={`/js/scroll-animations.js?v=${ASSET_VERSION}`} type="text/javascript" defer></script>
+        <script src={`/js/mobile-nav.js?v=${ASSET_VERSION}`} type="text/javascript"></script>
+        <script src={`/js/cookie-consent.js?v=${ASSET_VERSION}`} type="text/javascript" defer></script>
+        <script src={`/js/whatsapp-widget.js?v=${ASSET_VERSION}`} type="text/javascript" defer></script>
+        <script src={`/js/social-share.js?v=${ASSET_VERSION}`} type="text/javascript" defer></script>
+        <script src={`/js/newsletter-handler.js?v=${ASSET_VERSION}`} type="text/javascript" defer></script>
         <script src="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.js"></script>
-        <script src="/js/inline-scripts.js" type="text/javascript"></script>
+        <script src={`/js/inline-scripts.js?v=${ASSET_VERSION}`} type="text/javascript"></script>
     </>
   );
 }
