@@ -6,6 +6,34 @@
  */
 
 /* ============================================================
+   FONTS: Acumin Pro fallback → Inter
+   The Webflow design uses Acumin Pro (an Adobe Fonts / Typekit face)
+   on the navbar, menus, buttons, links, form labels and several
+   headings. That kit is NOT loaded in this build (and isn't on the
+   published reference either), and every `font-family: acumin-pro`
+   rule in the export is declared WITHOUT a fallback — so those
+   elements silently drop to the browser's default serif (Times),
+   which looks broken next to the Inter body text.
+
+   We alias the three Acumin family names to the Inter font files we
+   already ship (public/fonts/Inter-*.ttf). This restores a clean,
+   consistent sans-serif everywhere the design intended Acumin, with
+   no paid-kit dependency and without editing the 32 vendor rules.
+   ============================================================ */
+@font-face { font-family: "acumin-pro"; src: url("/fonts/Inter-Regular.ttf") format("truetype"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "acumin-pro"; src: url("/fonts/Inter-Medium.ttf") format("truetype"); font-weight: 500; font-style: normal; font-display: swap; }
+@font-face { font-family: "acumin-pro"; src: url("/fonts/Inter-SemiBold.ttf") format("truetype"); font-weight: 600; font-style: normal; font-display: swap; }
+@font-face { font-family: "acumin-pro"; src: url("/fonts/Inter-Bold.ttf") format("truetype"); font-weight: 700; font-style: normal; font-display: swap; }
+
+@font-face { font-family: "Acumin Pro"; src: url("/fonts/Inter-Regular.ttf") format("truetype"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "Acumin Pro"; src: url("/fonts/Inter-Medium.ttf") format("truetype"); font-weight: 500; font-style: normal; font-display: swap; }
+@font-face { font-family: "Acumin Pro"; src: url("/fonts/Inter-SemiBold.ttf") format("truetype"); font-weight: 600; font-style: normal; font-display: swap; }
+@font-face { font-family: "Acumin Pro"; src: url("/fonts/Inter-Bold.ttf") format("truetype"); font-weight: 700; font-style: normal; font-display: swap; }
+
+@font-face { font-family: "Acumin Pro Book"; src: url("/fonts/Inter-Regular.ttf") format("truetype"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "Acumin Pro Book"; src: url("/fonts/Inter-Medium.ttf") format("truetype"); font-weight: 500; font-style: normal; font-display: swap; }
+
+/* ============================================================
    GLOBAL: Prevent horizontal overflow
    ============================================================ */
 html,
