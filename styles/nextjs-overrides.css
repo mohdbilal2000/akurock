@@ -67,37 +67,20 @@
 }
 
 /* ============================================================
-   EMBEDSOCIAL CONTAINMENT
-   The embedsocial Instagram-hashtag / review feeds inject third-party
-   markup at runtime that is not constrained by the page's layout — wide
-   image grids / iframes that overflow the viewport and break the UI. The
-   always-on rsh2.js reviews loader (which had no widget to populate) was
-   removed from every page; the remaining .embedsocial-hashtag feeds are
-   clamped here so injected content can never exceed its container. An
-   empty widget (dead/slow feed) collapses instead of reserving space.
+   EMBEDSOCIAL REMOVED
+   The third-party Instagram/review aggregator injected a large branded
+   "loading" logo (a non-empty element, so earlier containment couldn't
+   catch it) that blew up to fill the page. The widget markup + scripts
+   were removed from every page; this hides any empty wrapper that the
+   export leaves behind (.code-embed* wrappers were embedsocial-only) so
+   there is no leftover gap or stray graphic.
    ============================================================ */
 .embedsocial-hashtag,
 .code-embed,
 .code-embed-2,
 .code-embed-3,
 .code-embed-4 {
-  max-width: 100%;
-  overflow-x: hidden;
-}
-.embedsocial-hashtag *,
-.embedsocial-hashtag img,
-.embedsocial-hashtag iframe,
-.embedsocial-hashtag video {
-  max-width: 100% !important;
-  box-sizing: border-box;
-}
-.embedsocial-hashtag img,
-.embedsocial-hashtag video {
-  height: auto !important;
-}
-/* collapse a feed that injected nothing so it leaves no dead gap */
-.embedsocial-hashtag:empty {
-  display: none;
+  display: none !important;
 }
 
 /* ============================================================

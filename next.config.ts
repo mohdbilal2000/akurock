@@ -93,7 +93,14 @@ const nextConfig: NextConfig = {
           },
           {
             key: 'Strict-Transport-Security',
-            value: 'max-age=31536000; includeSubDomains',
+            // No includeSubDomains/preload: while multiple domains are being
+            // connected to Vercel, a brief cert-provisioning glitch on the
+            // apex or a subdomain must NOT become an un-bypassable HSTS block
+            // across the whole zone. Shorter max-age (1 day) lets browsers
+            // recover quickly if a cert issue ever occurs, while still
+            // enforcing HTTPS. Raise back to a year once all domains are
+            // stable with valid certs.
+            value: 'max-age=86400',
           },
           {
             key: 'Content-Security-Policy',
