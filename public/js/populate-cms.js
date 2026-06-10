@@ -3248,6 +3248,12 @@
     loadI18n().then(() => loadCMSData()).then(data => {
       if (!data) {
         console.error('populate-cms.js: Failed to load CMS data');
+        // The cart drawer only needs localStorage, not CMS data — arm it
+        // anyway so the cart icon still opens the cart on CMS failure.
+        if (window.CartManager && !cartManagerInitialized) {
+          window.CartManager.init(null);
+          cartManagerInitialized = true;
+        }
         return;
       }
       
@@ -3373,6 +3379,11 @@
       }
     }).catch(error => {
       console.error('populate-cms.js: Error loading CMS data:', error);
+      // Same protection as the !data branch: never leave the cart unarmed.
+      if (window.CartManager && !cartManagerInitialized) {
+        window.CartManager.init(null);
+        cartManagerInitialized = true;
+      }
     });
   }
 

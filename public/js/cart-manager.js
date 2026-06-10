@@ -25,7 +25,16 @@
   const CartManager = {
     // Initialize cart system
     init: function(data) {
-      cmsData = data;
+      // cmsData may arrive later than the first init (e.g. the self-arming
+      // fallback below runs before populate-cms.js finishes loading CMS data).
+      // Always take the freshest data, but never attach listeners twice.
+      if (data) cmsData = data;
+      if (this._initialized) {
+        this.renderCart();
+        this.updateCartBadge();
+        return;
+      }
+      this._initialized = true;
       this.attachEventListeners();
       this.renderCart();
       this.updateCartBadge();
@@ -672,7 +681,28 @@
   };
 
   // Expose CartManager globally
-  // NOTE: Do NOT auto-initialize here. Let populate-cms.js initialize after CMS data loads.
   window.CartManager = CartManager;
+
+  // Self-arming fallback: populate-cms.js initializes CartManager after CMS
+  // data loads, but if that load fails (API route down, JSON fetch error)
+  // it used to bail out without ever calling init() — leaving the cart
+  // click handlers unbound, so the cart icon did NOTHING. The cart drawer
+  // itself only needs localStorage, not CMS data (cmsData is only used for
+  // product lookups when adding items), so make sure the cart UI always
+  // arms shortly after load even if CMS data never arrives. init() guards
+  // against double-binding when populate-cms.js initializes later/earlier.
+  function armFallback() {
+    setTimeout(function () {
+      if (!CartManager._initialized) {
+        console.warn('CartManager: initializing via fallback (CMS data not loaded yet)');
+        CartManager.init(window.cmsData || null);
+      }
+    }, 300);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', armFallback);
+  } else {
+    armFallback();
+  }
 
 })();
