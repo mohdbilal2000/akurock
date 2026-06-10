@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { rateLimit, getClientIP } from '@/lib/rate-limiter';
 import { sanitizeFormData } from '@/lib/sanitize';
+import { sendQuotationNotifications } from '@/lib/notify';
 
 export async function POST(request: NextRequest) {
   try {
@@ -51,8 +52,9 @@ export async function POST(request: NextRequest) {
     //   data: { ...sanitized, cartItems, total, status: 'PENDING' }
     // });
 
-    // TODO: Send email notification
-    // await sendQuotationEmail({ ...sanitized, cartItems, total });
+    // Notify the owner by email + WhatsApp. Never blocks the customer's
+    // submission; failures are logged (see lib/notify.ts for env config).
+    await sendQuotationNotifications({ ...sanitized, cartItems, total });
 
     return NextResponse.json({
       success: true,
