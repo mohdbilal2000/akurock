@@ -138,18 +138,23 @@
             const yamiProduct = parsedData.products.find(p => p.slug === 'yami' || p.id === 'yami');
             const gaiaProduct = parsedData.products.find(p => p.slug === 'gaia' || p.id === 'gaia');
             
-            const hasOldCDNUrls = 
-              (brushProduct && brushProduct.images && brushProduct.images.some(img => 
+            const hasOldCDNUrls =
+              (brushProduct && brushProduct.images && brushProduct.images.some(img =>
                 img.url && (img.url.includes('cdn.prod.website-files.com') || img.url.includes('uploads-ssl.webflow.com'))
               )) ||
               (yamiProduct && yamiProduct.selection_slider_image && (
-                yamiProduct.selection_slider_image.includes('cdn.prod.website-files.com') || 
+                yamiProduct.selection_slider_image.includes('cdn.prod.website-files.com') ||
                 yamiProduct.selection_slider_image.includes('uploads-ssl.webflow.com')
               )) ||
               (gaiaProduct && gaiaProduct.selection_slider_image && (
-                gaiaProduct.selection_slider_image.includes('cdn.prod.website-files.com') || 
+                gaiaProduct.selection_slider_image.includes('cdn.prod.website-files.com') ||
                 gaiaProduct.selection_slider_image.includes('uploads-ssl.webflow.com')
-              ));
+              )) ||
+              // Pre-fix data carried ENGLISH marketing copy (the German
+              // homepage hero read "Creating a healthy sound environment…").
+              // The fields are now authored in German and localized via t();
+              // treat cached English data as stale so it reloads.
+              (brushProduct && /Creating a healthy/i.test(brushProduct.special_field_text || ''));
             
             if (hasOldCDNUrls) {
               console.warn('populate-cms.js: localStorage has old CDN URLs (images or selection_slider_image), forcing reload from JSON file');
@@ -2880,11 +2885,12 @@
     if (heroHeading) {
       // Find product with marketing content, prefer Brush (sorting: 1)
       const brushProduct = cmsData.products.find(p => p.id === 'brush');
+      // CMS marketing fields are authored in German (the site's source
+      // language) and must go through t() so /en and /es localize them.
       if (brushProduct && brushProduct.special_field_text) {
-        heroHeading.textContent = brushProduct.special_field_text;
+        heroHeading.textContent = t(brushProduct.special_field_text);
       } else {
-        // Default English text if no marketing content
-        heroHeading.textContent = 'More than just an acoustic panel, a symphony of stone and design.';
+        heroHeading.textContent = t('Mehr als nur ein Akustikpaneel, eine Symphonie aus Stein und Design.');
       }
     }
 
@@ -2892,7 +2898,7 @@
     const yamiProduct = cmsData.products.find(p => p.id === 'yami');
     const healthSlogan = document.querySelector('.health-text-slogan');
     if (healthSlogan && yamiProduct && yamiProduct.special_field_slogan) {
-      healthSlogan.textContent = yamiProduct.special_field_slogan;
+      healthSlogan.textContent = t(yamiProduct.special_field_slogan);
     }
 
     // Update "Modern und ruhig" section with Yami product marketing content
@@ -2903,7 +2909,7 @@
         if (parentSection) {
           const sloganEl = parentSection.querySelector('.slogan._2.text');
           if (sloganEl && yamiProduct.special_field_slogan) {
-            sloganEl.textContent = yamiProduct.special_field_slogan;
+            sloganEl.textContent = t(yamiProduct.special_field_slogan);
           }
         }
       }
@@ -2912,7 +2918,7 @@
     // Update shout-out section slogan if it exists
     const shoutOutSlogan = document.querySelector('.shout-out-container.main .slogan._2.text');
     if (shoutOutSlogan && yamiProduct && yamiProduct.special_field_slogan) {
-      shoutOutSlogan.textContent = yamiProduct.special_field_slogan;
+      shoutOutSlogan.textContent = t(yamiProduct.special_field_slogan);
     }
 
     // Update product link buttons to point to correct product pages
