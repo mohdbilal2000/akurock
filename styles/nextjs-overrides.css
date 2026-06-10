@@ -465,4 +465,11 @@ body.nav-open .nav-mobile-drop *:not(.js-accordion-icon) {
     width: 100% !important;
     flex-wrap: wrap;
   }
+
+  /* product page: 500px-wide datasheet/installation image exceeds small
+     phone viewports (audited at 500x550 on 390px) */
+  .taps-hero-img.installation-downloads {
+    max-width: 100%;
+    height: auto;
+  }
 }
