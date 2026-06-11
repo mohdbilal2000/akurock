@@ -83,8 +83,16 @@ export async function generateMetadata({
       },
     },
     verification: {
-      // Add your verification codes here when ready
-      // google: 'your-google-verification-code',
+      // Set these in Vercel env vars to verify ownership without a code change.
+      // Google Search Console → Settings → Ownership verification → HTML tag:
+      // copy the content="..." value into NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION.
+      ...(process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+        ? { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION }
+        : {}),
+      // Bing Webmaster Tools (imports from GSC, but tag supported too)
+      ...(process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION
+        ? { other: { 'msvalidate.01': process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION } }
+        : {}),
     },
     other: {
       // GEO meta tags for local SEO
@@ -268,6 +276,13 @@ export default async function LocalizedLayout({
                   latitude: 48.1765,
                   longitude: 16.2845,
                 },
+                // GEO targeting: ships across the DACH region
+                areaServed: [
+                  { "@type": "Country", name: "AT" },
+                  { "@type": "Country", name: "DE" },
+                  { "@type": "Country", name: "CH" },
+                ],
+                currenciesAccepted: "EUR",
                 openingHoursSpecification: {
                   "@type": "OpeningHoursSpecification",
                   dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
