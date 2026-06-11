@@ -346,7 +346,10 @@ export default async function LocalizedLayout({
             />
           </>
         )}
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js" defer></script>
+        {/* jQuery is loaded once below (Webflow's 3.5.1 build, before webflow.js).
+            The previous code.jquery.com 3.6.0 here was a redundant second jQuery
+            that, being deferred, also clobbered window.jQuery AFTER webflow.js
+            had initialized. Removed. */}
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css" />
         <script async src="https://cdn.jsdelivr.net/npm/@finsweet/attributes-cmsload@1/cmsload.js"></script>
         {/* Hreflang tags for SEO - per-locale alternate links */}
