@@ -513,13 +513,19 @@ img[src=""] {
 
 /* Mobile carousel: the peeking next slide is the swipe affordance —
    overlay arrows on top of product imagery are clutter. Hide them on
-   mobile; keep ≥44px tap targets where they remain (desktop). */
+   mobile; keep ≥44px tap targets where they remain (desktop).
+   NOTE: this build's arrows are .slider-main_arrow / .slider-selector_arrow
+   (each also carrying .swiper-prev/.swiper-next), whose multi-class Webflow
+   rules out-specify a bare .swiper-prev selector — so the hide needs the
+   real arrow classes and !important to win. */
 @media (max-width: 768px) {
   .swiper-button-prev,
   .swiper-button-next,
   .swiper-prev,
-  .swiper-next {
-    display: none;
+  .swiper-next,
+  .slider-main_arrow,
+  .slider-selector_arrow {
+    display: none !important;
   }
   .swiper-drag-wrapper {
     position: static;
