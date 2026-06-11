@@ -458,9 +458,17 @@ body.nav-open .nav-mobile-drop *:not(.js-accordion-icon) {
     white-space: normal;
   }
 
-  /* product page: 500px-wide datasheet/installation image exceeds small
-     phone viewports (audited at 500x550 on 390px) */
+  /* product page: the vendor CSS pins .img-container-taps at a literal
+     500x550 with flex:none, so its image renders 500px wide on a 390px
+     phone (clipped by an overflow-hidden ancestor → cropped, not scaled).
+     Collapse the fixed box on mobile and let the image scale. */
+  .img-container-taps {
+    width: 100% !important;
+    max-width: 100%;
+    height: auto !important;
+  }
   .taps-hero-img.installation-downloads {
+    width: 100%;
     max-width: 100%;
     height: auto;
   }
