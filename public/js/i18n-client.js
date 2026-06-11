@@ -79,14 +79,14 @@
     container.id = 'lang-switcher';
     container.innerHTML =
       '<style>' +
-      '#lang-switcher { position: fixed; bottom: 24px; right: 24px; z-index: 9999; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }' +
+      '#lang-switcher { position: fixed; bottom: calc(88px + env(safe-area-inset-bottom)); right: 16px; z-index: 9996; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }' +
       '#lang-switcher .lang-main { width: 44px; height: 44px; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; background: #fff; box-shadow: 0 2px 12px rgba(0,0,0,0.15); transition: transform 0.2s, box-shadow 0.2s; padding: 0; }' +
       '#lang-switcher .lang-main:hover { transform: scale(1.08); box-shadow: 0 4px 16px rgba(0,0,0,0.2); }' +
       '#lang-switcher .lang-options { position: absolute; bottom: 56px; right: 0; display: flex; flex-direction: column; gap: 8px; opacity: 0; pointer-events: none; transform: translateY(8px); transition: opacity 0.25s ease, transform 0.25s ease; }' +
       '#lang-switcher.open .lang-options { opacity: 1; pointer-events: auto; transform: translateY(0); }' +
       '#lang-switcher .lang-option { width: 44px; height: 44px; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.12); transition: transform 0.15s; padding: 0; text-decoration: none; }' +
       '#lang-switcher .lang-option:hover { transform: scale(1.1); }' +
-      '@media (max-width: 480px) { #lang-switcher { bottom: 16px; right: 16px; } }' +
+      '@media (max-width: 480px) { #lang-switcher { bottom: calc(84px + env(safe-area-inset-bottom)); right: 12px; } }' +
       '</style>' +
       '<div class="lang-options">' +
       otherLocales.map(function(l) {

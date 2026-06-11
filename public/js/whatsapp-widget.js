@@ -26,8 +26,8 @@
     btn.setAttribute('aria-label', 'Chat on WhatsApp');
     btn.style.cssText = [
       'position:fixed',
-      'bottom:24px',
-      'left:24px',
+      'bottom:calc(16px + env(safe-area-inset-bottom))',
+      'right:16px',
       'z-index:9997',
       'width:52px',
       'height:52px',
