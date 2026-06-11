@@ -552,11 +552,76 @@ img[src=""] {
    COOKIE BANNER vs FLOATING WIDGETS
    The consent banner (z-index 9998) sits ABOVE the language flag (9996)
    and WhatsApp button (9997) and spans the bottom of the viewport — taps
-   on the widgets hit the banner instead (verified: "selecting German"
-   did nothing because the tap never reached the switcher). Hide the
-   widgets while the banner is in the DOM; it removes itself on consent.
+   on the widgets hit the banner instead. The real fix lives in JS
+   (whatsapp-widget.js / i18n-client.js hide the widgets via a
+   MutationObserver while the banner is in the DOM). A CSS :has() fallback
+   was removed here: lightningcss mishandled it and silently dropped the
+   rules that followed it in this file.
    ============================================================ */
-body:has(#stonearts-cookie-banner) #lang-switcher,
-body:has(#stonearts-cookie-banner) a[aria-label="Chat on WhatsApp"] {
-  display: none !important;
+
+/* ============================================================
+   PRODUCT "TAPS" NUMBERED SECTIONS — responsive stacking
+   The Webflow export lays these out as fixed desktop grids with NO mobile
+   override (the published reference is byte-identical and equally breaks on
+   phones): .grid-93 is 2-col, .grid-94 is 550px tall with margin-right:98px,
+   .img-container-taps is 500x550, .taps-right is a flex row. On a 390px
+   phone the content column overflows and the heading/body text get clipped
+   off the right edge, and the card image is pushed off-screen. Stack
+   everything to a single column on mobile and let media scale. Scoped to
+   <=767px so the desktop design is untouched.
+   ============================================================ */
+@media screen and (max-width: 767px) {
+  .grid-93 {
+    grid-template-columns: 1fr;
+    grid-row-gap: 1.5rem;
+  }
+  .grid-94,
+  .grid-94.specifications {
+    grid-template-columns: 1fr;
+    grid-row-gap: 1.5rem;
+    height: auto;
+    margin-right: 0;
+  }
+  .taps-grid-right {
+    grid-template-columns: 1fr;
+    grid-column-gap: 1.5rem;
+    grid-row-gap: 1.5rem;
+    flex-direction: column;
+    width: 100%;
+  }
+  .taps-right {
+    flex-direction: column;
+    width: 100%;
+  }
+  /* all taps imagery scales to the column instead of fixed px */
+  .img-container-taps,
+  .taps-img-container-2,
+  .taps-img-container-2.specifications,
+  .taps-img-container-3 {
+    width: 100% !important;
+    max-width: 100%;
+    height: auto !important;
+  }
+  .taps-hero-img,
+  .taps-hero-img.specification,
+  .image-152,
+  .image-153 {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+  }
+  /* text never overflows its column */
+  .taps-text-wrapper,
+  .taps-text-wrapper.specifications,
+  .taps-counter-information,
+  .right-tap-img-text-wrapper {
+    width: 100%;
+    max-width: 100%;
+  }
+  .taps-text-wrapper h3,
+  .taps-text-wrapper p,
+  .taps-tagline {
+    max-width: 100%;
+    overflow-wrap: break-word;
+  }
 }
