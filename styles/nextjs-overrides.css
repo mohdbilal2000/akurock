@@ -547,3 +547,16 @@ img[src=""] {
   min-width: 44px;
   min-height: 44px;
 }
+
+/* ============================================================
+   COOKIE BANNER vs FLOATING WIDGETS
+   The consent banner (z-index 9998) sits ABOVE the language flag (9996)
+   and WhatsApp button (9997) and spans the bottom of the viewport — taps
+   on the widgets hit the banner instead (verified: "selecting German"
+   did nothing because the tap never reached the switcher). Hide the
+   widgets while the banner is in the DOM; it removes itself on consent.
+   ============================================================ */
+body:has(#stonearts-cookie-banner) #lang-switcher,
+body:has(#stonearts-cookie-banner) a[aria-label="Chat on WhatsApp"] {
+  display: none !important;
+}

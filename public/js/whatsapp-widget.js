@@ -29,8 +29,8 @@
       'bottom:calc(16px + env(safe-area-inset-bottom))',
       'right:16px',
       'z-index:9997',
-      'width:52px',
-      'height:52px',
+      'width:44px',
+      'height:44px',
       'border-radius:50%',
       'background:#25D366',
       'display:flex',
@@ -50,6 +50,16 @@
     btn.addEventListener('mouseleave', function () { btn.style.transform = 'scale(1)'; });
 
     document.body.appendChild(btn);
+
+    // Hide while the cookie-consent banner (z-index 9998, spans the bottom)
+    // is open — it sits above this button and intercepts taps. The banner
+    // removes itself from the DOM on consent.
+    function syncWithBanner() {
+      btn.style.display = document.getElementById('stonearts-cookie-banner') ? 'none' : 'flex';
+    }
+    syncWithBanner();
+    new MutationObserver(syncWithBanner).observe(document.body, { childList: true });
+
   }
 
   if (document.readyState === 'loading') {
