@@ -384,6 +384,17 @@ export default async function LocalizedLayout({
             __html: `window.__LOCALE__ = "${locale}"; try{document.documentElement.lang="${locale}";}catch(e){}`,
           }}
         />
+        {/* Resilient images: on a flaky mobile connection an <img> can fail to
+            download and the browser paints the ugly "?" broken-image icon
+            (e.g. the contact-page photo over weak LTE). Retry each failed
+            image ONCE with a cache-busting query a moment later; this
+            self-heals transient failures and does nothing when images load
+            fine. Capture phase so it catches errors before paint settles. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `document.addEventListener('error',function(e){var el=e.target;if(!el||el.tagName!=='IMG')return;if(el.dataset.retried)return;var src=el.currentSrc||el.src;if(!src||src.indexOf('data:')===0)return;el.dataset.retried='1';setTimeout(function(){el.src=src+(src.indexOf('?')>-1?'&':'?')+'_r='+Date.now();},800);},true);`,
+          }}
+        />
         {children}
         <script src="https://d3e54v103j8qbb.cloudfront.net/js/jquery-3.5.1.min.dc5e7f18c8.js?site=64ad4116e38ed7d405f77d26" type="text/javascript" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossOrigin="anonymous"></script>
         <script src={`/js/webflow.js?v=${ASSET_VERSION}`} type="text/javascript"></script>
