@@ -348,6 +348,10 @@ const de = {
   'lang.de': 'Deutsch',
   'lang.en': 'English',
   'lang.es': 'Español',
+  // Visualizer (self-hosted) chrome
+  'visualizer.uploadPhoto': 'Eigenes Raumfoto',
+  'visualizer.reset': 'Zurücksetzen',
+  'visualizer.hint': 'Ziehe das Paneel auf deine Wand · ziehe die Ecke zum Skalieren',
 } as const;
 
 export default de;

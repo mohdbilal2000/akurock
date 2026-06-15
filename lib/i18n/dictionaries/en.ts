@@ -350,6 +350,10 @@ const en: Dictionary = {
   'lang.de': 'Deutsch',
   'lang.en': 'English',
   'lang.es': 'Español',
+  // Visualizer (self-hosted) chrome
+  'visualizer.uploadPhoto': 'Your own room photo',
+  'visualizer.reset': 'Reset',
+  'visualizer.hint': 'Drag the panel onto your wall · drag the corner to resize',
 };
 
 export default en;

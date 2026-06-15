@@ -78,26 +78,185 @@
     <div class="page_main">
       <section>
         <div>
-          <div bind="0529ef8b-7935-25f0-0ee8-892848e64b93" class="w-embed w-iframe w-script"><iframe
-              id="wizart-fitting-room-object" role="dialog" aria-label="Wizart Fitting Room." type="text/html"
-              class="active"
-              src="https://pim-client.wizart.ai/fitting-room?api_token=RegJJhwIXs8hU3XP7M5kNx7kmLjNOGbw3c86PjowOhbAtUXR0URNdOSZxFQ2&enabled_shopping_cart=0&is_shown_shopping_cart_prices=0&bba=true"
-              allowfullscreen="">
-            </iframe>
+          <div class="w-embed">
+            <!-- AKUROCK VISUALIZER — self-hosted (replaces the expired Wizart
+                 fitting-room embed). Pick a stone, drag the panel onto a room
+                 wall and resize it, or upload your own room photo. No third-party
+                 dependency. On-brand: Inter, #faf8f7 / #0d0d0d / #f24616. -->
+            <div id="akurock-visualizer">
+              <div class="av-topbar">
+                <div class="av-title">Visualizer</div>
+                <div class="av-actions">
+                  <label class="av-btn av-upload">
+                    <input id="av-file" type="file" accept="image/*" hidden>
+                    <span>Eigenes Raumfoto</span>
+                  </label>
+                  <button id="av-reset" class="av-btn av-ghost" type="button">Zurücksetzen</button>
+                </div>
+              </div>
+
+              <div class="av-stage" id="av-stage">
+                <img id="av-room" class="av-room" alt="Raum-Vorschau" src="/images/Skandi_Bedroom_3.webp">
+                <div id="av-panel" class="av-panel">
+                  <div class="av-panel-fill"></div>
+                  <span class="av-resize" id="av-resize" aria-label="Größe ändern"></span>
+                </div>
+                <div class="av-hint" id="av-hint">Ziehe das Paneel auf deine Wand · ziehe die Ecke zum Skalieren</div>
+              </div>
+
+              <div class="av-picker" id="av-picker"><!-- stone swatches injected by JS --></div>
+            </div>
+
             <script>
-              window.addEventListener('message', function (event) {
-                if (event.data === 'close_overlay') {
-                  window.location.href = 'https://www.akurock.com/';
+              (function () {
+                var STONES = [
+                  { slug: 'whisper', name: 'Whisper', tex: '/images/6672b83a8bd67b5b72bbd5fb_Whisper_Paneel.webp', sw: '/images/6672b845e7846b687ecca399_Whisper_Stone.webp' },
+                  { slug: 'brush',   name: 'Brush',   tex: '/images/6672c45aa4067e84ea2efbae_Brush_Paneele.webp', sw: '/images/6672c465bb2c1f412c8d9dbd_Brush_Stone.webp' },
+                  { slug: 'gaia',    name: 'Gaia',    tex: '/images/6672c5618fb534f344983a07_Gaia_Stone.webp',   sw: '/images/6672c5618fb534f344983a07_Gaia_Stone.webp' },
+                  { slug: 'yami',    name: 'Yami',    tex: '/images/6672c4a3cc07e459748b16a8_Yami_Paneel.webp',  sw: '/images/6672c50ce1fa6622177a75ca_Yami_Stone.webp' },
+                  { slug: 'yuki',    name: 'Yuki',    tex: '/images/6672c643b9abe5d94880a355_Yuki_Paneel.webp',  sw: '/images/6672c64c321c865a6ece5d6d_Yuki_Stone.webp' },
+                  { slug: 'ligia',   name: 'Ligia',   tex: '/images/6672c5cccadaf188f323804b_Ligia_Paneel.webp', sw: '/images/6672c5d54c31e70e1894d52f_ligia_Stone.webp' }
+                ];
+                var picker = document.getElementById('av-picker');
+                var panel = document.getElementById('av-panel');
+                var fill = panel.querySelector('.av-panel-fill');
+                var stage = document.getElementById('av-stage');
+                var room = document.getElementById('av-room');
+                var resize = document.getElementById('av-resize');
+                var hint = document.getElementById('av-hint');
+
+                function selectStone(s, btn) {
+                  fill.style.backgroundImage = 'url("' + s.tex + '")';
+                  Array.prototype.forEach.call(picker.children, function (c) { c.classList.remove('active'); });
+                  if (btn) btn.classList.add('active');
                 }
-              });
+                STONES.forEach(function (s, i) {
+                  var b = document.createElement('button');
+                  b.type = 'button';
+                  b.className = 'av-swatch';
+                  b.innerHTML = '<span class="av-swatch-img" style="background-image:url(\'' + s.sw + '\')"></span><span class="av-swatch-name">' + s.name + '</span>';
+                  b.addEventListener('click', function () { selectStone(s, b); });
+                  picker.appendChild(b);
+                  if (i === 0) selectStone(s, b);
+                });
+
+                // ---- drag + resize (pointer events: mouse + touch) ----
+                var dragging = false, resizing = false, sx = 0, sy = 0, sl = 0, st = 0, sw = 0, sh = 0;
+                function stageBox() { return stage.getBoundingClientRect(); }
+                function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+
+                panel.addEventListener('pointerdown', function (e) {
+                  if (e.target === resize) return;
+                  dragging = true; panel.setPointerCapture(e.pointerId);
+                  var r = panel.getBoundingClientRect(), b = stageBox();
+                  sx = e.clientX; sy = e.clientY; sl = r.left - b.left; st = r.top - b.top;
+                  hint.style.opacity = '0';
+                  e.preventDefault();
+                });
+                resize.addEventListener('pointerdown', function (e) {
+                  resizing = true; resize.setPointerCapture(e.pointerId);
+                  sx = e.clientX; sy = e.clientY; sw = panel.offsetWidth; sh = panel.offsetHeight;
+                  e.preventDefault(); e.stopPropagation();
+                });
+                window.addEventListener('pointermove', function (e) {
+                  var b = stageBox();
+                  if (dragging) {
+                    var nl = clamp(sl + (e.clientX - sx), 0, b.width - panel.offsetWidth);
+                    var nt = clamp(st + (e.clientY - sy), 0, b.height - panel.offsetHeight);
+                    panel.style.left = nl + 'px'; panel.style.top = nt + 'px';
+                  } else if (resizing) {
+                    var nw = clamp(sw + (e.clientX - sx), 60, b.width - panel.offsetLeft);
+                    var nh = clamp(sh + (e.clientY - sy), 60, b.height - panel.offsetTop);
+                    panel.style.width = nw + 'px'; panel.style.height = nh + 'px';
+                  }
+                });
+                window.addEventListener('pointerup', function () { dragging = false; resizing = false; });
+
+                // ---- upload own room ----
+                document.getElementById('av-file').addEventListener('change', function (e) {
+                  var f = e.target.files && e.target.files[0];
+                  if (!f) return;
+                  room.src = URL.createObjectURL(f);
+                });
+                document.getElementById('av-reset').addEventListener('click', function () {
+                  room.src = '/images/Skandi_Bedroom_3.webp';
+                  panel.style.left = ''; panel.style.top = ''; panel.style.width = ''; panel.style.height = '';
+                  hint.style.opacity = '';
+                });
+              })();
             </script>
+
             <style>
-              iframe {
-                position: fixed;
-                width: 100%;
-                height: 100%;
-                border: none;
-                z-index: 999999;
+              #akurock-visualizer {
+                position: fixed; inset: 0; z-index: 999990;
+                display: flex; flex-direction: column;
+                background: #faf8f7; font-family: 'Inter', sans-serif;
+              }
+              #akurock-visualizer .av-topbar {
+                display: flex; align-items: center; justify-content: flex-end; gap: 10px;
+                padding: 14px 16px 14px 150px; flex: none;
+              }
+              #akurock-visualizer .av-title {
+                position: absolute; left: 50%; transform: translateX(-50%);
+                font-weight: 600; letter-spacing: -0.02em; font-size: 18px; color: #0d0d0d;
+              }
+              #akurock-visualizer .av-btn {
+                display: inline-flex; align-items: center; cursor: pointer;
+                font-family: inherit; font-size: 13px; font-weight: 600; line-height: 1;
+                padding: 11px 18px; border-radius: 999px; border: 1px solid #0d0d0d;
+                background: #0d0d0d; color: #fff; transition: opacity .15s;
+              }
+              #akurock-visualizer .av-btn:hover { opacity: .85; }
+              #akurock-visualizer .av-ghost { background: transparent; color: #0d0d0d; }
+              #akurock-visualizer .av-stage {
+                position: relative; flex: 1; margin: 0 16px; border-radius: 14px;
+                overflow: hidden; background: #e9e5e2; touch-action: none;
+              }
+              #akurock-visualizer .av-room {
+                position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; user-select: none;
+              }
+              #akurock-visualizer .av-panel {
+                position: absolute; left: 32%; top: 18%; width: 38%; height: 58%;
+                cursor: grab; box-shadow: 0 10px 30px rgba(0,0,0,.28); border-radius: 4px;
+                touch-action: none;
+              }
+              #akurock-visualizer .av-panel:active { cursor: grabbing; }
+              #akurock-visualizer .av-panel-fill {
+                position: absolute; inset: 0; border-radius: 4px;
+                background-size: auto 100%; background-repeat: repeat-x; background-position: center;
+                outline: 2px solid rgba(255,255,255,.65); outline-offset: -2px;
+              }
+              #akurock-visualizer .av-resize {
+                position: absolute; right: -9px; bottom: -9px; width: 26px; height: 26px;
+                border-radius: 50%; background: #f24616; border: 3px solid #fff;
+                box-shadow: 0 2px 8px rgba(0,0,0,.3); cursor: nwse-resize;
+              }
+              #akurock-visualizer .av-hint {
+                position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%);
+                background: rgba(13,13,13,.72); color: #fff; font-size: 12px; font-weight: 500;
+                padding: 8px 14px; border-radius: 999px; white-space: nowrap;
+                transition: opacity .3s; pointer-events: none; max-width: 92%;
+              }
+              #akurock-visualizer .av-picker {
+                flex: none; display: flex; gap: 12px; overflow-x: auto;
+                padding: 14px 16px calc(14px + env(safe-area-inset-bottom));
+                -webkit-overflow-scrolling: touch;
+              }
+              #akurock-visualizer .av-swatch {
+                flex: none; display: flex; flex-direction: column; align-items: center; gap: 6px;
+                border: none; background: none; cursor: pointer; padding: 0; font-family: inherit;
+              }
+              #akurock-visualizer .av-swatch-img {
+                width: 54px; height: 54px; border-radius: 50%; background-size: cover; background-position: center;
+                border: 2px solid transparent; transition: border-color .15s, transform .15s;
+              }
+              #akurock-visualizer .av-swatch.active .av-swatch-img { border-color: #f24616; transform: scale(1.06); }
+              #akurock-visualizer .av-swatch-name { font-size: 12px; font-weight: 600; color: #464646; }
+              #akurock-visualizer .av-swatch.active .av-swatch-name { color: #0d0d0d; }
+              @media (max-width: 600px) {
+                #akurock-visualizer .av-topbar { padding: 12px 12px 10px 120px; }
+                #akurock-visualizer .av-stage { margin: 0 10px; }
+                #akurock-visualizer .av-swatch-img { width: 46px; height: 46px; }
               }
             </style>
           </div>

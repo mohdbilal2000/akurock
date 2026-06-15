@@ -350,6 +350,10 @@ const es: Dictionary = {
   'lang.de': 'Deutsch',
   'lang.en': 'English',
   'lang.es': 'Español',
+  // Visualizer (self-hosted) chrome
+  'visualizer.uploadPhoto': 'Tu propia foto de la sala',
+  'visualizer.reset': 'Restablecer',
+  'visualizer.hint': 'Arrastra el panel a tu pared · arrastra la esquina para escalar',
 };
 
 export default es;

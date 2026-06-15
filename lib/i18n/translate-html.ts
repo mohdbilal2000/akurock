@@ -255,6 +255,10 @@ const HTML_REPLACEMENTS: [string, TranslationKey][] = [
   ['#follow us', 'footer.followUs'],
   ['AGBs', 'footer.terms'],
   ['Kontakt', 'content.contact.heading'],
+  // Visualizer (self-hosted) chrome
+  ['Ziehe das Paneel auf deine Wand · ziehe die Ecke zum Skalieren', 'visualizer.hint'],
+  ['Eigenes Raumfoto', 'visualizer.uploadPhoto'],
+  ['Zurücksetzen', 'visualizer.reset'],
 ];
 
 export function translateHTML(html: string, locale: Locale): string {
