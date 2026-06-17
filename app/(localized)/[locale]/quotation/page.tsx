@@ -52,7 +52,7 @@ export default function QuotationPage() {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const cartData = localStorage.getItem('stonearts_cart');
+      const cartData = localStorage.getItem('stonearts-cart');
       if (cartData) {
         try {
           const cart = JSON.parse(cartData);
@@ -100,7 +100,7 @@ export default function QuotationPage() {
         });
       }
 
-      localStorage.removeItem('stonearts_cart');
+      localStorage.removeItem('stonearts-cart');
       setTimeout(() => { window.location.href = `/${locale}/quotation-success`; }, 3000);
     } catch (error) {
       console.error('Error submitting quotation:', error);

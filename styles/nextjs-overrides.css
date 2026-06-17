@@ -650,3 +650,20 @@ img[src=""] {
     overflow-wrap: break-word;
   }
 }
+
+/* ============================================================
+   CUSTOM CHECKBOX — checked state (webflow.js doesn't init here)
+   The newsletter "Yes, I accept…" box is a Webflow custom checkbox whose
+   checkmark is shown via .w--redirected-checked — a class webflow.js
+   normally adds. That init is replaced by a small handler in
+   newsletter-handler.js; webflow.css ships no checked STYLE, so define it
+   here (on-brand black fill + white check) so ticking it is visible.
+   ============================================================ */
+.w-checkbox-input--inputType-custom.w--redirected-checked {
+  background-color: #0d0d0d;
+  border-color: #0d0d0d;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
+  background-size: 11px 11px;
+  background-position: 50%;
+  background-repeat: no-repeat;
+}

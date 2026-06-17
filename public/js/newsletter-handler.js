@@ -72,9 +72,29 @@
     });
   }
 
+  // Webflow custom checkboxes (e.g. the newsletter "Yes, I accept…" box) show
+  // their checked state via a `w--redirected-checked` class on the visual
+  // <div class="w-checkbox-input">, normally added by webflow.js. That init
+  // doesn't run here, so clicking the box toggled the hidden input but showed
+  // NO checkmark — it looked dead. Sync the class on every checkbox change
+  // (delegated, covers all custom checkboxes) and set the initial state.
+  function syncCheckbox(cb) {
+    var wrap = cb.closest && cb.closest('.w-checkbox');
+    if (!wrap) return;
+    var vis = wrap.querySelector('.w-checkbox-input');
+    if (vis) vis.classList.toggle('w--redirected-checked', cb.checked);
+  }
+  function initCheckboxes() {
+    document.addEventListener('change', function (e) {
+      if (e.target && e.target.type === 'checkbox') syncCheckbox(e.target);
+    });
+    document.querySelectorAll('.w-checkbox input[type="checkbox"]').forEach(syncCheckbox);
+  }
+
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
+    document.addEventListener('DOMContentLoaded', function () { init(); initCheckboxes(); });
   } else {
     init();
+    initCheckboxes();
   }
 })();
