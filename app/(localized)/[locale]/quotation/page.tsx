@@ -78,6 +78,20 @@ export default function QuotationPage() {
     setIsSubmitting(true);
     setSubmitStatus('idle');
     try {
+      // Send the request to the owner (email + WhatsApp via /api/quotation →
+      // lib/notify.ts). This is what actually delivers the order; without it
+      // the form only saved to the visitor's own browser and nobody received
+      // it. Notification failures never block the customer's submission.
+      try {
+        await fetch('/api/quotation', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...formData, cartItems, total }),
+        });
+      } catch (notifyErr) {
+        console.error('Quotation API call failed (customer still proceeds):', notifyErr);
+      }
+
       const quotationData = { ...formData, cartItems, total, submittedAt: new Date().toISOString() };
       const quotations = JSON.parse(localStorage.getItem('stonearts_quotations') || '[]');
       quotations.push({ id: `quote-${Date.now()}`, ...quotationData });
