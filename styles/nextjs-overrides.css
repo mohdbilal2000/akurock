@@ -667,3 +667,34 @@ img[src=""] {
   background-position: 50%;
   background-repeat: no-repeat;
 }
+
+/* ============================================================
+   PRODUCT DESCRIPTION TABS — make the tab bar scrollable on mobile
+   The product detail tabs (.tabs-menu.beschreibung — Produktdetails /
+   Hauptmerkmale / Installation & Downloads / Unsere Steine /
+   Nachhaltigkeit) are a 5-item row ~589px wide. On a phone they overflow
+   their 360px container and the last tabs get clipped off-screen (and the
+   row collided with the floating widgets). We do NOT hide the tab
+   component on mobile (unlike the reference) because our accordion holds
+   only links, not the spec content — hiding the tabs would lose the
+   product details. Instead let the tab row scroll horizontally so all 5
+   tabs are reachable by swipe; nothing is cut off, desktop is untouched.
+   ============================================================ */
+@media screen and (max-width: 767px) {
+  .tabs-beschreibung .w-tab-menu,
+  .tabs-menu.beschreibung {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .tabs-beschreibung .w-tab-menu::-webkit-scrollbar,
+  .tabs-menu.beschreibung::-webkit-scrollbar {
+    display: none;
+  }
+  .tabs-beschreibung .w-tab-link {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+}
