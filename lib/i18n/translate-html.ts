@@ -258,6 +258,7 @@ const HTML_REPLACEMENTS: [string, TranslationKey][] = [
   // Visualizer (self-hosted) chrome
   ['Ziehe das Paneel auf deine Wand · ziehe die Ecke zum Skalieren', 'visualizer.hint'],
   ['Eigenes Raumfoto', 'visualizer.uploadPhoto'],
+  ['Zum Produkt', 'visualizer.viewProduct'],
   ['Zurücksetzen', 'visualizer.reset'],
 ];
 

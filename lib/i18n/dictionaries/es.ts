@@ -354,6 +354,7 @@ const es: Dictionary = {
   'visualizer.uploadPhoto': 'Tu propia foto de la sala',
   'visualizer.reset': 'Restablecer',
   'visualizer.hint': 'Arrastra el panel a tu pared · arrastra la esquina para escalar',
+  'visualizer.viewProduct': 'Ver producto',
 };
 
 export default es;

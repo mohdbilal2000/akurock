@@ -354,6 +354,7 @@ const en: Dictionary = {
   'visualizer.uploadPhoto': 'Your own room photo',
   'visualizer.reset': 'Reset',
   'visualizer.hint': 'Drag the panel onto your wall · drag the corner to resize',
+  'visualizer.viewProduct': 'View product',
 };
 
 export default en;

@@ -352,6 +352,7 @@ const de = {
   'visualizer.uploadPhoto': 'Eigenes Raumfoto',
   'visualizer.reset': 'Zurücksetzen',
   'visualizer.hint': 'Ziehe das Paneel auf deine Wand · ziehe die Ecke zum Skalieren',
+  'visualizer.viewProduct': 'Zum Produkt',
 } as const;
 
 export default de;
