@@ -256,7 +256,8 @@ const HTML_REPLACEMENTS: [string, TranslationKey][] = [
   ['AGBs', 'footer.terms'],
   ['Kontakt', 'content.contact.heading'],
   // Visualizer (self-hosted) chrome
-  ['Ziehe das Paneel auf deine Wand · ziehe die Ecke zum Skalieren', 'visualizer.hint'],
+  ['Ziehe das Paneel auf deine Wand · zieh an den Ecken für die Perspektive', 'visualizer.hint'],
+  ['Lamellenbreite', 'visualizer.slatWidth'],
   ['Eigenes Raumfoto', 'visualizer.uploadPhoto'],
   ['Zurücksetzen', 'visualizer.reset'],
 ];

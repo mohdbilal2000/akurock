@@ -69,120 +69,386 @@
 
 <body>
   <!-- Floating "back to site" control: the Visualizer is a full-screen embedded
-       tool (its iframe covers the viewport at a very high z-index), so a normal
-       navbar would be hidden behind it. This pill sits above the iframe and
-       always lets the visitor return to the site. href="/" is locale-prefixed
-       at render time (e.g. -> /de). -->
-  <a href="/" aria-label="Zurück zu Akurock" style="position:fixed;top:16px;left:16px;z-index:1000001;display:inline-flex;align-items:center;gap:6px;padding:10px 18px;background:#faf8f7;color:#0d0d0d;border-radius:999px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;text-decoration:none;box-shadow:0 2px 12px rgba(0,0,0,0.18);">&#8592; Akurock</a>
+       tool (it covers the viewport at a very high z-index), so a normal navbar
+       would be hidden behind it. This pill sits above the tool and always lets
+       the visitor return to the site. href="/" is locale-prefixed at render
+       time (e.g. -> /de). -->
+  <a href="/" class="av-back" aria-label="Zurück zu Akurock">&#8592; Akurock</a>
   <div class="page_wrap">
     <div class="page_main">
       <section>
         <div>
           <div class="w-embed">
             <!-- AKUROCK VISUALIZER — self-hosted (replaces the expired Wizart
-                 fitting-room embed). Pick a stone, drag the panel onto a room
-                 wall and resize it, or upload your own room photo. No third-party
+                 fitting-room embed). Pick a stone, place the panel on a wall and
+                 pull its corners so it follows the wall's perspective. The panel
+                 is rendered from a seamless slat texture and picks up the room's
+                 own light through a blurred multiply layer, so it sits in the
+                 photo instead of floating on top of it. No third-party
                  dependency. On-brand: Inter, #faf8f7 / #0d0d0d / #f24616. -->
             <div id="akurock-visualizer">
               <div class="av-topbar">
                 <div class="av-title">Visualizer</div>
                 <div class="av-actions">
-                  <label class="av-btn av-upload">
+                  <label class="av-btn av-solid" aria-label="Eigenes Raumfoto">
                     <input id="av-file" type="file" accept="image/*" hidden>
-                    <span>Eigenes Raumfoto</span>
+                    <svg class="av-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l1.4-2h7.2L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z"/><circle cx="12" cy="13.5" r="3.4"/></svg>
+                    <span class="av-btn-text">Eigenes Raumfoto</span>
                   </label>
-                  <button id="av-reset" class="av-btn av-ghost" type="button">Zurücksetzen</button>
+                  <button id="av-reset" class="av-btn av-ghost" type="button" aria-label="Zurücksetzen">
+                    <svg class="av-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12a7 7 0 1 1-2.05-4.95"/><path d="M19 4v4h-4"/></svg>
+                    <span class="av-btn-text">Zurücksetzen</span>
+                  </button>
                 </div>
               </div>
 
               <div class="av-stage" id="av-stage">
-                <img id="av-room" class="av-room" alt="Raum-Vorschau" src="/images/Skandi_Bedroom_3.webp">
-                <div id="av-panel" class="av-panel">
-                  <div class="av-panel-fill"></div>
-                  <span class="av-resize" id="av-resize" aria-label="Größe ändern"></span>
+                <div class="av-backdrop" id="av-backdrop"></div>
+                <div class="av-canvas" id="av-canvas">
+                  <div class="av-frame">
+                    <img id="av-room" class="av-room" alt="Raum-Vorschau" src="/images/visualizer/room-bedroom.webp">
+                    <div class="av-quad" id="av-quad">
+                      <div class="av-fill" id="av-fill"></div>
+                      <div class="av-relief"></div>
+                    </div>
+                    <div class="av-light" id="av-light"></div>
+                  </div>
+                  <svg class="av-outline" id="av-outline" aria-hidden="true">
+                    <polygon id="av-outline-shape" points=""></polygon>
+                  </svg>
+                  <div class="av-handles" id="av-handles"></div>
                 </div>
-                <div class="av-hint" id="av-hint">Ziehe das Paneel auf deine Wand · ziehe die Ecke zum Skalieren</div>
+                <div class="av-hint" id="av-hint">Ziehe das Paneel auf deine Wand · zieh an den Ecken für die Perspektive</div>
               </div>
 
-              <div class="av-picker" id="av-picker"><!-- stone swatches injected by JS --></div>
+              <div class="av-dock">
+                <div class="av-picker" id="av-picker"><!-- stone swatches injected by JS --></div>
+                <div class="av-tools">
+                  <div class="av-scenes" id="av-scenes"><!-- room scenes injected by JS --></div>
+                  <label class="av-range">
+                    <span class="av-range-label">Lamellenbreite</span>
+                    <input id="av-pitch" type="range" min="26" max="90" step="1" value="52">
+                  </label>
+                </div>
+              </div>
             </div>
 
             <script>
               (function () {
                 var STONES = [
-                  { slug: 'whisper', name: 'Whisper', tex: '/images/6672b83a8bd67b5b72bbd5fb_Whisper_Paneel.webp', sw: '/images/6672b845e7846b687ecca399_Whisper_Stone.webp' },
-                  { slug: 'brush',   name: 'Brush',   tex: '/images/6672c45aa4067e84ea2efbae_Brush_Paneele.webp', sw: '/images/6672c465bb2c1f412c8d9dbd_Brush_Stone.webp' },
-                  { slug: 'gaia',    name: 'Gaia',    tex: '/images/6672c5618fb534f344983a07_Gaia_Stone.webp',   sw: '/images/6672c5618fb534f344983a07_Gaia_Stone.webp' },
-                  { slug: 'yami',    name: 'Yami',    tex: '/images/6672c4a3cc07e459748b16a8_Yami_Paneel.webp',  sw: '/images/6672c50ce1fa6622177a75ca_Yami_Stone.webp' },
-                  { slug: 'yuki',    name: 'Yuki',    tex: '/images/6672c643b9abe5d94880a355_Yuki_Paneel.webp',  sw: '/images/6672c64c321c865a6ece5d6d_Yuki_Stone.webp' },
-                  { slug: 'ligia',   name: 'Ligia',   tex: '/images/6672c5cccadaf188f323804b_Ligia_Paneel.webp', sw: '/images/6672c5d54c31e70e1894d52f_ligia_Stone.webp' }
+                  { slug: 'whisper', name: 'Whisper' },
+                  { slug: 'brush',   name: 'Brush' },
+                  { slug: 'gaia',    name: 'Gaia' },
+                  { slug: 'yami',    name: 'Yami' },
+                  { slug: 'yuki',    name: 'Yuki' },
+                  { slug: 'ligia',   name: 'Ligia' }
                 ];
-                var picker = document.getElementById('av-picker');
-                var panel = document.getElementById('av-panel');
-                var fill = panel.querySelector('.av-panel-fill');
-                var stage = document.getElementById('av-stage');
-                var room = document.getElementById('av-room');
-                var resize = document.getElementById('av-resize');
-                var hint = document.getElementById('av-hint');
+                var SCENES = [
+                  '/images/visualizer/room-bedroom.webp',
+                  '/images/visualizer/room-living.webp',
+                  '/images/visualizer/room-japandi.webp'
+                ];
+                // The textured quad is authored in a fixed 1000x1000 coordinate
+                // space and then mapped onto the four draggable corners, so the
+                // slat width stays independent of the panel's screen size.
+                var BASE = 1000;
+                var DEFAULT_PTS = [[0.22, 0.06], [0.78, 0.06], [0.78, 0.45], [0.22, 0.45]];
 
-                function selectStone(s, btn) {
-                  fill.style.backgroundImage = 'url("' + s.tex + '")';
-                  Array.prototype.forEach.call(picker.children, function (c) { c.classList.remove('active'); });
-                  if (btn) btn.classList.add('active');
+                var stage = document.getElementById('av-stage');
+                var canvas = document.getElementById('av-canvas');
+                var backdrop = document.getElementById('av-backdrop');
+                var room = document.getElementById('av-room');
+                var quad = document.getElementById('av-quad');
+                var fill = document.getElementById('av-fill');
+                var light = document.getElementById('av-light');
+                var outline = document.getElementById('av-outline');
+                var shape = document.getElementById('av-outline-shape');
+                var handlesBox = document.getElementById('av-handles');
+                var picker = document.getElementById('av-picker');
+                var scenes = document.getElementById('av-scenes');
+                var hint = document.getElementById('av-hint');
+                var pitchInput = document.getElementById('av-pitch');
+
+                // Corners in normalised stage coordinates: TL, TR, BR, BL.
+                var pts = DEFAULT_PTS.map(function (p) { return [p[0], p[1]]; });
+                var handles = [];
+
+                // ---------- projective mapping (square -> quad) ----------
+                function adj(m) {
+                  return [
+                    m[4] * m[8] - m[5] * m[7], m[2] * m[7] - m[1] * m[8], m[1] * m[5] - m[2] * m[4],
+                    m[5] * m[6] - m[3] * m[8], m[0] * m[8] - m[2] * m[6], m[2] * m[3] - m[0] * m[5],
+                    m[3] * m[7] - m[4] * m[6], m[1] * m[6] - m[0] * m[7], m[0] * m[4] - m[1] * m[3]
+                  ];
                 }
-                STONES.forEach(function (s, i) {
+                function mulmm(a, b) {
+                  var c = [], i, j, k, s;
+                  for (i = 0; i < 3; i++) for (j = 0; j < 3; j++) {
+                    for (s = 0, k = 0; k < 3; k++) s += a[3 * i + k] * b[3 * k + j];
+                    c[3 * i + j] = s;
+                  }
+                  return c;
+                }
+                function mulmv(m, v) {
+                  return [
+                    m[0] * v[0] + m[1] * v[1] + m[2] * v[2],
+                    m[3] * v[0] + m[4] * v[1] + m[5] * v[2],
+                    m[6] * v[0] + m[7] * v[1] + m[8] * v[2]
+                  ];
+                }
+                function basis(p) {
+                  var m = [p[0][0], p[1][0], p[2][0], p[0][1], p[1][1], p[2][1], 1, 1, 1];
+                  var v = mulmv(adj(m), [p[3][0], p[3][1], 1]);
+                  return mulmm(m, [v[0], 0, 0, 0, v[1], 0, 0, 0, v[2]]);
+                }
+                function transformFor(dest) {
+                  var src = [[0, 0], [BASE, 0], [BASE, BASE], [0, BASE]];
+                  var t = mulmm(basis(dest), adj(basis(src)));
+                  for (var i = 0; i < 9; i++) t[i] = t[i] / t[8];
+                  return 'matrix3d(' + [
+                    t[0], t[3], 0, t[6],
+                    t[1], t[4], 0, t[7],
+                    0, 0, 1, 0,
+                    t[2], t[5], 0, t[8]
+                  ].join(',') + ')';
+                }
+
+                // ---------- rendering ----------
+                // The photo is fitted (never cropped) inside the stage, and the
+                // panel lives in the photo's own coordinate space.
+                function fitCanvas() {
+                  var r = stage.getBoundingClientRect();
+                  var pad = 22;   // keeps corner handles reachable at the edges
+                  var maxW = Math.max(40, r.width - pad * 2);
+                  var maxH = Math.max(40, r.height - pad * 2);
+                  var ar = (room.naturalWidth && room.naturalHeight)
+                    ? room.naturalWidth / room.naturalHeight : 1;
+                  var w = maxW, h = w / ar;
+                  if (h > maxH) { h = maxH; w = h * ar; }
+                  canvas.style.width = Math.round(w) + 'px';
+                  canvas.style.height = Math.round(h) + 'px';
+                }
+                function stageSize() {
+                  var r = canvas.getBoundingClientRect();
+                  return [r.width, r.height];
+                }
+                function pixels() {
+                  var s = stageSize();
+                  return pts.map(function (p) { return [p[0] * s[0], p[1] * s[1]]; });
+                }
+                function render() {
+                  fitCanvas();
+                  var px = pixels(), i;
+                  quad.style.transform = transformFor(px);
+                  var poly = px.map(function (p) { return p[0].toFixed(1) + 'px ' + p[1].toFixed(1) + 'px'; }).join(',');
+                  light.style.clipPath = 'polygon(' + poly + ')';
+                  light.style.webkitClipPath = 'polygon(' + poly + ')';
+                  shape.setAttribute('points', px.map(function (p) { return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' '));
+                  var s = stageSize();
+                  outline.setAttribute('viewBox', '0 0 ' + s[0] + ' ' + s[1]);
+                  for (i = 0; i < handles.length; i++) {
+                    handles[i].style.left = px[i][0] + 'px';
+                    handles[i].style.top = px[i][1] + 'px';
+                  }
+                }
+                function setRoom(src) {
+                  room.src = src;
+                  light.style.backgroundImage = 'url("' + src + '")';
+                  backdrop.style.backgroundImage = 'url("' + src + '")';
+                }
+                function setPitch(v) {
+                  // One texture tile holds 8 slats, so the tile width is 8 * pitch.
+                  fill.style.backgroundSize = (v * 8) + 'px auto';
+                }
+                function selectStone(stone, btn) {
+                  fill.style.backgroundImage = 'url("/images/visualizer/slat-' + stone.slug + '.webp")';
+                  Array.prototype.forEach.call(picker.children, function (c) { c.classList.remove('is-active'); });
+                  if (btn) btn.classList.add('is-active');
+                }
+
+                // ---------- controls ----------
+                STONES.forEach(function (stone, i) {
                   var b = document.createElement('button');
                   b.type = 'button';
                   b.className = 'av-swatch';
-                  b.innerHTML = '<span class="av-swatch-img" style="background-image:url(\'' + s.sw + '\')"></span><span class="av-swatch-name">' + s.name + '</span>';
-                  b.addEventListener('click', function () { selectStone(s, b); });
+                  b.innerHTML =
+                    '<span class="av-swatch-img" style="background-image:url(\'/images/visualizer/swatch-' + stone.slug + '.webp\')"></span>' +
+                    '<span class="av-swatch-name">' + stone.name + '</span>';
+                  b.addEventListener('click', function () { selectStone(stone, b); });
                   picker.appendChild(b);
-                  if (i === 0) selectStone(s, b);
+                  if (i === 0) selectStone(stone, b);
                 });
 
-                // ---- drag + resize (pointer events: mouse + touch) ----
-                var dragging = false, resizing = false, sx = 0, sy = 0, sl = 0, st = 0, sw = 0, sh = 0;
-                function stageBox() { return stage.getBoundingClientRect(); }
-                function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+                SCENES.forEach(function (src, i) {
+                  var b = document.createElement('button');
+                  b.type = 'button';
+                  b.className = 'av-scene' + (i === 0 ? ' is-active' : '');
+                  b.setAttribute('aria-label', 'Raum ' + (i + 1));
+                  b.style.backgroundImage = 'url("' + src + '")';
+                  b.addEventListener('click', function () {
+                    setRoom(src);
+                    Array.prototype.forEach.call(scenes.children, function (c) { c.classList.remove('is-active'); });
+                    b.classList.add('is-active');
+                  });
+                  scenes.appendChild(b);
+                });
 
-                panel.addEventListener('pointerdown', function (e) {
-                  if (e.target === resize) return;
-                  dragging = true; panel.setPointerCapture(e.pointerId);
-                  var r = panel.getBoundingClientRect(), b = stageBox();
-                  sx = e.clientX; sy = e.clientY; sl = r.left - b.left; st = r.top - b.top;
-                  hint.style.opacity = '0';
-                  e.preventDefault();
-                });
-                resize.addEventListener('pointerdown', function (e) {
-                  resizing = true; resize.setPointerCapture(e.pointerId);
-                  sx = e.clientX; sy = e.clientY; sw = panel.offsetWidth; sh = panel.offsetHeight;
-                  e.preventDefault(); e.stopPropagation();
-                });
-                window.addEventListener('pointermove', function (e) {
-                  var b = stageBox();
-                  if (dragging) {
-                    var nl = clamp(sl + (e.clientX - sx), 0, b.width - panel.offsetWidth);
-                    var nt = clamp(st + (e.clientY - sy), 0, b.height - panel.offsetHeight);
-                    panel.style.left = nl + 'px'; panel.style.top = nt + 'px';
-                  } else if (resizing) {
-                    var nw = clamp(sw + (e.clientX - sx), 60, b.width - panel.offsetLeft);
-                    var nh = clamp(sh + (e.clientY - sy), 60, b.height - panel.offsetTop);
-                    panel.style.width = nw + 'px'; panel.style.height = nh + 'px';
-                  }
-                });
-                window.addEventListener('pointerup', function () { dragging = false; resizing = false; });
+                for (var h = 0; h < 4; h++) {
+                  var el = document.createElement('button');
+                  el.type = 'button';
+                  el.className = 'av-handle';
+                  el.dataset.index = String(h);
+                  el.setAttribute('aria-label', 'Ecke ' + (h + 1));
+                  handlesBox.appendChild(el);
+                  handles.push(el);
+                }
 
-                // ---- upload own room ----
+                setRoom(SCENES[0]);
+                setPitch(parseInt(pitchInput.value, 10));
+                pitchInput.addEventListener('input', function () { setPitch(parseInt(pitchInput.value, 10)); });
+
                 document.getElementById('av-file').addEventListener('change', function (e) {
                   var f = e.target.files && e.target.files[0];
                   if (!f) return;
-                  room.src = URL.createObjectURL(f);
+                  setRoom(URL.createObjectURL(f));
+                  Array.prototype.forEach.call(scenes.children, function (c) { c.classList.remove('is-active'); });
                 });
                 document.getElementById('av-reset').addEventListener('click', function () {
-                  room.src = '/images/Skandi_Bedroom_3.webp';
-                  panel.style.left = ''; panel.style.top = ''; panel.style.width = ''; panel.style.height = '';
-                  hint.style.opacity = '';
+                  pts = DEFAULT_PTS.map(function (p) { return [p[0], p[1]]; });
+                  pitchInput.value = 52;
+                  setPitch(52);
+                  setRoom(SCENES[0]);
+                  Array.prototype.forEach.call(scenes.children, function (c, i) { c.classList.toggle('is-active', i === 0); });
+                  stage.classList.remove('is-touched');
+                  hint.classList.remove('is-hidden');
+                  render();
                 });
+
+                // ---------- interaction ----------
+                var pointers = {};      // active pointers by id
+                var gesture = null;     // { type, index, start, pts }
+                var idleTimer = null;
+
+                function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
+                function local(e) {
+                  var r = canvas.getBoundingClientRect();
+                  return [(e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height];
+                }
+                function inside(p) {
+                  var hit = false, i, j;
+                  for (i = 0, j = 3; i < 4; j = i++) {
+                    var a = pts[i], b = pts[j];
+                    if ((a[1] > p[1]) !== (b[1] > p[1]) &&
+                        p[0] < (b[0] - a[0]) * (p[1] - a[1]) / (b[1] - a[1]) + a[0]) hit = !hit;
+                  }
+                  return hit;
+                }
+                function snapshot() { return pts.map(function (p) { return [p[0], p[1]]; }); }
+                function activate() {
+                  stage.classList.add('is-active');
+                  hint.classList.add('is-hidden');
+                  clearTimeout(idleTimer);
+                }
+                function deactivate() {
+                  clearTimeout(idleTimer);
+                  idleTimer = setTimeout(function () { stage.classList.remove('is-active'); }, 1400);
+                }
+                function pointerList() {
+                  return Object.keys(pointers).map(function (k) { return pointers[k]; });
+                }
+
+                canvas.addEventListener('pointerdown', function (e) {
+                  var p = local(e);
+                  var handleIndex = e.target.classList && e.target.classList.contains('av-handle')
+                    ? parseInt(e.target.dataset.index, 10) : -1;
+                  if (handleIndex < 0 && !inside(p)) return;
+
+                  pointers[e.pointerId] = p;
+                  canvas.setPointerCapture(e.pointerId);
+                  activate();
+                  e.preventDefault();
+
+                  var list = pointerList();
+                  if (list.length >= 2) {
+                    gesture = { type: 'pinch', start: list.slice(0, 2).map(function (q) { return [q[0], q[1]]; }), pts: snapshot() };
+                  } else if (handleIndex >= 0) {
+                    gesture = { type: 'corner', index: handleIndex, start: p, pts: snapshot() };
+                  } else {
+                    gesture = { type: 'move', start: p, pts: snapshot() };
+                  }
+                });
+
+                canvas.addEventListener('pointermove', function (e) {
+                  if (!(e.pointerId in pointers) || !gesture) return;
+                  pointers[e.pointerId] = local(e);
+                  var list = pointerList();
+
+                  if (gesture.type === 'corner') {
+                    var p = pointers[e.pointerId];
+                    pts[gesture.index] = [clamp01(p[0]), clamp01(p[1])];
+                  } else if (gesture.type === 'move') {
+                    var q = pointers[e.pointerId];
+                    var dx = q[0] - gesture.start[0], dy = q[1] - gesture.start[1];
+                    // Shift as a whole, but never past the edges of the photo.
+                    var xs = gesture.pts.map(function (c) { return c[0]; });
+                    var ys = gesture.pts.map(function (c) { return c[1]; });
+                    dx = Math.max(-Math.min.apply(null, xs), Math.min(dx, 1 - Math.max.apply(null, xs)));
+                    dy = Math.max(-Math.min.apply(null, ys), Math.min(dy, 1 - Math.max.apply(null, ys)));
+                    pts = gesture.pts.map(function (c) { return [c[0] + dx, c[1] + dy]; });
+                  } else if (gesture.type === 'pinch' && list.length >= 2) {
+                    var a0 = gesture.start[0], b0 = gesture.start[1];
+                    var a1 = list[0], b1 = list[1];
+                    var d0 = Math.hypot(b0[0] - a0[0], b0[1] - a0[1]) || 1e-6;
+                    var d1 = Math.hypot(b1[0] - a1[0], b1[1] - a1[1]);
+                    var scale = Math.max(0.2, Math.min(4, d1 / d0));
+                    var c0 = [(a0[0] + b0[0]) / 2, (a0[1] + b0[1]) / 2];
+                    var c1 = [(a1[0] + b1[0]) / 2, (a1[1] + b1[1]) / 2];
+                    pts = gesture.pts.map(function (c) {
+                      return [
+                        clamp01(c1[0] + (c[0] - c0[0]) * scale),
+                        clamp01(c1[1] + (c[1] - c0[1]) * scale)
+                      ];
+                    });
+                  }
+                  render();
+                });
+
+                function endPointer(e) {
+                  delete pointers[e.pointerId];
+                  if (!pointerList().length) { gesture = null; deactivate(); }
+                  else if (gesture && gesture.type === 'pinch') { gesture = null; }
+                }
+                canvas.addEventListener('pointerup', endPointer);
+                canvas.addEventListener('pointercancel', endPointer);
+
+                // Keyboard nudging keeps the corners usable without a pointer.
+                handlesBox.addEventListener('keydown', function (e) {
+                  var i = e.target.dataset && e.target.dataset.index;
+                  if (i === undefined) return;
+                  var step = e.shiftKey ? 0.05 : 0.01, d = null;
+                  if (e.key === 'ArrowLeft') d = [-step, 0];
+                  if (e.key === 'ArrowRight') d = [step, 0];
+                  if (e.key === 'ArrowUp') d = [0, -step];
+                  if (e.key === 'ArrowDown') d = [0, step];
+                  if (!d) return;
+                  e.preventDefault();
+                  var idx = parseInt(i, 10);
+                  pts[idx] = [clamp01(pts[idx][0] + d[0]), clamp01(pts[idx][1] + d[1])];
+                  activate();
+                  deactivate();
+                  render();
+                });
+
+                window.addEventListener('resize', render);
+                if (window.ResizeObserver) new ResizeObserver(render).observe(stage);
+                room.addEventListener('load', render);
+                render();
+
+                // Warm the remaining textures so switching stones is instant.
+                window.setTimeout(function () {
+                  STONES.forEach(function (s) { new Image().src = '/images/visualizer/slat-' + s.slug + '.webp'; });
+                  SCENES.forEach(function (s) { new Image().src = s; });
+                }, 1200);
               })();
             </script>
 
@@ -190,73 +456,215 @@
               #akurock-visualizer {
                 position: fixed; inset: 0; z-index: 999990;
                 display: flex; flex-direction: column;
-                background: #faf8f7; font-family: 'Inter', sans-serif;
+                background: #faf8f7; font-family: 'Inter', sans-serif; color: #0d0d0d;
+                overscroll-behavior: none; -webkit-user-select: none; user-select: none;
               }
+              .av-back {
+                position: fixed; top: 18px; left: 18px; z-index: 1000001;
+                display: inline-flex; align-items: center; gap: 6px;
+                padding: 10px 18px; border-radius: 999px;
+                background: rgba(255,255,255,.92); backdrop-filter: blur(10px);
+                color: #0d0d0d; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600;
+                text-decoration: none; box-shadow: 0 2px 14px rgba(13,13,13,.14);
+                transition: transform .18s ease, box-shadow .18s ease;
+              }
+              .av-back:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(13,13,13,.18); }
+
               #akurock-visualizer .av-topbar {
+                position: relative; flex: none;
                 display: flex; align-items: center; justify-content: flex-end; gap: 10px;
-                padding: 14px 16px 14px 150px; flex: none;
+                padding: 16px 18px 12px 170px;
               }
               #akurock-visualizer .av-title {
-                position: absolute; left: 50%; transform: translateX(-50%);
-                font-weight: 600; letter-spacing: -0.02em; font-size: 18px; color: #0d0d0d;
+                position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
+                font-size: 17px; font-weight: 600; letter-spacing: -.02em;
               }
               #akurock-visualizer .av-btn {
-                display: inline-flex; align-items: center; cursor: pointer;
+                display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
                 font-family: inherit; font-size: 13px; font-weight: 600; line-height: 1;
-                padding: 11px 18px; border-radius: 999px; border: 1px solid #0d0d0d;
-                background: #0d0d0d; color: #fff; transition: opacity .15s;
+                padding: 12px 20px; border-radius: 999px; border: 1px solid #0d0d0d;
+                background: #0d0d0d; color: #fff; white-space: nowrap;
+                transition: opacity .15s ease, transform .15s ease;
               }
-              #akurock-visualizer .av-btn:hover { opacity: .85; }
-              #akurock-visualizer .av-ghost { background: transparent; color: #0d0d0d; }
+              #akurock-visualizer .av-btn:hover { opacity: .85; transform: translateY(-1px); }
+              #akurock-visualizer .av-ghost { background: transparent; color: #0d0d0d; border-color: rgba(13,13,13,.22); }
+              #akurock-visualizer .av-ghost:hover { border-color: #0d0d0d; opacity: 1; }
+              #akurock-visualizer .av-icon {
+                width: 17px; height: 17px; flex: none;
+                fill: none; stroke: currentColor; stroke-width: 1.7;
+                stroke-linecap: round; stroke-linejoin: round;
+              }
+
               #akurock-visualizer .av-stage {
-                position: relative; flex: 1; margin: 0 16px; border-radius: 14px;
-                overflow: hidden; background: #e9e5e2; touch-action: none;
+                position: relative; flex: 1 1 auto; min-height: 0;
+                margin: 0 18px; border-radius: 18px; overflow: hidden;
+                display: flex; align-items: center; justify-content: center;
+                background: #e9e5e2; touch-action: none; user-select: none;
+              }
+              /* Blurred fill behind the fitted photo, so any aspect ratio sits
+                 in the stage without letterbox bars. */
+              #akurock-visualizer .av-backdrop {
+                position: absolute; inset: -8%;
+                background-size: cover; background-position: center;
+                filter: blur(38px) brightness(.82) saturate(.8);
+              }
+              #akurock-visualizer .av-canvas {
+                /* Absolutely centred so its size never feeds back into the
+                   stage's own layout while we fit the photo. */
+                position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
+                touch-action: none;
+                box-shadow: 0 20px 50px rgba(13,13,13,.28);
+              }
+              #akurock-visualizer .av-frame {
+                position: absolute; inset: 0; overflow: hidden; border-radius: 6px;
               }
               #akurock-visualizer .av-room {
-                position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; user-select: none;
+                position: absolute; inset: 0; width: 100%; height: 100%;
+                object-fit: fill; user-select: none; pointer-events: none;
               }
-              #akurock-visualizer .av-panel {
-                position: absolute; left: 32%; top: 18%; width: 38%; height: 58%;
-                cursor: grab; box-shadow: 0 10px 30px rgba(0,0,0,.28); border-radius: 4px;
+
+              /* The textured panel: a 1000x1000 plane mapped onto the four corners. */
+              #akurock-visualizer .av-quad {
+                position: absolute; left: 0; top: 0; width: 1000px; height: 1000px;
+                transform-origin: 0 0; will-change: transform;
+                box-shadow: 12px 22px 46px rgba(13,13,13,.34);
+                cursor: grab;
+              }
+              #akurock-visualizer .av-stage.is-active .av-quad { cursor: grabbing; }
+              #akurock-visualizer .av-stage.is-active .av-canvas { box-shadow: 0 20px 50px rgba(13,13,13,.28); }
+              #akurock-visualizer .av-fill {
+                position: absolute; inset: 0;
+                background-repeat: repeat; background-position: center top;
+                filter: brightness(1.12) contrast(1.02);
+              }
+              /* Edge relief: a hint of thickness at the top and a shadow line at
+                 the bottom, so the panel reads as a solid object on the wall. */
+              #akurock-visualizer .av-relief {
+                position: absolute; inset: 0; pointer-events: none;
+                background:
+                  linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,0) 4%),
+                  linear-gradient(0deg, rgba(13,13,13,.20), rgba(13,13,13,0) 5%),
+                  linear-gradient(90deg, rgba(13,13,13,.14), rgba(13,13,13,0) 3%),
+                  linear-gradient(270deg, rgba(255,255,255,.10), rgba(255,255,255,0) 3%);
+                box-shadow: inset 0 0 0 1px rgba(13,13,13,.16);
+              }
+              /* Blurred copy of the room, multiplied over the panel and clipped to
+                 it — the panel then carries the room's own light and shadows. */
+              #akurock-visualizer .av-light {
+                position: absolute; inset: 0; pointer-events: none;
+                background-size: 100% 100%; background-position: center;
+                filter: blur(26px) saturate(.9);
+                mix-blend-mode: multiply; opacity: .55;
+              }
+              #akurock-visualizer .av-outline {
+                position: absolute; inset: 0; width: 100%; height: 100%;
+                pointer-events: none; opacity: 0; transition: opacity .25s ease;
+              }
+              #akurock-visualizer .av-outline polygon {
+                fill: none; stroke: rgba(255,255,255,.9); stroke-width: 1.5; stroke-dasharray: 6 5;
+              }
+              #akurock-visualizer .av-stage.is-active .av-outline { opacity: 1; }
+
+              #akurock-visualizer .av-handles { position: absolute; inset: 0; pointer-events: none; }
+              #akurock-visualizer .av-handle {
+                position: absolute; width: 30px; height: 30px; padding: 0;
+                transform: translate(-50%,-50%); pointer-events: auto;
+                border-radius: 50%; border: 3px solid #fff; background: #f24616;
+                box-shadow: 0 2px 10px rgba(13,13,13,.35); cursor: grab;
+                opacity: .55; transition: opacity .2s ease, transform .12s ease;
                 touch-action: none;
               }
-              #akurock-visualizer .av-panel:active { cursor: grabbing; }
-              #akurock-visualizer .av-panel-fill {
-                position: absolute; inset: 0; border-radius: 4px;
-                background-size: auto 100%; background-repeat: repeat-x; background-position: center;
-                outline: 2px solid rgba(255,255,255,.65); outline-offset: -2px;
-              }
-              #akurock-visualizer .av-resize {
-                position: absolute; right: -9px; bottom: -9px; width: 26px; height: 26px;
-                border-radius: 50%; background: #f24616; border: 3px solid #fff;
-                box-shadow: 0 2px 8px rgba(0,0,0,.3); cursor: nwse-resize;
-              }
+              #akurock-visualizer .av-handle:hover,
+              #akurock-visualizer .av-handle:focus-visible,
+              #akurock-visualizer .av-stage.is-active .av-handle { opacity: 1; }
+              #akurock-visualizer .av-handle:active { transform: translate(-50%,-50%) scale(1.12); }
+
               #akurock-visualizer .av-hint {
-                position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%);
-                background: rgba(13,13,13,.72); color: #fff; font-size: 12px; font-weight: 500;
-                padding: 8px 14px; border-radius: 999px; white-space: nowrap;
-                transition: opacity .3s; pointer-events: none; max-width: 92%;
+                position: absolute; left: 50%; bottom: 16px; transform: translateX(-50%);
+                background: rgba(13,13,13,.74); color: #fff; font-size: 12.5px; font-weight: 500;
+                padding: 9px 16px; border-radius: 999px; max-width: 92%; text-align: center;
+                transition: opacity .3s ease; pointer-events: none;
+              }
+              #akurock-visualizer .av-hint.is-hidden { opacity: 0; }
+
+              #akurock-visualizer .av-dock {
+                flex: none; padding: 14px 18px calc(12px + env(safe-area-inset-bottom));
               }
               #akurock-visualizer .av-picker {
-                flex: none; display: flex; gap: 12px; overflow-x: auto;
-                padding: 14px 16px calc(14px + env(safe-area-inset-bottom));
-                -webkit-overflow-scrolling: touch;
+                display: flex; gap: 14px; overflow-x: auto; padding-bottom: 10px;
+                scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
               }
+              #akurock-visualizer .av-picker::-webkit-scrollbar { display: none; }
               #akurock-visualizer .av-swatch {
-                flex: none; display: flex; flex-direction: column; align-items: center; gap: 6px;
-                border: none; background: none; cursor: pointer; padding: 0; font-family: inherit;
+                flex: none; scroll-snap-align: center;
+                display: flex; flex-direction: column; align-items: center; gap: 7px;
+                border: none; background: none; padding: 0; cursor: pointer; font-family: inherit;
               }
               #akurock-visualizer .av-swatch-img {
-                width: 54px; height: 54px; border-radius: 50%; background-size: cover; background-position: center;
-                border: 2px solid transparent; transition: border-color .15s, transform .15s;
+                width: 52px; height: 52px; border-radius: 50%;
+                background-size: cover; background-position: center;
+                box-shadow: 0 0 0 1px rgba(13,13,13,.10);
+                outline: 2px solid transparent; outline-offset: 3px;
+                transition: outline-color .18s ease, transform .18s ease;
               }
-              #akurock-visualizer .av-swatch.active .av-swatch-img { border-color: #f24616; transform: scale(1.06); }
-              #akurock-visualizer .av-swatch-name { font-size: 12px; font-weight: 600; color: #464646; }
-              #akurock-visualizer .av-swatch.active .av-swatch-name { color: #0d0d0d; }
-              @media (max-width: 600px) {
-                #akurock-visualizer .av-topbar { padding: 12px 12px 10px 120px; }
-                #akurock-visualizer .av-stage { margin: 0 10px; }
+              #akurock-visualizer .av-swatch:hover .av-swatch-img { transform: scale(1.05); }
+              #akurock-visualizer .av-swatch.is-active .av-swatch-img { outline-color: #f24616; transform: scale(1.05); }
+              #akurock-visualizer .av-swatch-name { font-size: 12px; font-weight: 600; color: #6b6b6b; }
+              #akurock-visualizer .av-swatch.is-active .av-swatch-name { color: #0d0d0d; }
+
+              #akurock-visualizer .av-tools {
+                display: flex; align-items: center; justify-content: space-between; gap: 18px;
+                padding-top: 12px; border-top: 1px solid rgba(13,13,13,.08);
+              }
+              #akurock-visualizer .av-scenes { display: flex; gap: 8px; }
+              #akurock-visualizer .av-scene {
+                width: 42px; height: 32px; border-radius: 9px; border: none; padding: 0; cursor: pointer;
+                background-size: cover; background-position: center;
+                box-shadow: 0 0 0 1px rgba(13,13,13,.12);
+                outline: 2px solid transparent; outline-offset: 2px;
+                transition: outline-color .18s ease, transform .18s ease;
+              }
+              #akurock-visualizer .av-scene:hover { transform: translateY(-1px); }
+              #akurock-visualizer .av-scene.is-active { outline-color: #f24616; }
+
+              #akurock-visualizer .av-range { display: flex; align-items: center; gap: 12px; min-width: 0; }
+              #akurock-visualizer .av-range-label {
+                font-size: 12px; font-weight: 600; color: #6b6b6b; white-space: nowrap;
+              }
+              #akurock-visualizer .av-range input {
+                -webkit-appearance: none; appearance: none; width: 190px; max-width: 42vw;
+                height: 4px; border-radius: 999px; background: rgba(13,13,13,.14); outline: none;
+              }
+              #akurock-visualizer .av-range input::-webkit-slider-thumb {
+                -webkit-appearance: none; appearance: none; width: 18px; height: 18px;
+                border-radius: 50%; background: #0d0d0d; border: 3px solid #fff;
+                box-shadow: 0 1px 6px rgba(13,13,13,.3); cursor: pointer;
+              }
+              #akurock-visualizer .av-range input::-moz-range-thumb {
+                width: 18px; height: 18px; border-radius: 50%; background: #0d0d0d;
+                border: 3px solid #fff; box-shadow: 0 1px 6px rgba(13,13,13,.3); cursor: pointer;
+              }
+
+              @media (max-width: 720px) {
+                .av-back { top: 12px; left: 12px; padding: 9px 14px; font-size: 13px; }
+                #akurock-visualizer .av-topbar { padding: 12px 12px 8px 130px; }
+                #akurock-visualizer .av-title { display: none; }
+                #akurock-visualizer .av-topbar { justify-content: flex-end; }
+                #akurock-visualizer .av-actions { display: flex; gap: 8px; }
+                #akurock-visualizer .av-btn { padding: 0; width: 42px; height: 42px; justify-content: center; }
+                #akurock-visualizer .av-btn-text {
+                  position: absolute; width: 1px; height: 1px; overflow: hidden;
+                  clip: rect(0 0 0 0); white-space: nowrap;
+                }
+                #akurock-visualizer .av-icon { width: 19px; height: 19px; }
+                #akurock-visualizer .av-stage { margin: 0 12px; border-radius: 14px; }
+                #akurock-visualizer .av-dock { padding: 12px 12px calc(10px + env(safe-area-inset-bottom)); }
                 #akurock-visualizer .av-swatch-img { width: 46px; height: 46px; }
+                #akurock-visualizer .av-handle { width: 28px; height: 28px; opacity: .85; }
+                #akurock-visualizer .av-tools { gap: 12px; }
+                #akurock-visualizer .av-range-label { display: none; }
+                #akurock-visualizer .av-hint { font-size: 11.5px; bottom: 12px; }
               }
             </style>
           </div>

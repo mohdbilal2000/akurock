@@ -353,7 +353,8 @@ const es: Dictionary = {
   // Visualizer (self-hosted) chrome
   'visualizer.uploadPhoto': 'Tu propia foto de la sala',
   'visualizer.reset': 'Restablecer',
-  'visualizer.hint': 'Arrastra el panel a tu pared · arrastra la esquina para escalar',
+  'visualizer.hint': 'Arrastra el panel a tu pared · tira de las esquinas para ajustar la perspectiva',
+  'visualizer.slatWidth': 'Ancho de lama',
 };
 
 export default es;

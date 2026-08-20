@@ -353,7 +353,8 @@ const en: Dictionary = {
   // Visualizer (self-hosted) chrome
   'visualizer.uploadPhoto': 'Your own room photo',
   'visualizer.reset': 'Reset',
-  'visualizer.hint': 'Drag the panel onto your wall · drag the corner to resize',
+  'visualizer.hint': 'Drag the panel onto your wall · pull the corners to match the perspective',
+  'visualizer.slatWidth': 'Slat width',
 };
 
 export default en;

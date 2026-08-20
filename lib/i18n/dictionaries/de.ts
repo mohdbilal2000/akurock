@@ -351,7 +351,8 @@ const de = {
   // Visualizer (self-hosted) chrome
   'visualizer.uploadPhoto': 'Eigenes Raumfoto',
   'visualizer.reset': 'Zurücksetzen',
-  'visualizer.hint': 'Ziehe das Paneel auf deine Wand · ziehe die Ecke zum Skalieren',
+  'visualizer.hint': 'Ziehe das Paneel auf deine Wand · zieh an den Ecken für die Perspektive',
+  'visualizer.slatWidth': 'Lamellenbreite',
 } as const;
 
 export default de;
