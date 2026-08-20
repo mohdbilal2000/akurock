@@ -355,6 +355,7 @@ const en: Dictionary = {
   'visualizer.reset': 'Reset',
   'visualizer.hint': 'Drag the panel onto your wall · pull the corners to match the perspective',
   'visualizer.slatWidth': 'Slat width',
+  'visualizer.saveImage': 'Save image',
 };
 
 export default en;

@@ -355,6 +355,7 @@ const es: Dictionary = {
   'visualizer.reset': 'Restablecer',
   'visualizer.hint': 'Arrastra el panel a tu pared · tira de las esquinas para ajustar la perspectiva',
   'visualizer.slatWidth': 'Ancho de lama',
+  'visualizer.saveImage': 'Guardar imagen',
 };
 
 export default es;

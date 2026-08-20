@@ -80,12 +80,14 @@
         <div>
           <div class="w-embed">
             <!-- AKUROCK VISUALIZER — self-hosted (replaces the expired Wizart
-                 fitting-room embed). Pick a stone, place the panel on a wall and
-                 pull its corners so it follows the wall's perspective. The panel
-                 is rendered from a seamless slat texture and picks up the room's
-                 own light through a blurred multiply layer, so it sits in the
-                 photo instead of floating on top of it. No third-party
-                 dependency. On-brand: Inter, #faf8f7 / #0d0d0d / #f24616. -->
+                 fitting-room embed). The panel is real geometry: one mesh per
+                 slat, extruded off the wall, lit by a light rig estimated from
+                 the room photo, casting its own shadows into the gaps and onto
+                 the wall. Pinning the four corners solves the wall's pose
+                 (focal length + plane orientation from the rectangle), so the
+                 render sits in the photo's perspective instead of being a
+                 warped picture of a panel. three.js is self-hosted under
+                 /js/three. On-brand: Inter, #faf8f7 / #0d0d0d / #f24616. -->
             <div id="akurock-visualizer">
               <div class="av-topbar">
                 <div class="av-title">Visualizer</div>
@@ -95,6 +97,10 @@
                     <svg class="av-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l1.4-2h7.2L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z"/><circle cx="12" cy="13.5" r="3.4"/></svg>
                     <span class="av-btn-text">Eigenes Raumfoto</span>
                   </label>
+                  <button id="av-save" class="av-btn av-ghost" type="button" aria-label="Bild speichern">
+                    <svg class="av-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11"/><path d="m8 11 4 4 4-4"/><path d="M5 19h14"/></svg>
+                    <span class="av-btn-text">Bild speichern</span>
+                  </button>
                   <button id="av-reset" class="av-btn av-ghost" type="button" aria-label="Zurücksetzen">
                     <svg class="av-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12a7 7 0 1 1-2.05-4.95"/><path d="M19 4v4h-4"/></svg>
                     <span class="av-btn-text">Zurücksetzen</span>
@@ -107,10 +113,7 @@
                 <div class="av-canvas" id="av-canvas">
                   <div class="av-frame">
                     <img id="av-room" class="av-room" alt="Raum-Vorschau" src="/images/visualizer/room-bedroom.webp">
-                    <div class="av-quad" id="av-quad">
-                      <div class="av-fill" id="av-fill"></div>
-                      <div class="av-relief"></div>
-                    </div>
+                    <canvas id="av-gl" class="av-gl"></canvas>
                     <div class="av-light" id="av-light"></div>
                   </div>
                   <svg class="av-outline" id="av-outline" aria-hidden="true">
@@ -127,329 +130,609 @@
                   <div class="av-scenes" id="av-scenes"><!-- room scenes injected by JS --></div>
                   <label class="av-range">
                     <span class="av-range-label">Lamellenbreite</span>
-                    <input id="av-pitch" type="range" min="26" max="90" step="1" value="52">
+                    <input id="av-pitch" type="range" min="10" max="44" step="1" value="26">
                   </label>
                 </div>
               </div>
             </div>
 
-            <script>
-              (function () {
-                var STONES = [
-                  { slug: 'whisper', name: 'Whisper' },
-                  { slug: 'brush',   name: 'Brush' },
-                  { slug: 'gaia',    name: 'Gaia' },
-                  { slug: 'yami',    name: 'Yami' },
-                  { slug: 'yuki',    name: 'Yuki' },
-                  { slug: 'ligia',   name: 'Ligia' }
-                ];
-                var SCENES = [
-                  '/images/visualizer/room-bedroom.webp',
-                  '/images/visualizer/room-living.webp',
-                  '/images/visualizer/room-japandi.webp'
-                ];
-                // The textured quad is authored in a fixed 1000x1000 coordinate
-                // space and then mapped onto the four draggable corners, so the
-                // slat width stays independent of the panel's screen size.
-                var BASE = 1000;
-                var DEFAULT_PTS = [[0.22, 0.06], [0.78, 0.06], [0.78, 0.45], [0.22, 0.45]];
+            <script type="module">
+              import * as THREE from '/js/three/three.module.min.js';
 
-                var stage = document.getElementById('av-stage');
-                var canvas = document.getElementById('av-canvas');
-                var backdrop = document.getElementById('av-backdrop');
-                var room = document.getElementById('av-room');
-                var quad = document.getElementById('av-quad');
-                var fill = document.getElementById('av-fill');
-                var light = document.getElementById('av-light');
-                var outline = document.getElementById('av-outline');
-                var shape = document.getElementById('av-outline-shape');
-                var handlesBox = document.getElementById('av-handles');
-                var picker = document.getElementById('av-picker');
-                var scenes = document.getElementById('av-scenes');
-                var hint = document.getElementById('av-hint');
-                var pitchInput = document.getElementById('av-pitch');
+              const STONES = [
+                { slug: 'whisper', name: 'Whisper', felt: '#b9b8bc' },
+                { slug: 'brush',   name: 'Brush',   felt: '#cdcacc' },
+                { slug: 'gaia',    name: 'Gaia',    felt: '#131313' },
+                { slug: 'yami',    name: 'Yami',    felt: '#242628' },
+                { slug: 'yuki',    name: 'Yuki',    felt: '#cdcbce' },
+                { slug: 'ligia',   name: 'Ligia',   felt: '#191a1b' }
+              ];
+              const SCENES = [
+                '/images/visualizer/room-bedroom.webp',
+                '/images/visualizer/room-living.webp',
+                '/images/visualizer/room-japandi.webp'
+              ];
+              // Real panel proportions: 42 mm slat on a 64 mm pitch, 23 mm deep.
+              const SLAT_RATIO = 42 / 64;
+              const DEPTH_RATIO = 23 / 64;
+              const DEFAULT_PTS = [[0.22, 0.06], [0.78, 0.06], [0.78, 0.45], [0.22, 0.45]];
+              const FACE_COLUMNS = 6;   // the face texture holds six slat strips
 
-                // Corners in normalised stage coordinates: TL, TR, BR, BL.
-                var pts = DEFAULT_PTS.map(function (p) { return [p[0], p[1]]; });
-                var handles = [];
+              const stage = document.getElementById('av-stage');
+              const canvas = document.getElementById('av-canvas');
+              const backdrop = document.getElementById('av-backdrop');
+              const room = document.getElementById('av-room');
+              const glCanvas = document.getElementById('av-gl');
+              const light2d = document.getElementById('av-light');
+              const outline = document.getElementById('av-outline');
+              const shape = document.getElementById('av-outline-shape');
+              const handlesBox = document.getElementById('av-handles');
+              const picker = document.getElementById('av-picker');
+              const scenes = document.getElementById('av-scenes');
+              const hint = document.getElementById('av-hint');
+              const pitchInput = document.getElementById('av-pitch');
 
-                // ---------- projective mapping (square -> quad) ----------
-                function adj(m) {
-                  return [
-                    m[4] * m[8] - m[5] * m[7], m[2] * m[7] - m[1] * m[8], m[1] * m[5] - m[2] * m[4],
-                    m[5] * m[6] - m[3] * m[8], m[0] * m[8] - m[2] * m[6], m[2] * m[3] - m[0] * m[5],
-                    m[3] * m[7] - m[4] * m[6], m[1] * m[6] - m[0] * m[7], m[0] * m[4] - m[1] * m[3]
-                  ];
-                }
-                function mulmm(a, b) {
-                  var c = [], i, j, k, s;
-                  for (i = 0; i < 3; i++) for (j = 0; j < 3; j++) {
-                    for (s = 0, k = 0; k < 3; k++) s += a[3 * i + k] * b[3 * k + j];
-                    c[3 * i + j] = s;
-                  }
-                  return c;
-                }
-                function mulmv(m, v) {
-                  return [
-                    m[0] * v[0] + m[1] * v[1] + m[2] * v[2],
-                    m[3] * v[0] + m[4] * v[1] + m[5] * v[2],
-                    m[6] * v[0] + m[7] * v[1] + m[8] * v[2]
-                  ];
-                }
-                function basis(p) {
-                  var m = [p[0][0], p[1][0], p[2][0], p[0][1], p[1][1], p[2][1], 1, 1, 1];
-                  var v = mulmv(adj(m), [p[3][0], p[3][1], 1]);
-                  return mulmm(m, [v[0], 0, 0, 0, v[1], 0, 0, 0, v[2]]);
-                }
-                function transformFor(dest) {
-                  var src = [[0, 0], [BASE, 0], [BASE, BASE], [0, BASE]];
-                  var t = mulmm(basis(dest), adj(basis(src)));
-                  for (var i = 0; i < 9; i++) t[i] = t[i] / t[8];
-                  return 'matrix3d(' + [
-                    t[0], t[3], 0, t[6],
-                    t[1], t[4], 0, t[7],
-                    0, 0, 1, 0,
-                    t[2], t[5], 0, t[8]
-                  ].join(',') + ')';
-                }
+              let pts = DEFAULT_PTS.map(p => p.slice());   // corners, normalised to the photo
+              const handles = [];
+              let stone = STONES[0];
+              let slatCount = slatCountFor(pitchInput.value);
 
-                // ---------- rendering ----------
-                // The photo is fitted (never cropped) inside the stage, and the
-                // panel lives in the photo's own coordinate space.
-                function fitCanvas() {
-                  var r = stage.getBoundingClientRect();
-                  var pad = 22;   // keeps corner handles reachable at the edges
-                  var maxW = Math.max(40, r.width - pad * 2);
-                  var maxH = Math.max(40, r.height - pad * 2);
-                  var ar = (room.naturalWidth && room.naturalHeight)
-                    ? room.naturalWidth / room.naturalHeight : 1;
-                  var w = maxW, h = w / ar;
-                  if (h > maxH) { h = maxH; w = h * ar; }
-                  canvas.style.width = Math.round(w) + 'px';
-                  canvas.style.height = Math.round(h) + 'px';
+              function slatCountFor(v) {
+                // The slider reads as slat width, so left (narrow) means more slats.
+                const min = +pitchInput.min, max = +pitchInput.max;
+                return min + max - +v;
+              }
+
+              /* ---------------- small linear algebra ---------------- */
+              const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+              const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+              const scale = (a, s) => [a[0] * s, a[1] * s, a[2] * s];
+              const norm = a => Math.hypot(a[0], a[1], a[2]);
+              const unit = a => scale(a, 1 / (norm(a) || 1e-9));
+              const cross = (a, b) => [
+                a[1] * b[2] - a[2] * b[1],
+                a[2] * b[0] - a[0] * b[2],
+                a[0] * b[1] - a[1] * b[0]
+              ];
+
+              // Homography mapping four source points onto four destination points.
+              function homography(src, dst) {
+                const A = [], b = [];
+                for (let i = 0; i < 4; i++) {
+                  const [x, y] = src[i], [u, v] = dst[i];
+                  A.push([x, y, 1, 0, 0, 0, -u * x, -u * y]); b.push(u);
+                  A.push([0, 0, 0, x, y, 1, -v * x, -v * y]); b.push(v);
                 }
-                function stageSize() {
-                  var r = canvas.getBoundingClientRect();
-                  return [r.width, r.height];
-                }
-                function pixels() {
-                  var s = stageSize();
-                  return pts.map(function (p) { return [p[0] * s[0], p[1] * s[1]]; });
-                }
-                function render() {
-                  fitCanvas();
-                  var px = pixels(), i;
-                  quad.style.transform = transformFor(px);
-                  var poly = px.map(function (p) { return p[0].toFixed(1) + 'px ' + p[1].toFixed(1) + 'px'; }).join(',');
-                  light.style.clipPath = 'polygon(' + poly + ')';
-                  light.style.webkitClipPath = 'polygon(' + poly + ')';
-                  shape.setAttribute('points', px.map(function (p) { return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' '));
-                  var s = stageSize();
-                  outline.setAttribute('viewBox', '0 0 ' + s[0] + ' ' + s[1]);
-                  for (i = 0; i < handles.length; i++) {
-                    handles[i].style.left = px[i][0] + 'px';
-                    handles[i].style.top = px[i][1] + 'px';
+                for (let i = 0; i < 8; i++) {                 // Gaussian elimination
+                  let p = i;
+                  for (let r = i + 1; r < 8; r++) if (Math.abs(A[r][i]) > Math.abs(A[p][i])) p = r;
+                  if (Math.abs(A[p][i]) < 1e-12) return null;
+                  [A[i], A[p]] = [A[p], A[i]]; [b[i], b[p]] = [b[p], b[i]];
+                  for (let r = 0; r < 8; r++) {
+                    if (r === i) continue;
+                    const k = A[r][i] / A[i][i];
+                    if (!k) continue;
+                    for (let c = i; c < 8; c++) A[r][c] -= k * A[i][c];
+                    b[r] -= k * b[i];
                   }
                 }
-                function setRoom(src) {
-                  room.src = src;
-                  light.style.backgroundImage = 'url("' + src + '")';
-                  backdrop.style.backgroundImage = 'url("' + src + '")';
-                }
-                function setPitch(v) {
-                  // One texture tile holds 8 slats, so the tile width is 8 * pitch.
-                  fill.style.backgroundSize = (v * 8) + 'px auto';
-                }
-                function selectStone(stone, btn) {
-                  fill.style.backgroundImage = 'url("/images/visualizer/slat-' + stone.slug + '.webp")';
-                  Array.prototype.forEach.call(picker.children, function (c) { c.classList.remove('is-active'); });
-                  if (btn) btn.classList.add('is-active');
-                }
+                const h = b.map((v, i) => v / A[i][i]);
+                return [h[0], h[1], h[2], h[3], h[4], h[5], h[6], h[7], 1];
+              }
 
-                // ---------- controls ----------
-                STONES.forEach(function (stone, i) {
-                  var b = document.createElement('button');
-                  b.type = 'button';
-                  b.className = 'av-swatch';
-                  b.innerHTML =
-                    '<span class="av-swatch-img" style="background-image:url(\'/images/visualizer/swatch-' + stone.slug + '.webp\')"></span>' +
-                    '<span class="av-swatch-name">' + stone.name + '</span>';
-                  b.addEventListener('click', function () { selectStone(stone, b); });
-                  picker.appendChild(b);
-                  if (i === 0) selectStone(stone, b);
-                });
+              // Pose of the pinned rectangle: focal length from the right-angle
+              // constraint, then plane rotation, translation and panel aspect.
+              function poseFromQuad(quad, w, h) {
+                const model = [[0, 0], [1, 0], [1, 1], [0, 1]];
+                const H = homography(model, quad);
+                if (!H) return null;
+                const cx = w / 2, cy = h / 2;
+                const h1 = [H[0], H[3], H[6]], h2 = [H[1], H[4], H[7]], h3 = [H[2], H[5], H[8]];
+                const fallback = (h / 2) / Math.tan(THREE.MathUtils.degToRad(24));
+                let f = fallback;
+                const den = h1[2] * h2[2];
+                if (Math.abs(den) > 1e-9) {
+                  const f2 = -((h1[0] - cx * h1[2]) * (h2[0] - cx * h2[2]) +
+                               (h1[1] - cy * h1[2]) * (h2[1] - cy * h2[2])) / den;
+                  if (isFinite(f2) && f2 > 0) f = Math.sqrt(f2);
+                }
+                f = THREE.MathUtils.clamp(f, h * 0.45, h * 6);
+                const K1 = v => [(v[0] - cx * v[2]) / f, (v[1] - cy * v[2]) / f, v[2]];
+                const n1 = K1(h1), n2 = K1(h2), n3 = K1(h3);
+                const l = 1 / (norm(n1) || 1e-9);
+                const aspect = THREE.MathUtils.clamp(norm(n2) / (norm(n1) || 1e-9), 0.05, 20);
+                let r1 = scale(n1, l);
+                let r2 = scale(n2, l / aspect);
+                r2 = unit(sub(r2, scale(r1, dot(r1, r2))));   // re-orthogonalise
+                r1 = unit(r1);
+                let r3 = cross(r1, r2);
+                let t = scale(n3, l);
+                if (t[2] < 0) { r1 = scale(r1, -1); r2 = scale(r2, -1); r3 = cross(r1, r2); t = scale(t, -1); }
+                return { f, aspect, r1, r2, r3, t };
+              }
 
-                SCENES.forEach(function (src, i) {
-                  var b = document.createElement('button');
-                  b.type = 'button';
-                  b.className = 'av-scene' + (i === 0 ? ' is-active' : '');
-                  b.setAttribute('aria-label', 'Raum ' + (i + 1));
-                  b.style.backgroundImage = 'url("' + src + '")';
-                  b.addEventListener('click', function () {
-                    setRoom(src);
-                    Array.prototype.forEach.call(scenes.children, function (c) { c.classList.remove('is-active'); });
-                    b.classList.add('is-active');
+              /* ---------------- three.js scene ---------------- */
+              let renderer = null;
+              try {
+                renderer = new THREE.WebGLRenderer({ canvas: glCanvas, alpha: true, antialias: true });
+              } catch (err) {
+                stage.classList.add('is-flat');
+              }
+              const scene = new THREE.Scene();
+              const camera = new THREE.PerspectiveCamera(40, 1, 0.05, 200);
+              const panel = new THREE.Group();
+              // Soft contact shadow: a blurred rectangle on the wall, offset away
+              // from the key light by the panel's own depth. The shadow map handles
+              // the shadows *inside* the panel (slat on felt); this is the one the
+              // panel throws onto the wall around it.
+              function shadowTexture() {
+                const c = document.createElement('canvas');
+                c.width = c.height = 256;
+                const ctx = c.getContext('2d');
+                const pad = 46;
+                ctx.fillStyle = '#000';
+                ctx.fillRect(0, 0, 256, 256);
+                ctx.filter = 'blur(20px)';        // alphaMap reads the colour channel
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(pad, pad, 256 - pad * 2, 256 - pad * 2);
+                const tex = new THREE.CanvasTexture(c);
+                tex.colorSpace = THREE.SRGBColorSpace;
+                return tex;
+              }
+              const wallShadow = new THREE.Mesh(
+                new THREE.PlaneGeometry(1, 1),
+                new THREE.MeshBasicMaterial({
+                  color: 0x000000, alphaMap: shadowTexture(), transparent: true,
+                  opacity: 0.46, depthWrite: false, side: THREE.DoubleSide
+                })
+              );
+              const keyLight = new THREE.DirectionalLight(0xffffff, 1);
+              const fillLight = new THREE.HemisphereLight(0xffffff, 0x8d8378, 1);
+              const loader = new THREE.TextureLoader();
+              const faceTextures = new Map();
+              let slats = [];
+              let backing = null;
+
+              if (renderer) {
+                renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+                renderer.outputColorSpace = THREE.SRGBColorSpace;
+                renderer.shadowMap.enabled = true;
+                renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+                renderer.setClearAlpha(0);
+                keyLight.castShadow = true;
+                keyLight.shadow.mapSize.set(2048, 2048);
+                keyLight.shadow.bias = -0.0006;
+                keyLight.shadow.normalBias = 0.012;
+                scene.add(panel, fillLight, keyLight, keyLight.target);
+                panel.add(wallShadow);
+              }
+
+              function faceTexture(slug) {
+                if (!faceTextures.has(slug)) {
+                  const tex = loader.load('/images/visualizer/face-' + slug + '.webp', () => {
+                    panel.userData = {};        // rebuild so the slats pick the texture up
+                    requestRender();
                   });
-                  scenes.appendChild(b);
+                  tex.colorSpace = THREE.SRGBColorSpace;
+                  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+                  tex.anisotropy = renderer ? renderer.capabilities.getMaxAnisotropy() : 1;
+                  faceTextures.set(slug, tex);
+                }
+                return faceTextures.get(slug);
+              }
+
+              // Rebuild the slats. Model space: x 0..1 across the panel, y 0..aspect
+              // down it, z out of the wall — the same space the pose maps from.
+              function buildPanel(aspect, dirSign) {
+                slats.forEach(m => {
+                  m.geometry.dispose();
+                  m.material.forEach(mat => { if (mat.map) mat.map.dispose(); mat.dispose(); });
+                  panel.remove(m);
                 });
+                slats = [];
+                if (backing) { backing.geometry.dispose(); backing.material.dispose(); panel.remove(backing); }
 
-                for (var h = 0; h < 4; h++) {
-                  var el = document.createElement('button');
-                  el.type = 'button';
-                  el.className = 'av-handle';
-                  el.dataset.index = String(h);
-                  el.setAttribute('aria-label', 'Ecke ' + (h + 1));
-                  handlesBox.appendChild(el);
-                  handles.push(el);
-                }
+                const felt = new THREE.Color(stone.felt);
+                const feltLum = 0.2126 * felt.r + 0.7152 * felt.g + 0.0722 * felt.b;
+                const pitch = 1 / slatCount;
+                const width = pitch * SLAT_RATIO;
+                const depth = pitch * DEPTH_RATIO;
 
-                setRoom(SCENES[0]);
-                setPitch(parseInt(pitchInput.value, 10));
-                pitchInput.addEventListener('input', function () { setPitch(parseInt(pitchInput.value, 10)); });
+                backing = new THREE.Mesh(
+                  new THREE.PlaneGeometry(1, aspect),
+                  new THREE.MeshStandardMaterial({ color: felt.clone().multiplyScalar(feltLum > 0.45 ? 0.5 : 0.34), roughness: 1 })
+                );
+                backing.material.side = THREE.DoubleSide;
+                backing.position.set(0.5, aspect / 2, 0);
+                backing.receiveShadow = true;
+                panel.add(backing);
 
-                document.getElementById('av-file').addEventListener('change', function (e) {
-                  var f = e.target.files && e.target.files[0];
-                  if (!f) return;
-                  setRoom(URL.createObjectURL(f));
-                  Array.prototype.forEach.call(scenes.children, function (c) { c.classList.remove('is-active'); });
+                const core = new THREE.MeshStandardMaterial({
+                  color: felt.clone().multiplyScalar(0.55), roughness: 0.95
                 });
-                document.getElementById('av-reset').addEventListener('click', function () {
-                  pts = DEFAULT_PTS.map(function (p) { return [p[0], p[1]]; });
-                  pitchInput.value = 52;
-                  setPitch(52);
-                  setRoom(SCENES[0]);
-                  Array.prototype.forEach.call(scenes.children, function (c, i) { c.classList.toggle('is-active', i === 0); });
-                  stage.classList.remove('is-touched');
-                  hint.classList.remove('is-hidden');
-                  render();
-                });
-
-                // ---------- interaction ----------
-                var pointers = {};      // active pointers by id
-                var gesture = null;     // { type, index, start, pts }
-                var idleTimer = null;
-
-                function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
-                function local(e) {
-                  var r = canvas.getBoundingClientRect();
-                  return [(e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height];
-                }
-                function inside(p) {
-                  var hit = false, i, j;
-                  for (i = 0, j = 3; i < 4; j = i++) {
-                    var a = pts[i], b = pts[j];
-                    if ((a[1] > p[1]) !== (b[1] > p[1]) &&
-                        p[0] < (b[0] - a[0]) * (p[1] - a[1]) / (b[1] - a[1]) + a[0]) hit = !hit;
-                  }
-                  return hit;
-                }
-                function snapshot() { return pts.map(function (p) { return [p[0], p[1]]; }); }
-                function activate() {
-                  stage.classList.add('is-active');
-                  hint.classList.add('is-hidden');
-                  clearTimeout(idleTimer);
-                }
-                function deactivate() {
-                  clearTimeout(idleTimer);
-                  idleTimer = setTimeout(function () { stage.classList.remove('is-active'); }, 1400);
-                }
-                function pointerList() {
-                  return Object.keys(pointers).map(function (k) { return pointers[k]; });
-                }
-
-                canvas.addEventListener('pointerdown', function (e) {
-                  var p = local(e);
-                  var handleIndex = e.target.classList && e.target.classList.contains('av-handle')
-                    ? parseInt(e.target.dataset.index, 10) : -1;
-                  if (handleIndex < 0 && !inside(p)) return;
-
-                  pointers[e.pointerId] = p;
-                  canvas.setPointerCapture(e.pointerId);
-                  activate();
-                  e.preventDefault();
-
-                  var list = pointerList();
-                  if (list.length >= 2) {
-                    gesture = { type: 'pinch', start: list.slice(0, 2).map(function (q) { return [q[0], q[1]]; }), pts: snapshot() };
-                  } else if (handleIndex >= 0) {
-                    gesture = { type: 'corner', index: handleIndex, start: p, pts: snapshot() };
-                  } else {
-                    gesture = { type: 'move', start: p, pts: snapshot() };
-                  }
-                });
-
-                canvas.addEventListener('pointermove', function (e) {
-                  if (!(e.pointerId in pointers) || !gesture) return;
-                  pointers[e.pointerId] = local(e);
-                  var list = pointerList();
-
-                  if (gesture.type === 'corner') {
-                    var p = pointers[e.pointerId];
-                    pts[gesture.index] = [clamp01(p[0]), clamp01(p[1])];
-                  } else if (gesture.type === 'move') {
-                    var q = pointers[e.pointerId];
-                    var dx = q[0] - gesture.start[0], dy = q[1] - gesture.start[1];
-                    // Shift as a whole, but never past the edges of the photo.
-                    var xs = gesture.pts.map(function (c) { return c[0]; });
-                    var ys = gesture.pts.map(function (c) { return c[1]; });
-                    dx = Math.max(-Math.min.apply(null, xs), Math.min(dx, 1 - Math.max.apply(null, xs)));
-                    dy = Math.max(-Math.min.apply(null, ys), Math.min(dy, 1 - Math.max.apply(null, ys)));
-                    pts = gesture.pts.map(function (c) { return [c[0] + dx, c[1] + dy]; });
-                  } else if (gesture.type === 'pinch' && list.length >= 2) {
-                    var a0 = gesture.start[0], b0 = gesture.start[1];
-                    var a1 = list[0], b1 = list[1];
-                    var d0 = Math.hypot(b0[0] - a0[0], b0[1] - a0[1]) || 1e-6;
-                    var d1 = Math.hypot(b1[0] - a1[0], b1[1] - a1[1]);
-                    var scale = Math.max(0.2, Math.min(4, d1 / d0));
-                    var c0 = [(a0[0] + b0[0]) / 2, (a0[1] + b0[1]) / 2];
-                    var c1 = [(a1[0] + b1[0]) / 2, (a1[1] + b1[1]) / 2];
-                    pts = gesture.pts.map(function (c) {
-                      return [
-                        clamp01(c1[0] + (c[0] - c0[0]) * scale),
-                        clamp01(c1[1] + (c[1] - c0[1]) * scale)
-                      ];
+                const tex = faceTexture(stone.slug);
+                const ready = !!(tex.image && tex.image.width);
+                for (let i = 0; i < slatCount; i++) {
+                  let face;
+                  if (ready) {
+                    const map = tex.clone();
+                    map.needsUpdate = true;
+                    map.repeat.set(1 / FACE_COLUMNS, Math.max(1, Math.round(aspect / 1.6)));
+                    map.offset.set((i % FACE_COLUMNS) / FACE_COLUMNS, (i * 0.37) % 1);
+                    face = new THREE.MeshStandardMaterial({
+                      map, roughness: 0.94, metalness: 0,
+                      bumpMap: map, bumpScale: 0.0018
                     });
+                  } else {
+                    face = new THREE.MeshStandardMaterial({ color: felt.clone().lerp(new THREE.Color(0xffffff), 0.35), roughness: 0.94 });
                   }
-                  render();
-                });
-
-                function endPointer(e) {
-                  delete pointers[e.pointerId];
-                  if (!pointerList().length) { gesture = null; deactivate(); }
-                  else if (gesture && gesture.type === 'pinch') { gesture = null; }
+                  // BoxGeometry material order: +x, -x, +y, -y, +z, -z. The slats
+                  // stand off whichever side of the plane faces the camera, so the
+                  // stone face goes on both z faces and only one is ever seen.
+                  const slat = new THREE.Mesh(
+                    new THREE.BoxGeometry(width, aspect, depth),
+                    [core, core, core, core, face, face]
+                  );
+                  slat.position.set(pitch * (i + 0.5), aspect / 2, dirSign * depth / 2);
+                  slat.castShadow = true;
+                  slat.receiveShadow = true;
+                  panel.add(slat);
+                  slats.push(slat);
                 }
-                canvas.addEventListener('pointerup', endPointer);
-                canvas.addEventListener('pointercancel', endPointer);
 
-                // Keyboard nudging keeps the corners usable without a pointer.
-                handlesBox.addEventListener('keydown', function (e) {
-                  var i = e.target.dataset && e.target.dataset.index;
-                  if (i === undefined) return;
-                  var step = e.shiftKey ? 0.05 : 0.01, d = null;
-                  if (e.key === 'ArrowLeft') d = [-step, 0];
-                  if (e.key === 'ArrowRight') d = [step, 0];
-                  if (e.key === 'ArrowUp') d = [0, -step];
-                  if (e.key === 'ArrowDown') d = [0, step];
-                  if (!d) return;
-                  e.preventDefault();
-                  var idx = parseInt(i, 10);
-                  pts[idx] = [clamp01(pts[idx][0] + d[0]), clamp01(pts[idx][1] + d[1])];
-                  activate();
-                  deactivate();
-                  render();
+                const bleed = 16 * depth;     // matches the blur baked into the texture
+                wallShadow.geometry.dispose();
+                wallShadow.geometry = new THREE.PlaneGeometry(1 + bleed, aspect + bleed);
+                wallShadow.renderOrder = -1;
+                wallShadow.position.set(0.5, aspect / 2, dirSign * 0.0006);
+                panel.userData.depth = depth;
+              }
+
+              /* ---------------- light rig estimated from the photo ---------------- */
+              let lightRig = { dir: [0.35, -0.45, 1], key: 1.1, ambient: 0.9, sky: 0xffffff, ground: 0x8d8378 };
+              function analysePhoto() {
+                if (!room.naturalWidth) return;
+                const c = document.createElement('canvas');
+                c.width = 48; c.height = 48;
+                const ctx = c.getContext('2d', { willReadFrequently: true });
+                let data;
+                try {
+                  ctx.drawImage(room, 0, 0, 48, 48);
+                  data = ctx.getImageData(0, 0, 48, 48).data;
+                } catch (err) { return; }   // tainted canvas: keep the defaults
+                let sum = 0, top = [0, 0, 0], bottom = [0, 0, 0], best = -1, bx = 24, by = 12, wsum = 0, cxw = 0, cyw = 0;
+                for (let y = 0; y < 48; y++) for (let x = 0; x < 48; x++) {
+                  const i = (y * 48 + x) * 4;
+                  const r = data[i] / 255, g = data[i + 1] / 255, b = data[i + 2] / 255;
+                  const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+                  sum += lum;
+                  const bin = y < 16 ? top : (y > 31 ? bottom : null);
+                  if (bin) { bin[0] += r; bin[1] += g; bin[2] += b; }
+                  if (lum > best) { best = lum; bx = x; by = y; }
+                  const w = Math.pow(lum, 6);          // pull towards the bright areas
+                  wsum += w; cxw += w * x; cyw += w * y;
+                }
+                const mean = sum / (48 * 48);
+                // three's lights are in physical units: a surface facing a light of
+                // intensity I reflects albedo * I / PI, so aim for a target
+                // irradiance and split it between ambient and key by the photo's
+                // own contrast.
+                const contrast = THREE.MathUtils.clamp((best - mean) / (mean + 0.15), 0.12, 0.9);
+                const target = THREE.MathUtils.clamp(mean * 1.45 + 0.14, 0.28, 1.4);
+                const keyShare = 0.24 + 0.42 * contrast;
+                const hx = wsum ? cxw / wsum : bx, hy = wsum ? cyw / wsum : by;
+                let px = (hx / 48) * 2 - 1, py = (hy / 48) * 2 - 1;
+                if (Math.hypot(px, py) < 0.35) { px = px * 0.4 + 0.42; py = py * 0.4 - 0.5; }
+                lightRig = {
+                  dir: [px * 1.5, py * 1.5, 1.15],
+                  key: Math.PI * target * keyShare,
+                  ambient: Math.PI * target * (1 - keyShare),
+                  sky: new THREE.Color(top[0] / 768, top[1] / 768, top[2] / 768).getHex(),
+                  ground: new THREE.Color(bottom[0] / 768, bottom[1] / 768, bottom[2] / 768).getHex()
+                };
+              }
+
+              /* ---------------- rendering ---------------- */
+              function fitCanvas() {
+                const r = stage.getBoundingClientRect();
+                const pad = 22;                       // keeps corner handles reachable
+                const maxW = Math.max(40, r.width - pad * 2);
+                const maxH = Math.max(40, r.height - pad * 2);
+                const ar = (room.naturalWidth && room.naturalHeight)
+                  ? room.naturalWidth / room.naturalHeight : 1;
+                let w = maxW, h = w / ar;
+                if (h > maxH) { h = maxH; w = h * ar; }
+                canvas.style.width = Math.round(w) + 'px';
+                canvas.style.height = Math.round(h) + 'px';
+              }
+              function canvasSize() {
+                const r = canvas.getBoundingClientRect();
+                return [r.width, r.height];
+              }
+              function pixels() {
+                const [w, h] = canvasSize();
+                return pts.map(p => [p[0] * w, p[1] * h]);
+              }
+
+              let queued = false;
+              function requestRender() {
+                if (queued) return;
+                queued = true;
+                requestAnimationFrame(() => { queued = false; draw(); });
+              }
+
+              function draw() {
+                fitCanvas();
+                const px = pixels();
+                const [w, h] = canvasSize();
+
+                const poly = px.map(p => p[0].toFixed(1) + 'px ' + p[1].toFixed(1) + 'px').join(',');
+                light2d.style.clipPath = 'polygon(' + poly + ')';
+                light2d.style.webkitClipPath = 'polygon(' + poly + ')';
+                shape.setAttribute('points', px.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' '));
+                outline.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
+                handles.forEach((el, i) => {
+                  el.style.left = px[i][0] + 'px';
+                  el.style.top = px[i][1] + 'px';
                 });
+                if (!renderer || w < 2 || h < 2) return;
 
-                window.addEventListener('resize', render);
-                if (window.ResizeObserver) new ResizeObserver(render).observe(stage);
-                room.addEventListener('load', render);
-                render();
+                const pose = poseFromQuad(px, w, h);
+                if (!pose) return;
+                // Extrude off the side of the wall plane that faces the camera.
+                const dirSign = dot(pose.r3, pose.t) < 0 ? 1 : -1;
+                if (!slats.length || Math.abs(panel.userData.aspect - pose.aspect) > 0.004 ||
+                    panel.userData.slug !== stone.slug || panel.userData.slats !== slatCount ||
+                    panel.userData.dir !== dirSign) {
+                  buildPanel(pose.aspect, dirSign);
+                  panel.userData = { aspect: pose.aspect, slug: stone.slug, slats: slatCount, dir: dirSign };
+                }
 
-                // Warm the remaining textures so switching stones is instant.
-                window.setTimeout(function () {
-                  STONES.forEach(function (s) { new Image().src = '/images/visualizer/slat-' + s.slug + '.webp'; });
-                  SCENES.forEach(function (s) { new Image().src = s; });
-                }, 1200);
-              })();
+                // OpenCV pose -> three.js (y and z flipped).
+                const { r1, r2, r3, t } = pose;
+                panel.matrixAutoUpdate = false;
+                panel.matrix.set(
+                   r1[0],  r2[0],  r3[0],  t[0],
+                  -r1[1], -r2[1], -r3[1], -t[1],
+                  -r1[2], -r2[2], -r3[2], -t[2],
+                       0,      0,      0,     1
+                );
+                panel.matrixWorldNeedsUpdate = true;
+
+                camera.fov = 2 * Math.atan((h / 2) / pose.f) * 180 / Math.PI;
+                camera.aspect = w / h;
+                camera.updateProjectionMatrix();
+
+                const centre = new THREE.Vector3(0.5, pose.aspect / 2, 0).applyMatrix4(panel.matrix);
+                const d = unit(lightRig.dir);
+                {
+                  // Light direction expressed in the wall's own axes.
+                  const lx = d[0] * pose.r1[0] + (-d[1]) * pose.r1[1] + d[2] * pose.r1[2];
+                  const ly = d[0] * pose.r2[0] + (-d[1]) * pose.r2[1] + d[2] * pose.r2[2];
+                  const ln = Math.abs(d[0] * pose.r3[0] + (-d[1]) * pose.r3[1] + d[2] * pose.r3[2]);
+                  const dep = panel.userData.depth || 0.02;
+                  const k = Math.min(0.14, 2.4 * dep / Math.max(ln, 0.25));
+                  wallShadow.position.x = 0.5 - lx * k;
+                  wallShadow.position.y = pose.aspect / 2 - ly * k;
+                }
+                keyLight.position.set(centre.x + d[0] * 4, centre.y - d[1] * 4, centre.z + d[2] * 4);
+                keyLight.target.position.copy(centre);
+                keyLight.target.updateMatrixWorld();
+                keyLight.intensity = lightRig.key;
+                keyLight.color.setHex(lightRig.sky);
+                const span = 0.62 * Math.max(1 + 0.5, pose.aspect + 0.5) + 0.25;
+                const s = keyLight.shadow.camera;
+                s.left = -span; s.right = span; s.top = span; s.bottom = -span;
+                s.near = 0.1; s.far = 14;
+                s.updateProjectionMatrix();
+                fillLight.intensity = lightRig.ambient;
+                fillLight.color.setHex(lightRig.sky);
+                fillLight.groundColor.setHex(lightRig.ground);
+
+                renderer.setSize(w, h, false);
+                renderer.render(scene, camera);
+              }
+
+              /* ---------------- controls ---------------- */
+              function setRoom(src) {
+                room.src = src;
+                light2d.style.backgroundImage = 'url("' + src + '")';
+                backdrop.style.backgroundImage = 'url("' + src + '")';
+              }
+              function selectStone(next, btn) {
+                stone = next;
+                Array.from(picker.children).forEach(c => c.classList.remove('is-active'));
+                if (btn) btn.classList.add('is-active');
+                requestRender();
+              }
+
+              STONES.forEach((s, i) => {
+                const b = document.createElement('button');
+                b.type = 'button';
+                b.className = 'av-swatch';
+                b.innerHTML =
+                  '<span class="av-swatch-img" style="background-image:url(\'/images/visualizer/swatch-' + s.slug + '.webp\')"></span>' +
+                  '<span class="av-swatch-name">' + s.name + '</span>';
+                b.addEventListener('click', () => selectStone(s, b));
+                picker.appendChild(b);
+                if (i === 0) b.classList.add('is-active');
+              });
+
+              SCENES.forEach((src, i) => {
+                const b = document.createElement('button');
+                b.type = 'button';
+                b.className = 'av-scene' + (i === 0 ? ' is-active' : '');
+                b.setAttribute('aria-label', 'Raum ' + (i + 1));
+                b.style.backgroundImage = 'url("' + src + '")';
+                b.addEventListener('click', () => {
+                  setRoom(src);
+                  Array.from(scenes.children).forEach(c => c.classList.remove('is-active'));
+                  b.classList.add('is-active');
+                });
+                scenes.appendChild(b);
+              });
+
+              for (let i = 0; i < 4; i++) {
+                const el = document.createElement('button');
+                el.type = 'button';
+                el.className = 'av-handle';
+                el.dataset.index = String(i);
+                el.setAttribute('aria-label', 'Ecke ' + (i + 1));
+                handlesBox.appendChild(el);
+                handles.push(el);
+              }
+
+              pitchInput.addEventListener('input', () => {
+                slatCount = slatCountFor(pitchInput.value);
+                requestRender();
+              });
+
+              document.getElementById('av-file').addEventListener('change', e => {
+                const f = e.target.files && e.target.files[0];
+                if (!f) return;
+                setRoom(URL.createObjectURL(f));
+                Array.from(scenes.children).forEach(c => c.classList.remove('is-active'));
+              });
+
+              document.getElementById('av-reset').addEventListener('click', () => {
+                pts = DEFAULT_PTS.map(p => p.slice());
+                pitchInput.value = 26;
+                slatCount = slatCountFor(26);
+                setRoom(SCENES[0]);
+                Array.from(scenes.children).forEach((c, i) => c.classList.toggle('is-active', i === 0));
+                stage.classList.remove('is-active');
+                hint.classList.remove('is-hidden');
+                requestRender();
+              });
+
+              document.getElementById('av-save').addEventListener('click', () => {
+                const [w, h] = canvasSize();
+                const out = document.createElement('canvas');
+                const scaleUp = Math.min(2, Math.max(1, (room.naturalWidth || w) / w));
+                out.width = Math.round(w * scaleUp);
+                out.height = Math.round(h * scaleUp);
+                const ctx = out.getContext('2d');
+                draw();
+                ctx.drawImage(room, 0, 0, out.width, out.height);
+                if (renderer) ctx.drawImage(glCanvas, 0, 0, out.width, out.height);
+                out.toBlob(blob => {
+                  if (!blob) return;
+                  const a = document.createElement('a');
+                  a.href = URL.createObjectURL(blob);
+                  a.download = 'akurock-visualizer.png';
+                  a.click();
+                  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+                }, 'image/png');
+              });
+
+              /* ---------------- interaction ---------------- */
+              const pointers = new Map();
+              let gesture = null;
+              let idleTimer = null;
+              const clamp01 = v => v < 0 ? 0 : v > 1 ? 1 : v;
+
+              function local(e) {
+                const r = canvas.getBoundingClientRect();
+                return [(e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height];
+              }
+              function inside(p) {
+                let hit = false;
+                for (let i = 0, j = 3; i < 4; j = i++) {
+                  const a = pts[i], b = pts[j];
+                  if ((a[1] > p[1]) !== (b[1] > p[1]) &&
+                      p[0] < (b[0] - a[0]) * (p[1] - a[1]) / (b[1] - a[1]) + a[0]) hit = !hit;
+                }
+                return hit;
+              }
+              const snapshot = () => pts.map(p => p.slice());
+              function activate() {
+                stage.classList.add('is-active');
+                hint.classList.add('is-hidden');
+                clearTimeout(idleTimer);
+              }
+              function deactivate() {
+                clearTimeout(idleTimer);
+                idleTimer = setTimeout(() => stage.classList.remove('is-active'), 1400);
+              }
+
+              canvas.addEventListener('pointerdown', e => {
+                const p = local(e);
+                const idx = e.target.classList && e.target.classList.contains('av-handle')
+                  ? +e.target.dataset.index : -1;
+                if (idx < 0 && !inside(p)) return;
+                pointers.set(e.pointerId, p);
+                canvas.setPointerCapture(e.pointerId);
+                activate();
+                e.preventDefault();
+                const list = [...pointers.values()];
+                if (list.length >= 2) gesture = { type: 'pinch', start: list.slice(0, 2).map(q => q.slice()), pts: snapshot() };
+                else if (idx >= 0) gesture = { type: 'corner', index: idx, pts: snapshot() };
+                else gesture = { type: 'move', start: p, pts: snapshot() };
+              });
+
+              canvas.addEventListener('pointermove', e => {
+                if (!pointers.has(e.pointerId) || !gesture) return;
+                pointers.set(e.pointerId, local(e));
+                const list = [...pointers.values()];
+
+                if (gesture.type === 'corner') {
+                  const p = pointers.get(e.pointerId);
+                  pts[gesture.index] = [clamp01(p[0]), clamp01(p[1])];
+                } else if (gesture.type === 'move') {
+                  const q = pointers.get(e.pointerId);
+                  let dx = q[0] - gesture.start[0], dy = q[1] - gesture.start[1];
+                  const xs = gesture.pts.map(c => c[0]), ys = gesture.pts.map(c => c[1]);
+                  dx = Math.max(-Math.min(...xs), Math.min(dx, 1 - Math.max(...xs)));
+                  dy = Math.max(-Math.min(...ys), Math.min(dy, 1 - Math.max(...ys)));
+                  pts = gesture.pts.map(c => [c[0] + dx, c[1] + dy]);
+                } else if (gesture.type === 'pinch' && list.length >= 2) {
+                  const [a0, b0] = gesture.start, [a1, b1] = list;
+                  const d0 = Math.hypot(b0[0] - a0[0], b0[1] - a0[1]) || 1e-6;
+                  const d1 = Math.hypot(b1[0] - a1[0], b1[1] - a1[1]);
+                  const k = Math.max(0.2, Math.min(4, d1 / d0));
+                  const c0 = [(a0[0] + b0[0]) / 2, (a0[1] + b0[1]) / 2];
+                  const c1 = [(a1[0] + b1[0]) / 2, (a1[1] + b1[1]) / 2];
+                  pts = gesture.pts.map(c => [
+                    clamp01(c1[0] + (c[0] - c0[0]) * k),
+                    clamp01(c1[1] + (c[1] - c0[1]) * k)
+                  ]);
+                }
+                requestRender();
+              });
+
+              function endPointer(e) {
+                pointers.delete(e.pointerId);
+                if (!pointers.size) { gesture = null; deactivate(); }
+                else if (gesture && gesture.type === 'pinch') gesture = null;
+              }
+              canvas.addEventListener('pointerup', endPointer);
+              canvas.addEventListener('pointercancel', endPointer);
+
+              handlesBox.addEventListener('keydown', e => {
+                const i = e.target.dataset && e.target.dataset.index;
+                if (i === undefined) return;
+                const step = e.shiftKey ? 0.05 : 0.01;
+                const d = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] }[e.key];
+                if (!d) return;
+                e.preventDefault();
+                const idx = +i;
+                pts[idx] = [clamp01(pts[idx][0] + d[0]), clamp01(pts[idx][1] + d[1])];
+                activate();
+                deactivate();
+                requestRender();
+              });
+
+              room.addEventListener('load', () => { analysePhoto(); requestRender(); });
+              window.addEventListener('resize', requestRender);
+              if (window.ResizeObserver) new ResizeObserver(requestRender).observe(stage);
+              if (room.complete) analysePhoto();
+              setRoom(SCENES[0]);
+              requestRender();
+
+              window.setTimeout(() => {
+                STONES.forEach(s => { new Image().src = '/images/visualizer/face-' + s.slug + '.webp'; });
+                SCENES.forEach(s => { new Image().src = s; });
+              }, 1500);
             </script>
 
             <style>
@@ -501,77 +784,48 @@
                 display: flex; align-items: center; justify-content: center;
                 background: #e9e5e2; touch-action: none; user-select: none;
               }
-              /* Blurred fill behind the fitted photo, so any aspect ratio sits
-                 in the stage without letterbox bars. */
               #akurock-visualizer .av-backdrop {
                 position: absolute; inset: -8%;
                 background-size: cover; background-position: center;
                 filter: blur(38px) brightness(.82) saturate(.8);
               }
               #akurock-visualizer .av-canvas {
-                /* Absolutely centred so its size never feeds back into the
-                   stage's own layout while we fit the photo. */
                 position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
-                touch-action: none;
-                box-shadow: 0 20px 50px rgba(13,13,13,.28);
+                touch-action: none; box-shadow: 0 20px 50px rgba(13,13,13,.28);
               }
               #akurock-visualizer .av-frame {
                 position: absolute; inset: 0; overflow: hidden; border-radius: 6px;
               }
-              #akurock-visualizer .av-room {
+              #akurock-visualizer .av-room,
+              #akurock-visualizer .av-gl {
                 position: absolute; inset: 0; width: 100%; height: 100%;
-                object-fit: fill; user-select: none; pointer-events: none;
+                pointer-events: none; user-select: none;
               }
-
-              /* The textured panel: a 1000x1000 plane mapped onto the four corners. */
-              #akurock-visualizer .av-quad {
-                position: absolute; left: 0; top: 0; width: 1000px; height: 1000px;
-                transform-origin: 0 0; will-change: transform;
-                box-shadow: 12px 22px 46px rgba(13,13,13,.34);
-                cursor: grab;
-              }
-              #akurock-visualizer .av-stage.is-active .av-quad { cursor: grabbing; }
-              #akurock-visualizer .av-stage.is-active .av-canvas { box-shadow: 0 20px 50px rgba(13,13,13,.28); }
-              #akurock-visualizer .av-fill {
-                position: absolute; inset: 0;
-                background-repeat: repeat; background-position: center top;
-                filter: brightness(1.12) contrast(1.02);
-              }
-              /* Edge relief: a hint of thickness at the top and a shadow line at
-                 the bottom, so the panel reads as a solid object on the wall. */
-              #akurock-visualizer .av-relief {
-                position: absolute; inset: 0; pointer-events: none;
-                background:
-                  linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,0) 4%),
-                  linear-gradient(0deg, rgba(13,13,13,.20), rgba(13,13,13,0) 5%),
-                  linear-gradient(90deg, rgba(13,13,13,.14), rgba(13,13,13,0) 3%),
-                  linear-gradient(270deg, rgba(255,255,255,.10), rgba(255,255,255,0) 3%);
-                box-shadow: inset 0 0 0 1px rgba(13,13,13,.16);
-              }
-              /* Blurred copy of the room, multiplied over the panel and clipped to
-                 it — the panel then carries the room's own light and shadows. */
+              #akurock-visualizer .av-room { object-fit: fill; }
+              /* Faint copy of the room over the render, so the panel picks up the
+                 wall's colour temperature and any large light gradients. */
               #akurock-visualizer .av-light {
                 position: absolute; inset: 0; pointer-events: none;
                 background-size: 100% 100%; background-position: center;
-                filter: blur(26px) saturate(.9);
-                mix-blend-mode: multiply; opacity: .55;
+                filter: blur(30px) saturate(.85);
+                mix-blend-mode: multiply; opacity: .18;
               }
               #akurock-visualizer .av-outline {
                 position: absolute; inset: 0; width: 100%; height: 100%;
                 pointer-events: none; opacity: 0; transition: opacity .25s ease;
               }
               #akurock-visualizer .av-outline polygon {
-                fill: none; stroke: rgba(255,255,255,.9); stroke-width: 1.5; stroke-dasharray: 6 5;
+                fill: none; stroke: rgba(255,255,255,.85); stroke-width: 1.4; stroke-dasharray: 6 5;
               }
               #akurock-visualizer .av-stage.is-active .av-outline { opacity: 1; }
 
               #akurock-visualizer .av-handles { position: absolute; inset: 0; pointer-events: none; }
               #akurock-visualizer .av-handle {
-                position: absolute; width: 30px; height: 30px; padding: 0;
+                position: absolute; width: 26px; height: 26px; padding: 0;
                 transform: translate(-50%,-50%); pointer-events: auto;
-                border-radius: 50%; border: 3px solid #fff; background: #f24616;
+                border-radius: 50%; border: 2.5px solid #fff; background: #f24616;
                 box-shadow: 0 2px 10px rgba(13,13,13,.35); cursor: grab;
-                opacity: .55; transition: opacity .2s ease, transform .12s ease;
+                opacity: .5; transition: opacity .2s ease, transform .12s ease;
                 touch-action: none;
               }
               #akurock-visualizer .av-handle:hover,
@@ -648,9 +902,8 @@
 
               @media (max-width: 720px) {
                 .av-back { top: 12px; left: 12px; padding: 9px 14px; font-size: 13px; }
-                #akurock-visualizer .av-topbar { padding: 12px 12px 8px 130px; }
+                #akurock-visualizer .av-topbar { padding: 12px 12px 8px 130px; justify-content: flex-end; }
                 #akurock-visualizer .av-title { display: none; }
-                #akurock-visualizer .av-topbar { justify-content: flex-end; }
                 #akurock-visualizer .av-actions { display: flex; gap: 8px; }
                 #akurock-visualizer .av-btn { padding: 0; width: 42px; height: 42px; justify-content: center; }
                 #akurock-visualizer .av-btn-text {

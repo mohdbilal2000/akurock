@@ -353,6 +353,7 @@ const de = {
   'visualizer.reset': 'Zurücksetzen',
   'visualizer.hint': 'Ziehe das Paneel auf deine Wand · zieh an den Ecken für die Perspektive',
   'visualizer.slatWidth': 'Lamellenbreite',
+  'visualizer.saveImage': 'Bild speichern',
 } as const;
 
 export default de;

@@ -258,6 +258,7 @@ const HTML_REPLACEMENTS: [string, TranslationKey][] = [
   // Visualizer (self-hosted) chrome
   ['Ziehe das Paneel auf deine Wand · zieh an den Ecken für die Perspektive', 'visualizer.hint'],
   ['Lamellenbreite', 'visualizer.slatWidth'],
+  ['Bild speichern', 'visualizer.saveImage'],
   ['Eigenes Raumfoto', 'visualizer.uploadPhoto'],
   ['Zurücksetzen', 'visualizer.reset'],
 ];
