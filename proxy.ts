@@ -78,6 +78,15 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(redirectUrl, 301);
   }
 
+  // ─── Visualizer Skip ───
+  // /visualizer is its own top-level Next.js route (app/visualizer), not a
+  // CMS page — it must not get locale-prefixed to /de/visualizer, which
+  // would fall through to the [locale]/[...slug] catch-all and serve the
+  // legacy public/html/visualizer.html 2D tool instead.
+  if (pathname === '/visualizer' || pathname.startsWith('/visualizer/')) {
+    return NextResponse.next();
+  }
+
   // ─── Static File / API Skip ───
   if (
     pathname.startsWith('/api') ||
