@@ -97,6 +97,10 @@
                     <svg class="av-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l1.4-2h7.2L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z"/><circle cx="12" cy="13.5" r="3.4"/></svg>
                     <span class="av-btn-text">Eigenes Raumfoto</span>
                   </label>
+                  <button id="av-generate" class="av-btn av-solid av-generate" type="button" aria-label="Foto-Render">
+                    <svg class="av-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v3"/><path d="M12 18v3"/><path d="M3 12h3"/><path d="M18 12h3"/><path d="m5.6 5.6 2.1 2.1"/><path d="m16.3 16.3 2.1 2.1"/><path d="m18.4 5.6-2.1 2.1"/><path d="m7.7 16.3-2.1 2.1"/></svg>
+                    <span class="av-btn-text">Foto-Render</span>
+                  </button>
                   <button id="av-save" class="av-btn av-ghost" type="button" aria-label="Bild speichern">
                     <svg class="av-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11"/><path d="m8 11 4 4 4-4"/><path d="M5 19h14"/></svg>
                     <span class="av-btn-text">Bild speichern</span>
@@ -122,6 +126,18 @@
                   <div class="av-handles" id="av-handles"></div>
                 </div>
                 <div class="av-hint" id="av-hint">Ziehe das Paneel auf deine Wand · zieh an den Ecken für die Perspektive</div>
+                <div class="av-result" id="av-result" hidden>
+                  <img id="av-result-img" alt="Foto-Render">
+                  <div class="av-result-bar">
+                    <button id="av-result-toggle" class="av-btn av-ghost" type="button">Vorher</button>
+                    <button id="av-result-save" class="av-btn av-ghost" type="button">Bild speichern</button>
+                    <button id="av-result-close" class="av-btn av-ghost" type="button">Schließen</button>
+                  </div>
+                </div>
+                <div class="av-busy" id="av-busy" hidden>
+                  <div class="av-spinner" aria-hidden="true"></div>
+                  <div class="av-busy-text" id="av-busy-text">Raum wird gelesen …</div>
+                </div>
               </div>
 
               <div class="av-dock">
@@ -625,6 +641,195 @@
                 }, 'image/png');
               });
 
+              /* ---------------- generative render ----------------
+                 The three.js pass above stops being the output here. It becomes
+                 the control signal: the server sends it to an image model
+                 alongside the photo, so the model gets the panel's real slat
+                 pitch and perspective instead of inventing a product. */
+              const generateBtn = document.getElementById('av-generate');
+              const busy = document.getElementById('av-busy');
+              const busyText = document.getElementById('av-busy-text');
+              const resultBox = document.getElementById('av-result');
+              const resultImg = document.getElementById('av-result-img');
+              const resultToggle = document.getElementById('av-result-toggle');
+              let sceneAnalysis = null;
+              let analysedSrc = null;      // which photo sceneAnalysis describes
+              let maskMode = 'white-paint';
+              let busyState = false;
+              let showingBefore = false;
+
+              // Long edge the photo is sent at. Big enough for the model to
+              // resolve slats, small enough to keep the request under the
+              // route's size cap and the round-trip bearable on mobile data.
+              const SEND_EDGE = 1280;
+
+              function photoCanvas() {
+                const nw = room.naturalWidth || 1, nh = room.naturalHeight || 1;
+                const k = Math.min(1, SEND_EDGE / Math.max(nw, nh));
+                const c = document.createElement('canvas');
+                c.width = Math.max(1, Math.round(nw * k));
+                c.height = Math.max(1, Math.round(nh * k));
+                c.getContext('2d').drawImage(room, 0, 0, c.width, c.height);
+                return c;
+              }
+
+              function polygonPath(ctx, w, h) {
+                ctx.beginPath();
+                pts.forEach((p, i) => {
+                  const x = p[0] * w, y = p[1] * h;
+                  if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+                });
+                ctx.closePath();
+              }
+
+              function controlDataUrl(w, h) {
+                const c = document.createElement('canvas');
+                c.width = w; c.height = h;
+                const ctx = c.getContext('2d');
+                draw();
+                ctx.drawImage(room, 0, 0, w, h);
+                if (renderer) ctx.drawImage(glCanvas, 0, 0, w, h);
+                return c.toDataURL('image/png');
+              }
+
+              function maskDataUrl(w, h) {
+                const c = document.createElement('canvas');
+                c.width = w; c.height = h;
+                const ctx = c.getContext('2d');
+                if (maskMode === 'alpha-hole') {
+                  // Repaint where the mask is transparent.
+                  ctx.fillStyle = '#000';
+                  ctx.fillRect(0, 0, w, h);
+                  ctx.globalCompositeOperation = 'destination-out';
+                  polygonPath(ctx, w, h);
+                  ctx.fill();
+                } else {
+                  // Repaint where the mask is white.
+                  ctx.fillStyle = '#000';
+                  ctx.fillRect(0, 0, w, h);
+                  ctx.fillStyle = '#fff';
+                  polygonPath(ctx, w, h);
+                  ctx.fill();
+                }
+                return c.toDataURL('image/png');
+              }
+
+              function setBusy(on, text) {
+                busyState = on;
+                busy.hidden = !on;
+                if (text) busyText.textContent = text;
+                generateBtn.disabled = on;
+                generateBtn.classList.toggle('is-busy', on);
+              }
+
+              function failGenerate(message) {
+                setBusy(false);
+                hint.textContent = message;
+                hint.classList.remove('is-hidden');
+              }
+
+              /* Place the panel on the wall Claude found, so the visitor never
+                 has to drag corners to get a plausible starting point. */
+              function applyAnalysis(a) {
+                if (!a || !a.wall || !Array.isArray(a.wall.corners)) return;
+                if (a.wall.corners.length !== 4 || a.wall.confidence < 0.35) return;
+                const c = a.wall.corners.map(p => [clamp01(p.x), clamp01(p.y)]);
+                // Inset to about 70% of the wall — a panel rarely covers it all.
+                const cx = c.reduce((t, p) => t + p[0], 0) / 4;
+                const cy = c.reduce((t, p) => t + p[1], 0) / 4;
+                pts = c.map(p => [cx + (p[0] - cx) * 0.7, cy + (p[1] - cy) * 0.7]);
+                requestRender();
+              }
+
+              async function ensureAnalysis(photo) {
+                if (sceneAnalysis && analysedSrc === room.currentSrc) return sceneAnalysis;
+                setBusy(true, 'Raum wird gelesen …');
+                const res = await fetch('/api/visualizer/analyze', {
+                  method: 'POST',
+                  headers: { 'content-type': 'application/json' },
+                  body: JSON.stringify({ image: photo, locale: document.documentElement.lang || 'de' })
+                });
+                const json = await res.json().catch(() => ({}));
+                if (!res.ok) throw new Error('Render fehlgeschlagen.');
+                if (json.analysis && json.analysis.rejectionReason) {
+                  const err = new Error(json.analysis.rejectionReason);
+                  err.fromModel = true;   // already in the visitor's language
+                  throw err;
+                }
+                sceneAnalysis = json.analysis;
+                analysedSrc = room.currentSrc;
+                if (json.maskConvention) maskMode = json.maskConvention;
+                applyAnalysis(sceneAnalysis);
+                return sceneAnalysis;
+              }
+
+              async function generate() {
+                if (busyState) return;
+                let photo;
+                try {
+                  photo = photoCanvas().toDataURL('image/jpeg', 0.92);
+                } catch (err) {
+                  // A cross-origin photo taints the canvas and cannot be read out.
+                  failGenerate('Dieses Foto kann nicht gerendert werden.');
+                  return;
+                }
+                try {
+                  const analysis = await ensureAnalysis(photo);
+                  const c = photoCanvas();
+                  setBusy(true, 'Paneel wird gerendert …');
+                  const res = await fetch('/api/visualizer/render', {
+                    method: 'POST',
+                    headers: { 'content-type': 'application/json' },
+                    body: JSON.stringify({
+                      roomImage: photo,
+                      controlImage: controlDataUrl(c.width, c.height),
+                      maskImage: maskDataUrl(c.width, c.height),
+                      stone: stone.name,
+                      analysis: analysis
+                    })
+                  });
+                  const json = await res.json().catch(() => ({}));
+                  if (!res.ok || !json.image) throw new Error('Render fehlgeschlagen.');
+                  resultImg.src = json.image;
+                  showingBefore = false;
+                  resultToggle.textContent = 'Vorher';
+                  resultBox.hidden = false;
+                  setBusy(false);
+                } catch (err) {
+                  failGenerate(err && err.fromModel && err.message
+                    ? err.message
+                    : 'Render fehlgeschlagen.');
+                }
+              }
+
+              generateBtn.addEventListener('click', generate);
+
+              resultToggle.addEventListener('click', () => {
+                showingBefore = !showingBefore;
+                resultImg.style.visibility = showingBefore ? 'hidden' : '';
+                resultToggle.textContent = showingBefore ? 'Nachher' : 'Vorher';
+              });
+
+              document.getElementById('av-result-close').addEventListener('click', () => {
+                resultBox.hidden = true;
+                resultImg.removeAttribute('src');
+              });
+
+              document.getElementById('av-result-save').addEventListener('click', () => {
+                if (!resultImg.src) return;
+                const a = document.createElement('a');
+                a.href = resultImg.src;
+                a.download = 'akurock-visualizer.png';
+                a.click();
+              });
+
+              /* A new photo invalidates the analysis. */
+              room.addEventListener('load', () => {
+                sceneAnalysis = null;
+                analysedSrc = null;
+                resultBox.hidden = true;
+              });
+
               /* ---------------- interaction ---------------- */
               const pointers = new Map();
               let gesture = null;
@@ -742,6 +947,43 @@
                 background: #faf8f7; font-family: 'Inter', sans-serif; color: #0d0d0d;
                 overscroll-behavior: none; -webkit-user-select: none; user-select: none;
               }
+              /* These overlays set `display`, which out-ranks the UA's
+                 [hidden] rule — without this they never hide. */
+              .av-result[hidden], .av-busy[hidden] { display: none; }
+
+              .av-generate { background: #f24616; color: #fff; border-color: #f24616; }
+              .av-generate:disabled { opacity: .6; cursor: default; }
+
+              .av-busy {
+                position: absolute; inset: 0; z-index: 6;
+                display: flex; flex-direction: column; align-items: center; justify-content: center;
+                gap: 14px; background: rgba(250, 248, 247, .82); backdrop-filter: blur(3px);
+              }
+              .av-spinner {
+                width: 34px; height: 34px; border-radius: 50%;
+                border: 3px solid rgba(13, 13, 13, .15); border-top-color: #f24616;
+                animation: av-spin .8s linear infinite;
+              }
+              @keyframes av-spin { to { transform: rotate(360deg); } }
+              @media (prefers-reduced-motion: reduce) {
+                .av-spinner { animation-duration: 2.4s; }
+              }
+              .av-busy-text { font-size: 14px; letter-spacing: .01em; }
+
+              .av-result {
+                position: absolute; inset: 0; z-index: 7;
+                display: flex; align-items: center; justify-content: center;
+                background: #faf8f7;
+              }
+              .av-result img {
+                max-width: 100%; max-height: 100%; object-fit: contain; display: block;
+              }
+              .av-result-bar {
+                position: absolute; left: 50%; bottom: 16px; transform: translateX(-50%);
+                display: flex; gap: 8px; padding-bottom: env(safe-area-inset-bottom, 0);
+              }
+              .av-result-bar .av-btn { background: #fff; }
+
               .av-back {
                 position: fixed; top: 18px; left: 18px; z-index: 1000001;
                 display: inline-flex; align-items: center; gap: 6px;
@@ -755,11 +997,12 @@
 
               #akurock-visualizer .av-topbar {
                 position: relative; flex: none;
-                display: flex; align-items: center; justify-content: flex-end; gap: 10px;
+                display: flex; align-items: center; justify-content: flex-start; gap: 10px;
                 padding: 16px 18px 12px 170px;
               }
               #akurock-visualizer .av-title {
-                position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
+                flex: 1 1 auto; min-width: 0;
+                overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
                 font-size: 17px; font-weight: 600; letter-spacing: -.02em;
               }
               #akurock-visualizer .av-btn {

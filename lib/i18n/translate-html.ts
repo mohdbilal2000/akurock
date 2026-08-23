@@ -261,6 +261,14 @@ const HTML_REPLACEMENTS: [string, TranslationKey][] = [
   ['Bild speichern', 'visualizer.saveImage'],
   ['Eigenes Raumfoto', 'visualizer.uploadPhoto'],
   ['Zurücksetzen', 'visualizer.reset'],
+  ['Foto-Render', 'visualizer.generate'],
+  ['Raum wird gelesen …', 'visualizer.reading'],
+  ['Paneel wird gerendert …', 'visualizer.rendering'],
+  ['Vorher', 'visualizer.before'],
+  ['Nachher', 'visualizer.after'],
+  ['Schließen', 'visualizer.close'],
+  ['Dieses Foto kann nicht gerendert werden.', 'visualizer.cannotRender'],
+  ['Render fehlgeschlagen.', 'visualizer.renderFailed'],
 ];
 
 export function translateHTML(html: string, locale: Locale): string {

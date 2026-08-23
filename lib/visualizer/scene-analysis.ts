@@ -178,17 +178,29 @@ function clamp(n: number, lo: number, hi: number): number {
   return Math.min(hi, Math.max(lo, n));
 }
 
+const LANGUAGES: Record<string, string> = {
+  de: 'German',
+  en: 'English',
+  es: 'Spanish',
+};
+
 export async function analyseScene(
   imageBase64: string,
-  mediaType: 'image/jpeg' | 'image/png' | 'image/webp'
+  mediaType: 'image/jpeg' | 'image/png' | 'image/webp',
+  locale = 'de'
 ): Promise<SceneAnalysis> {
   const client = new Anthropic();
+  // rejectionReason is shown to the visitor verbatim, so it has to come back
+  // in the language they are browsing in.
+  const language = LANGUAGES[locale] ?? LANGUAGES.de;
 
   const response = await client.messages.create({
     model: 'claude-opus-5',
     max_tokens: 4000,
     thinking: { type: 'adaptive' },
-    system: SYSTEM,
+    system: `${SYSTEM}
+
+Write rejectionReason in ${language}.`,
     tools: [SCENE_TOOL],
     tool_choice: { type: 'tool', name: 'report_scene' },
     messages: [

@@ -354,6 +354,14 @@ const de = {
   'visualizer.hint': 'Ziehe das Paneel auf deine Wand · zieh an den Ecken für die Perspektive',
   'visualizer.slatWidth': 'Lamellenbreite',
   'visualizer.saveImage': 'Bild speichern',
+  'visualizer.generate': 'Foto-Render',
+  'visualizer.reading': 'Raum wird gelesen …',
+  'visualizer.rendering': 'Paneel wird gerendert …',
+  'visualizer.before': 'Vorher',
+  'visualizer.after': 'Nachher',
+  'visualizer.close': 'Schließen',
+  'visualizer.cannotRender': 'Dieses Foto kann nicht gerendert werden.',
+  'visualizer.renderFailed': 'Render fehlgeschlagen.',
 } as const;
 
 export default de;

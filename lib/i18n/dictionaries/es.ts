@@ -356,6 +356,14 @@ const es: Dictionary = {
   'visualizer.hint': 'Arrastra el panel a tu pared · tira de las esquinas para ajustar la perspectiva',
   'visualizer.slatWidth': 'Ancho de lama',
   'visualizer.saveImage': 'Guardar imagen',
+  'visualizer.generate': 'Render fotográfico',
+  'visualizer.reading': 'Leyendo la habitación …',
+  'visualizer.rendering': 'Renderizando el panel …',
+  'visualizer.before': 'Antes',
+  'visualizer.after': 'Después',
+  'visualizer.close': 'Cerrar',
+  'visualizer.cannotRender': 'Esta foto no se puede renderizar.',
+  'visualizer.renderFailed': 'Error al renderizar.',
 };
 
 export default es;

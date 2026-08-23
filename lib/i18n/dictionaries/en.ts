@@ -356,6 +356,14 @@ const en: Dictionary = {
   'visualizer.hint': 'Drag the panel onto your wall · pull the corners to match the perspective',
   'visualizer.slatWidth': 'Slat width',
   'visualizer.saveImage': 'Save image',
+  'visualizer.generate': 'Photo render',
+  'visualizer.reading': 'Reading the room …',
+  'visualizer.rendering': 'Rendering the panel …',
+  'visualizer.before': 'Before',
+  'visualizer.after': 'After',
+  'visualizer.close': 'Close',
+  'visualizer.cannotRender': 'This photo cannot be rendered.',
+  'visualizer.renderFailed': 'Render failed.',
 };
 
 export default en;

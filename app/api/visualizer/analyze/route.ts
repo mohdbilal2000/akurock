@@ -63,7 +63,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const analysis = await analyseScene(data, mime as AllowedMime);
+    const locale = ['de', 'en', 'es'].includes(body?.locale) ? body.locale : 'de';
+    const analysis = await analyseScene(data, mime as AllowedMime, locale);
     // The browser draws the mask, so it needs the render provider's convention
     // back with the analysis — see MaskConvention in lib/visualizer.
     return NextResponse.json({ analysis, maskConvention: maskConvention() });
