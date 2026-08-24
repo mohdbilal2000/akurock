@@ -138,9 +138,9 @@ export function Visualizer() {
   }
 
   return (
-    <div className="flex h-screen w-full flex-col bg-neutral-50 md:items-center">
+    <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-neutral-50 md:items-center">
       {step === "upload" && (
-        <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-10">
+        <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 overflow-y-auto px-4 py-10">
           <header className="text-center">
             <h1 className="text-2xl font-bold text-neutral-900">Akurock Wall Visualizer</h1>
             <p className="mt-1 text-sm text-neutral-500">
@@ -152,8 +152,8 @@ export function Visualizer() {
       )}
 
       {step === "corners" && image && (
-        <div className="flex flex-col gap-4 px-4 py-6 md:max-w-3xl md:gap-6 md:py-10">
-          <div className="flex items-center justify-between">
+        <div className="flex w-full flex-col gap-4 overflow-y-auto px-4 py-6 md:max-w-3xl md:gap-6 md:py-10">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="text-lg font-semibold text-neutral-900">Tap the 4 wall corners</h2>
             <button
               type="button"
@@ -208,9 +208,9 @@ export function Visualizer() {
       )}
 
       {step === "main" && image && wallPlane && coverage && (
-        <div className="flex flex-col gap-0 overflow-hidden md:max-w-3xl md:flex-row">
+        <div className="flex h-full w-full min-h-0 flex-col overflow-hidden md:max-w-3xl md:flex-row">
           {/* Canvas area: full width on mobile, left half on desktop */}
-          <div className="relative w-full flex-1 overflow-hidden md:h-screen">
+          <div className="relative flex w-full min-h-0 flex-1 items-center justify-center overflow-hidden bg-neutral-900/5 md:h-full">
             {!isAdjustingCoverage && (
               <CompositorCanvas
                 ref={canvasRef}
@@ -261,7 +261,7 @@ export function Visualizer() {
           </div>
 
           {/* Bottom sheet on mobile, right panel on desktop */}
-          <div className="flex max-h-[60vh] flex-col gap-4 overflow-y-auto border-t border-neutral-200 bg-white px-4 py-5 md:max-h-screen md:w-80 md:border-l md:border-t-0">
+          <div className="flex max-h-[55dvh] shrink-0 flex-col gap-4 overflow-y-auto overscroll-contain border-t border-neutral-200 bg-white px-4 py-5 [&>*]:shrink-0 md:max-h-full md:w-80 md:shrink md:border-l md:border-t-0">
             <div className="flex items-baseline justify-between gap-2">
               <h3 className="text-sm font-semibold text-neutral-900">Finish</h3>
             </div>

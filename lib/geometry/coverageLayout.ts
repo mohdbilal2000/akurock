@@ -21,19 +21,30 @@ function maxFit(available: number, step: number): number {
   return Math.max(0.5, Math.floor((available / step) * 2) / 2);
 }
 
+/** A feature wall people actually order; also the widest we auto-suggest. */
+export const DEFAULT_MAX_COVERAGE_WIDTH_MM = 4000;
+
 /**
  * Fills the wall with the biggest whole/half-panel grid that fits,
  * horizontally centred and anchored to the floor (feature walls are
  * usually panelled full-height or from the floor up).
+ *
+ * The width is capped at `maxWidthMm`. Wall width is inferred from the
+ * corner quad and the entered wall height, so a loose corner pick can imply
+ * an 8m wall — auto-filling that opens the tool on ~13 panels and a four
+ * figure price, and packs the slats so tightly they render as hairlines.
+ * Capping keeps the first render a believable feature wall; dragging the
+ * coverage handles still covers as much wall as the user actually wants.
  */
 export function suggestCoverage(
   wallWidthMm: number,
   wallHeightMm: number,
   panel: PanelSpec,
   orientation: PanelOrientation,
+  maxWidthMm: number = DEFAULT_MAX_COVERAGE_WIDTH_MM,
 ): CoverageResult {
   const step = panelStep(panel, orientation);
-  const across = maxFit(wallWidthMm, step.x);
+  const across = maxFit(Math.min(wallWidthMm, maxWidthMm), step.x);
   const high = maxFit(wallHeightMm, step.y);
   const width = across * step.x;
   const height = high * step.y;

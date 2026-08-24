@@ -129,3 +129,29 @@ describe("resizeCoverage", () => {
     expect(r.y + r.height).toBeLessThanOrEqual(WALL_H + 1e-6);
   });
 });
+
+describe("suggestCoverage width cap", () => {
+  it("does not auto-fill an implausibly wide inferred wall", () => {
+    // A loose corner pick on a room photo can imply a wall this wide.
+    const result = suggestCoverage(8000, 1880, PANEL, "vertical");
+    expect(result.rectMm.width).toBeLessThanOrEqual(4000);
+    // 4000/600 -> 6.5 across, 1880/2400 -> 0.5 high => 3.25 panels, not ~10.
+    expect(result.panelCount).toBeLessThan(4);
+  });
+
+  it("still fills a wall narrower than the cap completely", () => {
+    const result = suggestCoverage(3000, 2500, PANEL, "vertical");
+    expect(result.panelsAcross).toBe(5); // 3000/600 = 5 exactly
+    expect(result.rectMm.width).toBe(3000);
+  });
+
+  it("stays centred on the real wall after capping", () => {
+    const result = suggestCoverage(8000, 2500, PANEL, "vertical");
+    expect(result.rectMm.x).toBeCloseTo((8000 - result.rectMm.width) / 2, 6);
+  });
+
+  it("honours an explicit cap", () => {
+    const result = suggestCoverage(8000, 2500, PANEL, "vertical", 1200);
+    expect(result.rectMm.width).toBeLessThanOrEqual(1200);
+  });
+});

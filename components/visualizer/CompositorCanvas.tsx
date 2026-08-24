@@ -81,7 +81,11 @@ export const CompositorCanvas = forwardRef<HTMLCanvasElement, CompositorCanvasPr
           if (typeof forwardedRef === "function") forwardedRef(node);
           else if (forwardedRef) forwardedRef.current = node;
         }}
-        className="w-full max-w-2xl rounded-xl border border-neutral-200"
+        // The canvas's intrinsic size is the photo's natural pixel size, so it
+        // needs BOTH axes constrained: w/h-auto keeps the aspect while
+        // max-h-full stops a tall photo from overflowing its pane and
+        // covering the sheet below it.
+        className="block h-full w-full object-contain"
       />
     );
   },
