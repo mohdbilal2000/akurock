@@ -44,16 +44,67 @@ export interface LuminanceMask {
 }
 
 /**
+ * Separable box blur over a scalar field, run three times to approximate a
+ * Gaussian. Cheap and good enough — this only ever smooths a lighting field.
+ */
+export function blurScalarField(
+  src: Float32Array,
+  width: number,
+  height: number,
+  radius: number,
+): Float32Array {
+  const r = Math.max(0, Math.floor(radius));
+  if (r === 0 || width === 0 || height === 0) return Float32Array.from(src);
+
+  let buf = Float32Array.from(src);
+  let tmp = new Float32Array(buf.length);
+  const win = r * 2 + 1;
+
+  for (let pass = 0; pass < 3; pass++) {
+    // horizontal
+    for (let y = 0; y < height; y++) {
+      const row = y * width;
+      let acc = 0;
+      for (let k = -r; k <= r; k++) acc += buf[row + Math.min(width - 1, Math.max(0, k))];
+      for (let x = 0; x < width; x++) {
+        tmp[row + x] = acc / win;
+        const out = row + Math.min(width - 1, Math.max(0, x - r));
+        const inn = row + Math.min(width - 1, Math.max(0, x + r + 1));
+        acc += buf[inn] - buf[out];
+      }
+    }
+    // vertical
+    for (let x = 0; x < width; x++) {
+      let acc = 0;
+      for (let k = -r; k <= r; k++) acc += tmp[Math.min(height - 1, Math.max(0, k)) * width + x];
+      for (let y = 0; y < height; y++) {
+        buf[y * width + x] = acc / win;
+        const out = Math.min(height - 1, Math.max(0, y - r)) * width + x;
+        const inn = Math.min(height - 1, Math.max(0, y + r + 1)) * width + x;
+        acc += tmp[inn] - tmp[out];
+      }
+    }
+  }
+  return buf;
+}
+
+/**
  * Computes a mean-normalised luminance multiplier for every pixel in
  * `pixels`, clamped to [minMultiplier, maxMultiplier] so deep shadows or
  * blown highlights in the source photo don't crush the panel texture to
  * black/white.
+ *
+ * The L* field is heavily LOW-PASSED first. Without that the mask carries
+ * every edge in the photo, so anything standing in front of the wall — a
+ * lamp, a sofa, a track light — gets its silhouette multiplied straight into
+ * the panel and appears to show through it. Only the broad lighting gradient
+ * should transfer; `blurRadiusFraction` of the long edge is the cutoff.
  */
 export function computeNormalizedLuminanceMask(
   pixels: PixelBuffer,
-  opts: { minMultiplier?: number; maxMultiplier?: number } = {},
+  opts: { minMultiplier?: number; maxMultiplier?: number; blurRadiusFraction?: number } = {},
 ): LuminanceMask {
-  const { minMultiplier = 0.4, maxMultiplier = 1.8 } = opts;
+  const { minMultiplier = 0.7, maxMultiplier = 1.3, blurRadiusFraction = 1 / 10 } = opts;
   const { width, height, data } = pixels;
   const count = width * height;
   const ls = new Float32Array(count);
@@ -68,9 +119,12 @@ export function computeNormalizedLuminanceMask(
   const meanL = count > 0 ? sum / count : 50;
   const safeMean = meanL < 1e-6 ? 1e-6 : meanL;
 
+  const radius = Math.round(Math.max(width, height) * blurRadiusFraction);
+  const smooth = blurScalarField(ls, width, height, radius);
+
   const values = new Float32Array(count);
   for (let i = 0; i < count; i++) {
-    const m = ls[i] / safeMean;
+    const m = smooth[i] / safeMean;
     values[i] = Math.max(minMultiplier, Math.min(maxMultiplier, m));
   }
 
