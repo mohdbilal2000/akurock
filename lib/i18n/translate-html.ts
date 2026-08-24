@@ -393,6 +393,14 @@ function prefixInternalLinks(html: string, locale: Locale): string {
       if (/^(admin|api|images|videos|documents|js|fonts|css|data|_next)/.test(path)) {
         return match;
       }
+      // /visualizer is a top-level Next.js route (app/visualizer), not a CMS
+      // page. Prefixing it to /de/visualizer sends the user through the
+      // [locale]/[...slug] catch-all, which serves the legacy 2D
+      // public/html/visualizer.html instead of the real tool. Keep it bare and
+      // hand the locale over as ?lang= (see lib/i18n/visualizer.ts).
+      if (/^visualizer(\/|$|\?)/.test(path)) {
+        return `href="/visualizer?lang=${locale}"`;
+      }
       // Don't prefix if already has a locale
       if (/^(de|en|es)(\/|$)/.test(path)) {
         return match;

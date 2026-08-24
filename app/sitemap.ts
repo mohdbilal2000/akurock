@@ -15,7 +15,6 @@ const CONTENT_PAGES = [
   'stoneskin',           // technology page — brand/AEO value
   'uber-uns',            // about us — trust/E-E-A-T signal
   'verantwortung',       // sustainability — E-E-A-T signal
-  'visualizer',          // visualizer tool
   'zahlung-und-versand', // payment & shipping
   'zubehoer',            // accessories
   'blog-news',           // blog
@@ -116,6 +115,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
       });
     }
   }
+
+  // Wall visualizer — one locale-independent top-level route (app/visualizer),
+  // not a per-locale CMS page. The old /{locale}/visualizer paths now 301 here
+  // (proxy.ts), so listing them would submit redirecting URLs to Google.
+  entries.push({
+    url: `${BASE_URL}/visualizer`,
+    lastModified: getLastModified('visualizer'),
+    changeFrequency: 'monthly',
+    priority: 0.8,
+  });
 
   // Product pages per locale
   for (const slug of PRODUCT_SLUGS) {

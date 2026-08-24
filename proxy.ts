@@ -87,6 +87,17 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Locale-prefixed visualizer URLs (/de/visualizer, /es/visualizador, ...)
+  // were the CMS-era paths and still resolve through [locale]/[...slug] to the
+  // legacy 2D tool. They are indexed in Google, so 301 them onto the real tool
+  // rather than leaving two visualizers live on one domain.
+  const legacyVisualizer = /^\/(de|en|es)\/(visualizer|visualizador)\/?$/.exec(pathname);
+  if (legacyVisualizer) {
+    const redirectUrl = new URL('/visualizer', request.url);
+    redirectUrl.searchParams.set('lang', legacyVisualizer[1]);
+    return NextResponse.redirect(redirectUrl, 301);
+  }
+
   // ─── Static File / API Skip ───
   if (
     pathname.startsWith('/api') ||
