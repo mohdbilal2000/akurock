@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Vendored, minified third-party bundle (self-hosted three.js) — not our source.
+    "public/js/three/**",
   ]),
 ]);
 
