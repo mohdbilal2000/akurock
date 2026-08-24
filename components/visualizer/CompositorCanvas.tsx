@@ -12,6 +12,9 @@ interface CompositorCanvasProps {
   coverageMm: Rect;
   panelSizeMm: { width: number; height: number };
   textureUrl: string;
+  wallWidthMm?: number;
+  wallHeightMm?: number;
+  finishSlug?: string;
 }
 
 function loadImage(url: string): Promise<HTMLImageElement> {
@@ -27,7 +30,7 @@ function loadImage(url: string): Promise<HTMLImageElement> {
 /** Renders the instant composite (photo + warped panel texture) onto a canvas. */
 export const CompositorCanvas = forwardRef<HTMLCanvasElement, CompositorCanvasProps>(
   function CompositorCanvas(
-    { imageUrl, naturalWidth, naturalHeight, imageToWallMm, coverageMm, panelSizeMm, textureUrl },
+    { imageUrl, naturalWidth, naturalHeight, imageToWallMm, coverageMm, panelSizeMm, textureUrl, wallWidthMm = 4000, wallHeightMm = 2500, finishSlug = "whisper" },
     forwardedRef,
   ) {
     const localRef = useRef<HTMLCanvasElement>(null);
@@ -43,15 +46,23 @@ export const CompositorCanvas = forwardRef<HTMLCanvasElement, CompositorCanvasPr
           const [photo, panel] = await Promise.all([loadImage(imageUrl), loadImage(textureUrl)]);
           if (cancelled) return;
 
-          compositorRef.current ??= new WallCompositor(canvas);
-          compositorRef.current.render({
-            photo,
-            photoWidth: naturalWidth,
-            photoHeight: naturalHeight,
-            panelTexture: panel,
+          const compositor = (compositorRef.current ??= new WallCompositor(canvas));
+          compositor.setPhoto(photo, naturalWidth, naturalHeight);
+          compositor.setStoneTexture(finishSlug, panel);
+
+          const isVertical = panelSizeMm.height > panelSizeMm.width;
+          compositor.render({
+            stoneSlug: finishSlug,
             imageToWallMm,
             coverageMm,
-            panelSizeMm,
+            wallWidthMm,
+            wallHeightMm,
+            slatsVertical: isVertical,
+            feltHex: "#b9b8bc",
+            slatPitchMm: 64,
+            slatWidthMm: 42,
+            panelLengthMm: 2400,
+            stoneScaleMm: { width: 600, height: 2400 },
           });
         } catch (err) {
           console.error("Visualizer render failed", err);
@@ -61,7 +72,7 @@ export const CompositorCanvas = forwardRef<HTMLCanvasElement, CompositorCanvasPr
       return () => {
         cancelled = true;
       };
-    }, [imageUrl, naturalWidth, naturalHeight, imageToWallMm, coverageMm, panelSizeMm, textureUrl]);
+    }, [imageUrl, naturalWidth, naturalHeight, imageToWallMm, coverageMm, panelSizeMm, textureUrl, wallWidthMm, wallHeightMm, finishSlug]);
 
     return (
       <canvas

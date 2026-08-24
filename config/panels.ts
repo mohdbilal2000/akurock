@@ -29,6 +29,17 @@ export const PANEL: PanelSpec = {
   slatWidthMm: 42,
 };
 
+/**
+ * Physical footprint the face-*.webp stone textures span when tiled in
+ * wall space. The images are ~1:4 (576x2225) — one 600x2400mm panel face.
+ * Slats are drawn procedurally on top (lib/render/shaders.ts); these
+ * textures only contribute stone grain.
+ */
+export const STONE_TEXTURE_SPAN_MM = { width: 600, height: 2400 } as const;
+
+/** Classic Akurock mounting is vertical panels -> vertical slats. */
+export const DEFAULT_ORIENTATION: PanelOrientation = "vertical";
+
 export interface Finish {
   slug: string;
   name: string;

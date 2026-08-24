@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import type { Point } from "@/lib/geometry/types";
 import { fractionalPoint, toNaturalPoint } from "./pointerUtils";
+import { Magnifier } from "./Magnifier";
 
 const LABELS = ["top-left", "top-right", "bottom-right", "bottom-left"];
 
@@ -29,6 +30,7 @@ export function CornerPicker({
 }: CornerPickerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [pointerPercent, setPointerPercent] = useState({ x: 0, y: 0 });
 
   function handleContainerClick(e: React.MouseEvent) {
     if (corners.length >= 4 || !containerRef.current) return;
@@ -38,8 +40,11 @@ export function CornerPicker({
   }
 
   function handlePointerMove(e: React.PointerEvent) {
-    if (dragIndex === null || !containerRef.current) return;
+    if (!containerRef.current) return;
     const fraction = fractionalPoint(containerRef.current, e.clientX, e.clientY);
+    setPointerPercent({ x: fraction.x * 100, y: fraction.y * 100 });
+
+    if (dragIndex === null) return;
     const point = toNaturalPoint(fraction, naturalWidth, naturalHeight);
     const next = [...corners];
     next[dragIndex] = point;
@@ -89,6 +94,17 @@ export function CornerPicker({
           ))}
         </svg>
       </div>
+
+      {dragIndex !== null && (
+        <Magnifier
+          imageUrl={imageUrl}
+          naturalWidth={naturalWidth}
+          naturalHeight={naturalHeight}
+          pointerX={pointerPercent.x}
+          pointerY={pointerPercent.y}
+        />
+      )}
+
       <p className="text-sm text-neutral-500">
         {corners.length < 4
           ? `Click the wall's ${LABELS[corners.length]} corner (${corners.length}/4).`
