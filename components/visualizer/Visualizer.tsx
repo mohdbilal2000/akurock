@@ -5,7 +5,7 @@ import { snapCoverageToPanels, rectFromDragPoints } from "@/lib/geometry/coverag
 import { suggestCoverage } from "@/lib/geometry/coverageLayout";
 import { buildWallPlane, type WallCorners } from "@/lib/geometry/wallPlane";
 import { applyHomography } from "@/lib/geometry/homography";
-import { suggestWallCorners } from "@/lib/geometry/autoWall";
+import { defaultWallQuad, suggestWallCorners } from "@/lib/geometry/autoWall";
 import type { Point, Rect } from "@/lib/geometry/types";
 import { DEFAULT_WALL_HEIGHT_MM, FINISHES, PANEL, type Finish, type PanelOrientation } from "@/config/panels";
 import { pricePerPanel } from "@/config/prices";
@@ -44,6 +44,7 @@ export function Visualizer() {
   const [finish, setFinish] = useState<Finish>(FINISHES[0]);
   const [rawCoverageMm, setRawCoverageMm] = useState<Rect | null>(null);
   const [isAutoDetecting, setIsAutoDetecting] = useState(false);
+  const [autoDetectNote, setAutoDetectNote] = useState<string | null>(null);
   const [isAdjustingCoverage, setIsAdjustingCoverage] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -70,7 +71,10 @@ export function Visualizer() {
   async function handleImageSelected(url: string) {
     const loaded = await loadImageDims(url);
     setImage(loaded);
-    setCorners([]);
+    // Start on a sensible quad rather than an empty "tap 4 corners" state —
+    // nudging four handles that are already roughly right beats cold-tapping
+    // four precise points on a phone.
+    setCorners(defaultWallQuad(loaded.naturalWidth, loaded.naturalHeight));
     setRawCoverageMm(null);
     setStep("corners");
   }
@@ -97,10 +101,19 @@ export function Visualizer() {
       ctx.drawImage(img, 0, 0);
       const imageData = ctx.getImageData(0, 0, image.naturalWidth, image.naturalHeight);
 
-      // Call auto-detect with pixel buffer
-      const result = suggestWallCorners({ width: image.naturalWidth, height: image.naturalHeight, data: imageData.data });
-      if (result) {
+      const result = suggestWallCorners({
+        width: image.naturalWidth,
+        height: image.naturalHeight,
+        data: imageData.data,
+      });
+      // confidence is the share of the four wall boundaries actually found.
+      // Applying a one-edge guess moves the handles somewhere arbitrary and
+      // is worse than leaving the user's own quad alone.
+      if (result && result.confidence >= 0.5) {
         setCorners([result.corners[0], result.corners[1], result.corners[2], result.corners[3]]);
+        setAutoDetectNote(null);
+      } else {
+        setAutoDetectNote("Couldn't find the wall edges — drag the corners to the wall.");
       }
     } catch (e) {
       console.error("Auto-detect failed:", e);
@@ -130,11 +143,20 @@ export function Visualizer() {
     setRawCoverageMm(rectFromDragPoints(startMm, endMm));
   }
 
-  function handleReset() {
+  /** Undo whatever the user dragged: back to the auto-fitted panel layout. */
+  function handleResetLayout() {
+    if (!wallPlane) return;
+    setIsAdjustingCoverage(false);
+    setRawCoverageMm(suggestCoverage(wallPlane.wallWidthMm, wallHeightMm, PANEL, orientation).rectMm);
+  }
+
+  /** Discard the photo entirely and go back to the picker. */
+  function handleNewPhoto() {
     setStep("upload");
     setImage(null);
     setCorners([]);
     setRawCoverageMm(null);
+    setAutoDetectNote(null);
   }
 
   return (
@@ -180,6 +202,9 @@ export function Visualizer() {
               )}
             </button>
           </div>
+          {autoDetectNote && (
+            <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900">{autoDetectNote}</p>
+          )}
           <CornerPicker
             imageUrl={image.url}
             naturalWidth={image.naturalWidth}
@@ -190,10 +215,10 @@ export function Visualizer() {
           <div className="flex gap-3">
             <button
               type="button"
-              onClick={handleReset}
+              onClick={handleNewPhoto}
               className="flex-1 rounded-lg border border-neutral-300 px-5 py-3 text-sm font-semibold text-neutral-900 hover:bg-neutral-100"
             >
-              Start over
+              New photo
             </button>
             <button
               type="button"
@@ -288,14 +313,14 @@ export function Visualizer() {
                 panelCount={coverage.panelCount}
                 areaM2={coverage.areaM2}
                 priceEur={priceEur}
-                onReset={handleReset}
+                onReset={handleNewPhoto}
               />
               <button
                 type="button"
-                onClick={() => setStep("corners")}
+                onClick={handleResetLayout}
                 className="text-xs font-medium text-neutral-500 underline hover:text-neutral-700"
               >
-                Start over
+                Reset panel layout
               </button>
             </div>
           </div>

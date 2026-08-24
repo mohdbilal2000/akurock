@@ -98,6 +98,32 @@ function strongestEdge(profile: Float32Array, from: number, to: number, minRatio
   return bestIdx;
 }
 
+/** Inset used for any wall boundary the detector can't find. */
+const DEFAULT_QUAD = { left: 0.06, right: 0.94, top: 0.08, bottom: 0.88 } as const;
+
+/**
+ * A detected wall must span at least this fraction of the photo on each
+ * axis. Below that it is furniture, not a wall.
+ */
+const MIN_WALL_FRACTION = { x: 0.35, y: 0.3 } as const;
+
+/**
+ * The quad to start every photo on, so the user nudges four handles that are
+ * already roughly right instead of cold-tapping four corners.
+ */
+export function defaultWallQuad(width: number, height: number): [Point, Point, Point, Point] {
+  const x0 = width * DEFAULT_QUAD.left;
+  const x1 = width * DEFAULT_QUAD.right;
+  const y0 = height * DEFAULT_QUAD.top;
+  const y1 = height * DEFAULT_QUAD.bottom;
+  return [
+    { x: x0, y: y0 },
+    { x: x1, y: y0 },
+    { x: x1, y: y1 },
+    { x: x0, y: y1 },
+  ];
+}
+
 /**
  * Suggests wall corners around `seed` (defaults to image centre). Falls
  * back to a sensible inset rectangle for any boundary it can't find, and
@@ -120,10 +146,29 @@ export function suggestWallCorners(pixels: PixelBuffer, seed?: Point): AutoWallR
   const bottom = strongestEdge(rowScore, sy + margin, height - margin, MIN_RATIO);
 
   let found = 0;
-  const x0 = left >= 0 ? (found++, left) : width * 0.06;
-  const x1 = right >= 0 ? (found++, right) : width * 0.94;
-  const y0 = top >= 0 ? (found++, top) : height * 0.08;
-  const y1 = bottom >= 0 ? (found++, bottom) : height * 0.88;
+  let x0 = left >= 0 ? (found++, left) : width * DEFAULT_QUAD.left;
+  let x1 = right >= 0 ? (found++, right) : width * DEFAULT_QUAD.right;
+  let y0 = top >= 0 ? (found++, top) : height * DEFAULT_QUAD.top;
+  let y1 = bottom >= 0 ? (found++, bottom) : height * DEFAULT_QUAD.bottom;
+
+  // Plausibility guard. The strongest edges in a room photo are usually
+  // furniture, not the wall boundary — a headboard or a curtain can win and
+  // yield a thin band that is nowhere near a wall. Panelling that band gives
+  // a hairline rectangle floating over the furniture. If either axis comes
+  // out implausibly small, discard the detection on THAT axis and fall back
+  // to the default inset, lowering confidence to match.
+  if (x1 - x0 < width * MIN_WALL_FRACTION.x) {
+    x0 = width * DEFAULT_QUAD.left;
+    x1 = width * DEFAULT_QUAD.right;
+    if (left >= 0) found--;
+    if (right >= 0) found--;
+  }
+  if (y1 - y0 < height * MIN_WALL_FRACTION.y) {
+    y0 = height * DEFAULT_QUAD.top;
+    y1 = height * DEFAULT_QUAD.bottom;
+    if (top >= 0) found--;
+    if (bottom >= 0) found--;
+  }
 
   return {
     corners: [

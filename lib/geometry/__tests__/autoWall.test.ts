@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { maskToQuad, suggestWallCorners } from "../autoWall";
+import { defaultWallQuad, maskToQuad, suggestWallCorners } from "../autoWall";
 import type { PixelBuffer } from "../luminance";
 
 function buffer(width: number, height: number, fill = 128): PixelBuffer {
@@ -114,5 +114,54 @@ describe("maskToQuad", () => {
     expect(maskToQuad(buf, { x: 5, y: 5 })).toBeNull();
     expect(maskToQuad(buf, { x: 25, y: 25 })).toBeNull(); // 1px region → degenerate
     expect(maskToQuad(buf, { x: -3, y: 10 })).toBeNull();
+  });
+});
+
+describe("suggestWallCorners plausibility guard", () => {
+  /** Photo whose strongest horizontal edges form a thin band (a headboard). */
+  function bandPhoto(width: number, height: number) {
+    const data = new Uint8ClampedArray(width * height * 4);
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const o = (y * width + x) * 4;
+        const inBand = y > height * 0.33 && y < height * 0.42;
+        const v = inBand ? 10 : 200;
+        data[o] = data[o + 1] = data[o + 2] = v;
+        data[o + 3] = 255;
+      }
+    }
+    return { width, height, data };
+  }
+
+  it("rejects a band too short to be a wall and falls back", () => {
+    const res = suggestWallCorners(bandPhoto(400, 400));
+    const h = res.corners[2].y - res.corners[0].y;
+    expect(h).toBeGreaterThanOrEqual(400 * 0.3);
+  });
+
+  it("reports low confidence when it falls back", () => {
+    const res = suggestWallCorners(bandPhoto(400, 400));
+    expect(res.confidence).toBeLessThan(0.5);
+  });
+
+  it("never returns a quad narrower than the minimum fraction", () => {
+    const res = suggestWallCorners(bandPhoto(300, 500));
+    const w = res.corners[1].x - res.corners[0].x;
+    expect(w).toBeGreaterThanOrEqual(300 * 0.35);
+  });
+});
+
+describe("defaultWallQuad", () => {
+  it("returns TL, TR, BR, BL inside the image", () => {
+    const q = defaultWallQuad(1000, 800);
+    expect(q).toHaveLength(4);
+    expect(q[0].x).toBeLessThan(q[1].x);
+    expect(q[0].y).toBeLessThan(q[2].y);
+    for (const p of q) {
+      expect(p.x).toBeGreaterThanOrEqual(0);
+      expect(p.x).toBeLessThanOrEqual(1000);
+      expect(p.y).toBeGreaterThanOrEqual(0);
+      expect(p.y).toBeLessThanOrEqual(800);
+    }
   });
 });

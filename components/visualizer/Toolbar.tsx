@@ -60,7 +60,7 @@ export function Toolbar({ canvasRef, finish, orientation, panelCount, areaM2, pr
         onClick={onReset}
         className="rounded-full border border-neutral-300 px-5 py-2.5 text-sm font-semibold text-neutral-900 transition hover:border-neutral-500"
       >
-        Reset
+        New photo
       </button>
       <button
         type="button"
