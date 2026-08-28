@@ -92,20 +92,39 @@ void main() {
   vec2 stoneUv = fract(wallMm / uStoneScaleMm);
   vec3 stone = texture2D(uStoneTex, stoneUv).rgb;
 
-  // Slat face relief: soft rounding in the outer ~3mm of each face plus a
-  // directional bias (light from above/left) so the slats read as 3D bars.
+  // Slat face relief. A 23mm-deep bar lit from the upper left reads as three
+  // tones, not one: a bright leading edge, a broad diffuse face, and a
+  // darker trailing edge where the neighbouring slat occludes it. Shading
+  // the face as a single flat tone is what made this look like paint.
   float t = clamp((q - faceStart) / uSlatWidthMm, 0.0, 1.0);
-  float edgeRound = smoothstep(0.0, 3.0 / uSlatWidthMm, min(t, 1.0 - t));
-  float faceShade = mix(0.72, 1.0, edgeRound);
-  faceShade *= 1.0 - (t - 0.5) * 0.1; // one flank catches slightly less light
-  vec3 faceColor = stone * faceShade;
 
-  // Groove: felt colour in shadow, darkest mid-gap where the least light
-  // reaches the bottom between the two proud slats.
+  // Chamfer: the outer ~2.5mm of each face rolls over towards the groove.
+  float chamfer = 2.5 / uSlatWidthMm;
+  float lead  = 1.0 - smoothstep(0.0, chamfer, t);           // light-facing edge
+  float trail = smoothstep(1.0 - chamfer, 1.0, t);           // shadowed edge
+
+  // Broad cosine falloff across the face — a cylinder-ish body, brighter
+  // toward the light side rather than uniformly flat.
+  float body = 0.86 + 0.14 * cos((t - 0.32) * 3.14159);
+
+  float faceShade = body + lead * 0.22 - trail * 0.30;
+
+  // Ambient occlusion creeping in from both grooves.
+  float ao = smoothstep(0.0, 0.16, min(t, 1.0 - t));
+  faceShade *= mix(0.80, 1.0, ao);
+  vec3 faceColor = stone * clamp(faceShade, 0.0, 1.6);
+
+  // Groove: the felt sits 23mm back, so it is mostly ambient. Darkest at the
+  // centre of the gap where least sky reaches, and it never picks up the
+  // full face brightness.
   float distToFace = q < faceStart ? (faceStart - q) : max(q - faceEnd, 0.0);
   float depth = clamp(distToFace / max(grooveHalf, 0.001), 0.0, 1.0);
-  float grooveLight = mix(0.62, 0.3, depth);
+  float grooveLight = mix(0.52, 0.16, depth * depth);
   vec3 grooveColor = uFeltColor * grooveLight;
+
+  // Cast shadow from the slat edge onto the felt just inside the groove.
+  float edgeCast = 1.0 - smoothstep(0.0, grooveHalf * 0.9, distToFace);
+  grooveColor *= mix(1.0, 0.75, edgeCast * step(faceEnd, q));
 
   vec3 panelColor = mix(grooveColor, faceColor, onFace);
 

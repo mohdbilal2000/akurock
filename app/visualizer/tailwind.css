@@ -1,7 +1,26 @@
-/*
- * Tailwind is scoped to the /visualizer route only (imported from
- * app/visualizer/layout.tsx). Next.js's App Router bundles layout-level
- * CSS per route segment, so this never reaches the Webflow-based pages
- * elsewhere on the site.
- */
 @import "tailwindcss";
+
+/*
+ * Brand tokens, matched to the rest of the site: Playfair Display headings,
+ * #0d0d0d ink, #f24616 accent, #faf8f7 warm ground. Without these the tool
+ * reads as a bolted-on utility rather than part of akurock.com.
+ */
+@theme {
+  --color-ink: #0d0d0d;
+  --color-accent: #f24616;
+  --color-ground: #faf8f7;
+  --color-line: #e6e1de;
+  --font-display: "Playfair Display", Georgia, serif;
+}
+
+:root {
+  --brand-ground: #faf8f7;
+}
+
+body {
+  background: var(--brand-ground);
+}
+
+.font-display {
+  font-family: "Playfair Display", Georgia, serif;
+}

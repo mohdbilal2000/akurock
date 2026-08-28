@@ -28,10 +28,10 @@ export function FinishPicker({ selected, onSelect }: FinishPickerProps) {
               src={finish.swatchUrl}
               alt={finish.name}
               className={`h-14 w-14 shrink-0 rounded-full object-cover ring-2 ring-offset-2 transition ${
-                isActive ? "ring-orange-500" : "ring-transparent hover:ring-neutral-300"
+                isActive ? "ring-accent" : "ring-transparent hover:ring-ink/20"
               }`}
             />
-            <span className={`text-xs font-medium ${isActive ? "text-neutral-900" : "text-neutral-500"}`}>
+            <span className={`text-xs font-medium ${isActive ? "text-ink" : "text-ink/55"}`}>
               {finish.name}
             </span>
           </button>

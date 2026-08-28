@@ -2,12 +2,14 @@
 
 import { useRef } from "react";
 import { PRESET_ROOMS } from "@/config/panels";
+import { useVisualizerStrings } from "./useVisualizerStrings";
 
 interface ImageSourceProps {
   onImageSelected: (url: string) => void;
 }
 
 export function ImageSource({ onImageSelected }: ImageSourceProps) {
+  const t = useVisualizerStrings();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
@@ -19,26 +21,26 @@ export function ImageSource({ onImageSelected }: ImageSourceProps) {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-md flex-col items-center gap-4 rounded-2xl border border-neutral-200 bg-white p-8 text-center">
-      <h2 className="text-lg font-semibold text-neutral-900">Add a photo of your wall</h2>
-      <p className="text-sm text-neutral-500">
-        Take a straight-on photo for the most accurate panel count, or start from a preset room.
+    <div className="mx-auto flex w-full max-w-md flex-col items-center gap-4 rounded-2xl border border-line bg-white p-8 text-center">
+      <h2 className="font-display text-xl font-semibold text-ink">{t.photoHeading}</h2>
+      <p className="text-sm text-ink/60">
+        {t.photoHelp}
       </p>
 
       <div className="flex w-full flex-col gap-3 sm:flex-row">
         <button
           type="button"
           onClick={() => cameraInputRef.current?.click()}
-          className="flex-1 rounded-full bg-neutral-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-neutral-700"
+          className="flex-1 rounded-full bg-ink px-5 py-3 text-sm font-semibold text-white transition hover:bg-ink/90"
         >
-          Take a photo
+          {t.takePhoto}
         </button>
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          className="flex-1 rounded-full border border-neutral-300 px-5 py-3 text-sm font-semibold text-neutral-900 transition hover:border-neutral-500"
+          className="flex-1 rounded-full border border-line px-5 py-3 text-sm font-semibold text-ink transition hover:border-ink/40"
         >
-          Upload a photo
+          {t.uploadPhoto}
         </button>
       </div>
 
@@ -53,8 +55,8 @@ export function ImageSource({ onImageSelected }: ImageSourceProps) {
       <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
 
       <div className="mt-2 w-full">
-        <p className="mb-2 text-xs font-medium uppercase tracking-wide text-neutral-400">
-          Or try a preset room
+        <p className="mb-2 text-xs font-medium uppercase tracking-wide text-ink/40">
+          {t.presetLabel}
         </p>
         <div className="grid grid-cols-3 gap-2">
           {PRESET_ROOMS.map((room) => (
@@ -62,7 +64,7 @@ export function ImageSource({ onImageSelected }: ImageSourceProps) {
               key={room.slug}
               type="button"
               onClick={() => onImageSelected(room.url)}
-              className="group overflow-hidden rounded-lg border border-neutral-200"
+              className="group overflow-hidden rounded-lg border border-line"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img

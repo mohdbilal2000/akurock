@@ -56,8 +56,8 @@ export function blurScalarField(
   const r = Math.max(0, Math.floor(radius));
   if (r === 0 || width === 0 || height === 0) return Float32Array.from(src);
 
-  let buf = Float32Array.from(src);
-  let tmp = new Float32Array(buf.length);
+  const buf = Float32Array.from(src);
+  const tmp = new Float32Array(buf.length);
   const win = r * 2 + 1;
 
   for (let pass = 0; pass < 3; pass++) {

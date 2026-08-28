@@ -1,3 +1,6 @@
+"use client";
+
+import { useVisualizerStrings } from "./useVisualizerStrings";
 import { formatEur } from "@/config/prices";
 
 interface CalculatorProps {
@@ -8,11 +11,12 @@ interface CalculatorProps {
 
 /** Always-visible "12 panels · 7.2 m² · €2,640" readout, per spec 3. */
 export function Calculator({ panelCount, areaM2, priceEur }: CalculatorProps) {
+  const t = useVisualizerStrings();
   return (
-    <div className="flex items-center justify-center gap-4 rounded-xl bg-neutral-900 px-6 py-4 text-white">
-      <Stat label="panels" value={formatCount(panelCount)} />
+    <div className="flex items-center justify-center gap-4 rounded-xl bg-ink px-6 py-4 text-white">
+      <Stat label={t.panelsLabel} value={formatCount(panelCount)} />
       <Divider />
-      <Stat label="m²" value={areaM2.toFixed(1)} />
+      <Stat label={t.areaLabel} value={areaM2.toFixed(1)} />
       <Divider />
       <Stat label="" value={formatEur(priceEur)} emphasis />
     </div>
@@ -27,7 +31,7 @@ function Stat({ label, value, emphasis }: { label: string; value: string; emphas
   return (
     <div className="text-center">
       <div className={emphasis ? "text-xl font-bold" : "text-lg font-semibold"}>{value}</div>
-      {label && <div className="text-xs uppercase tracking-wide text-neutral-400">{label}</div>}
+      {label && <div className="text-xs uppercase tracking-wide text-white/50">{label}</div>}
     </div>
   );
 }

@@ -4,8 +4,8 @@ import { useRef, useState } from "react";
 import type { Point } from "@/lib/geometry/types";
 import { fractionalPoint, toNaturalPoint } from "./pointerUtils";
 import { Magnifier } from "./Magnifier";
+import { useVisualizerStrings } from "./useVisualizerStrings";
 
-const LABELS = ["top-left", "top-right", "bottom-right", "bottom-left"];
 
 interface CornerPickerProps {
   imageUrl: string;
@@ -28,6 +28,7 @@ export function CornerPicker({
   corners,
   onCornersChange,
 }: CornerPickerProps) {
+  const t = useVisualizerStrings();
   const containerRef = useRef<HTMLDivElement>(null);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [pointerPercent, setPointerPercent] = useState({ x: 0, y: 0 });
@@ -55,7 +56,7 @@ export function CornerPicker({
     <div className="flex flex-col items-center gap-3">
       <div
         ref={containerRef}
-        className="relative w-full max-w-2xl touch-none select-none overflow-hidden rounded-xl border border-neutral-200"
+        className="relative w-full max-w-2xl touch-none select-none overflow-hidden rounded-xl border border-line"
         onClick={handleContainerClick}
         onPointerMove={handlePointerMove}
         onPointerUp={() => setDragIndex(null)}
@@ -105,10 +106,8 @@ export function CornerPicker({
         />
       )}
 
-      <p className="text-sm text-neutral-500">
-        {corners.length < 4
-          ? `Click the wall's ${LABELS[corners.length]} corner (${corners.length}/4).`
-          : "Drag any corner to fine-tune, then confirm."}
+      <p className="text-sm text-ink/60">
+        {t.cornersHint}
       </p>
     </div>
   );

@@ -35,9 +35,35 @@ export interface VisualizerStrings {
   saveImage: string;
   share: string;
   startOver: string;
+  photoHeading: string;
+  photoHelp: string;
+  finishLabel: string;
+  adjustCorners: string;
+  adjustCoverage: string;
+  doneAdjusting: string;
+  resetLayout: string;
+  newPhoto: string;
+  wallHeightHelp: string;
+  panelsLabel: string;
+  areaLabel: string;
+  autoDetectFailed: string;
+  cornerStepTitle: string;
 }
 
 const de: VisualizerStrings = {
+  photoHeading: "Foto Ihrer Wand",
+  photoHelp: "Frontal aufgenommen wird die Paneelmenge am genauesten — oder starten Sie mit einem Beispielraum.",
+  finishLabel: "Oberfläche",
+  adjustCorners: "Ecken anpassen",
+  adjustCoverage: "Fläche anpassen",
+  doneAdjusting: "Fertig",
+  resetLayout: "Anordnung zurücksetzen",
+  newPhoto: "Neues Foto",
+  wallHeightHelp: "Die eine Angabe, die Lattenbreite und Paneelanzahl maßstabsgetreu macht.",
+  panelsLabel: "Paneele",
+  areaLabel: "m²",
+  autoDetectFailed: "Wandkanten nicht gefunden — ziehen Sie die Ecken an die Wand.",
+  cornerStepTitle: "Die 4 Wandecken setzen",
   title: "Akurock Raumvisualizer",
   subtitle: "Ihre Wand mit echten Akurock Paneelen — exakte Stückzahl, sofort.",
   stepPhoto: "Foto",
@@ -69,6 +95,19 @@ const de: VisualizerStrings = {
 };
 
 const en: VisualizerStrings = {
+  photoHeading: "Add a photo of your wall",
+  photoHelp: "A straight-on photo gives the most accurate panel count, or start from a preset room.",
+  finishLabel: "Finish",
+  adjustCorners: "Adjust corners",
+  adjustCoverage: "Adjust coverage",
+  doneAdjusting: "Done",
+  resetLayout: "Reset panel layout",
+  newPhoto: "New photo",
+  wallHeightHelp: "The single reference that makes slat width and panel count true to scale.",
+  panelsLabel: "panels",
+  areaLabel: "m²",
+  autoDetectFailed: "Couldn’t find the wall edges — drag the corners onto the wall.",
+  cornerStepTitle: "Set the 4 wall corners",
   title: "Akurock Wall Visualizer",
   subtitle: "Your wall in real Akurock panels — exact panel count, instantly.",
   stepPhoto: "Photo",
@@ -100,6 +139,19 @@ const en: VisualizerStrings = {
 };
 
 const es: VisualizerStrings = {
+  photoHeading: "Añada una foto de su pared",
+  photoHelp: "Una foto frontal da el recuento de paneles más preciso, o empiece con una sala de ejemplo.",
+  finishLabel: "Acabado",
+  adjustCorners: "Ajustar esquinas",
+  adjustCoverage: "Ajustar superficie",
+  doneAdjusting: "Listo",
+  resetLayout: "Restablecer distribución",
+  newPhoto: "Nueva foto",
+  wallHeightHelp: "La única referencia que hace que el ancho de lama y el número de paneles sean fieles a escala.",
+  panelsLabel: "paneles",
+  areaLabel: "m²",
+  autoDetectFailed: "No se encontraron los bordes — arrastre las esquinas hasta la pared.",
+  cornerStepTitle: "Marque las 4 esquinas",
   title: "Visualizador Akurock",
   subtitle: "Su pared con paneles Akurock reales — cantidad exacta, al instante.",
   stepPhoto: "Foto",

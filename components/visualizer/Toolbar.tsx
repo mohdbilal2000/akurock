@@ -1,4 +1,5 @@
 "use client";
+import { useVisualizerStrings } from "./useVisualizerStrings";
 
 import { useState } from "react";
 import type { Finish, PanelOrientation } from "@/config/panels";
@@ -14,6 +15,7 @@ interface ToolbarProps {
 }
 
 export function Toolbar({ canvasRef, finish, orientation, panelCount, areaM2, priceEur, onReset }: ToolbarProps) {
+  const t = useVisualizerStrings();
   const [cartState, setCartState] = useState<"idle" | "adding" | "added" | "error">("idle");
 
   function handleSavePng() {
@@ -51,24 +53,24 @@ export function Toolbar({ canvasRef, finish, orientation, panelCount, areaM2, pr
       <button
         type="button"
         onClick={handleSavePng}
-        className="rounded-full border border-neutral-300 px-5 py-2.5 text-sm font-semibold text-neutral-900 transition hover:border-neutral-500"
+        className="rounded-full border border-line px-5 py-2.5 text-sm font-semibold text-ink transition hover:border-neutral-500"
       >
-        Save image
+        {t.saveImage}
       </button>
       <button
         type="button"
         onClick={onReset}
-        className="rounded-full border border-neutral-300 px-5 py-2.5 text-sm font-semibold text-neutral-900 transition hover:border-neutral-500"
+        className="rounded-full border border-line px-5 py-2.5 text-sm font-semibold text-ink transition hover:border-neutral-500"
       >
-        New photo
+        {t.newPhoto}
       </button>
       <button
         type="button"
         onClick={handleAddToCart}
         disabled={cartState === "adding"}
-        className="rounded-full bg-orange-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-500 disabled:opacity-60"
+        className="rounded-full bg-orange-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-accent disabled:opacity-60"
       >
-        {cartState === "added" ? "Added ✓" : cartState === "adding" ? "Adding…" : "Add to cart"}
+        {cartState === "added" ? t.added : cartState === "adding" ? t.adding : t.addToCart}
       </button>
       {cartState === "error" && <p className="w-full text-center text-sm text-red-600">Couldn&apos;t add to cart, try again.</p>}
     </div>
