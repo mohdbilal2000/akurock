@@ -4,43 +4,12 @@ import {
   moveCoverage,
   panelStep,
   resizeCoverage,
-  suggestCoverage,
 } from "../coverageLayout";
 import { PANEL } from "@/config/panels";
 
 // Vertical orientation: panel footprint is 600mm wide x 2400mm tall.
 const WALL_W = 4000;
 const WALL_H = 2500;
-
-describe("suggestCoverage", () => {
-  it("fills a 4m x 2.5m wall with the largest fitting vertical-panel grid", () => {
-    const result = suggestCoverage(WALL_W, WALL_H, PANEL, "vertical");
-    // 4000/600 = 6.66 -> 6.5 across; 2500/2400 = 1.04 -> 1 high
-    expect(result.panelsAcross).toBe(6.5);
-    expect(result.panelsHigh).toBe(1);
-    expect(result.rectMm.width).toBe(6.5 * 600);
-    expect(result.rectMm.height).toBe(2400);
-  });
-
-  it("centres horizontally and anchors to the floor", () => {
-    const result = suggestCoverage(WALL_W, WALL_H, PANEL, "vertical");
-    expect(result.rectMm.x).toBeCloseTo((WALL_W - result.rectMm.width) / 2, 6);
-    expect(result.rectMm.y).toBeCloseTo(WALL_H - result.rectMm.height, 6);
-  });
-
-  it("never suggests less than half a panel on a tiny wall", () => {
-    const result = suggestCoverage(200, 200, PANEL, "vertical");
-    expect(result.panelsAcross).toBe(0.5);
-    expect(result.panelsHigh).toBe(0.5);
-  });
-
-  it("respects orientation", () => {
-    const result = suggestCoverage(WALL_W, WALL_H, PANEL, "horizontal");
-    // 4000/2400 = 1.66 -> 1.5 across; 2500/600 = 4.16 -> 4 high
-    expect(result.panelsAcross).toBe(1.5);
-    expect(result.panelsHigh).toBe(4);
-  });
-});
 
 describe("moveCoverage / clampCoverageToWall", () => {
   const rect = { x: 1000, y: 100, width: 1200, height: 2400 };
@@ -130,28 +99,3 @@ describe("resizeCoverage", () => {
   });
 });
 
-describe("suggestCoverage width cap", () => {
-  it("does not auto-fill an implausibly wide inferred wall", () => {
-    // A loose corner pick on a room photo can imply a wall this wide.
-    const result = suggestCoverage(8000, 1880, PANEL, "vertical");
-    expect(result.rectMm.width).toBeLessThanOrEqual(4000);
-    // 4000/600 -> 6.5 across, 1880/2400 -> 0.5 high => 3.25 panels, not ~10.
-    expect(result.panelCount).toBeLessThan(4);
-  });
-
-  it("still fills a wall narrower than the cap completely", () => {
-    const result = suggestCoverage(3000, 2500, PANEL, "vertical");
-    expect(result.panelsAcross).toBe(5); // 3000/600 = 5 exactly
-    expect(result.rectMm.width).toBe(3000);
-  });
-
-  it("stays centred on the real wall after capping", () => {
-    const result = suggestCoverage(8000, 2500, PANEL, "vertical");
-    expect(result.rectMm.x).toBeCloseTo((8000 - result.rectMm.width) / 2, 6);
-  });
-
-  it("honours an explicit cap", () => {
-    const result = suggestCoverage(8000, 2500, PANEL, "vertical", 1200);
-    expect(result.rectMm.width).toBeLessThanOrEqual(1200);
-  });
-});

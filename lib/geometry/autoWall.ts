@@ -7,8 +7,12 @@
  * lines above and below it (ceiling line, floor/skirting line). Those four
  * lines bound the wall quad. Phone photos of a wall are near-frontal, so an
  * axis-aligned rectangle is a good first suggestion — the user fine-tunes
- * with the corner handles, and the SAM-2 route (app/api/detect-wall)
- * replaces this wholesale when configured.
+ * with the corner handles.
+ *
+ * This is the *fallback* path: when services/wall-ai is reachable,
+ * segmentation + metric depth supersede it entirely (see
+ * lib/visualizer/detectWall.ts). It still earns its place for a service
+ * outage and for photos the models decline.
  *
  * Pure pixel-buffer math (no DOM) so it is unit-testable in Vitest.
  */

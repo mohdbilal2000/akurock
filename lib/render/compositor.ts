@@ -65,6 +65,10 @@ const UNIFORM_NAMES = [
   "uFeltColor",
   "uStoneScaleMm",
   "uAAmm",
+  "uWallMaskTex",
+  "uOccluderTex",
+  "uHasWallMask",
+  "uHasOccluder",
 ] as const;
 
 /**
@@ -81,6 +85,9 @@ export class WallCompositor {
   private readonly stoneTextures = new Map<string, WebGLTexture>();
   private photoTexture: WebGLTexture | null = null;
   private lumTexture: WebGLTexture | null = null;
+  private wallMaskTexture: WebGLTexture | null = null;
+  private occluderTexture: WebGLTexture | null = null;
+  private dummyTexture: WebGLTexture | null = null;
   private photoWidth = 0;
   private photoHeight = 0;
 
@@ -171,6 +178,48 @@ export class WallCompositor {
     this.lumTexture = tex;
   }
 
+  /**
+   * Uploads the AI masks for the current photo: where the wall is, and what
+   * stands in front of it. Passing null for either clears it, which is the
+   * geometry-only path (manual corners, no detection service).
+   *
+   * Masks may be any resolution — the shader samples them in normalised UV,
+   * so the service can return them at inference size instead of shipping a
+   * 12-megapixel PNG to a phone.
+   */
+  setMasks(wallMask: TexImageSource | null, occluder: TexImageSource | null): void {
+    const { gl } = this;
+    if (this.wallMaskTexture) gl.deleteTexture(this.wallMaskTexture);
+    if (this.occluderTexture) gl.deleteTexture(this.occluderTexture);
+    this.wallMaskTexture = wallMask ? this.uploadTexture(wallMask) : null;
+    this.occluderTexture = occluder ? this.uploadTexture(occluder) : null;
+  }
+
+  hasMasks(): boolean {
+    return this.wallMaskTexture !== null || this.occluderTexture !== null;
+  }
+
+  /**
+   * A 1x1 black texture bound to the mask units when no mask is loaded.
+   * Leaving a sampler unbound makes it alias onto texture unit 0 (the
+   * photo), which is a driver-dependent way to get garbage out of a branch
+   * that is supposed to be disabled.
+   */
+  private getDummyTexture(): WebGLTexture {
+    const { gl } = this;
+    if (this.dummyTexture) return this.dummyTexture;
+    const tex = gl.createTexture();
+    if (!tex) throw new Error("Failed to create placeholder texture");
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 0, 255]));
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    this.dummyTexture = tex;
+    return tex;
+  }
+
   /** Uploads and caches one finish's stone texture under its slug. */
   setStoneTexture(slug: string, image: TexImageSource): void {
     if (this.stoneTextures.has(slug)) return;
@@ -207,6 +256,14 @@ export class WallCompositor {
     gl.activeTexture(gl.TEXTURE2);
     gl.bindTexture(gl.TEXTURE_2D, this.lumTexture);
     gl.uniform1i(this.uniforms.get("uLumTex")!, 2);
+    gl.activeTexture(gl.TEXTURE3);
+    gl.bindTexture(gl.TEXTURE_2D, this.wallMaskTexture ?? this.getDummyTexture());
+    gl.uniform1i(this.uniforms.get("uWallMaskTex")!, 3);
+    gl.activeTexture(gl.TEXTURE4);
+    gl.bindTexture(gl.TEXTURE_2D, this.occluderTexture ?? this.getDummyTexture());
+    gl.uniform1i(this.uniforms.get("uOccluderTex")!, 4);
+    gl.uniform1f(this.uniforms.get("uHasWallMask")!, this.wallMaskTexture ? 1 : 0);
+    gl.uniform1f(this.uniforms.get("uHasOccluder")!, this.occluderTexture ? 1 : 0);
 
     gl.uniform2f(this.uniforms.get("uImageSize")!, this.photoWidth, this.photoHeight);
     gl.uniformMatrix3fv(this.uniforms.get("uImageToWallMm")!, false, toColumnMajor(opts.imageToWallMm));
@@ -234,6 +291,9 @@ export class WallCompositor {
     const { gl } = this;
     if (this.photoTexture) gl.deleteTexture(this.photoTexture);
     if (this.lumTexture) gl.deleteTexture(this.lumTexture);
+    if (this.wallMaskTexture) gl.deleteTexture(this.wallMaskTexture);
+    if (this.occluderTexture) gl.deleteTexture(this.occluderTexture);
+    if (this.dummyTexture) gl.deleteTexture(this.dummyTexture);
     for (const tex of this.stoneTextures.values()) gl.deleteTexture(tex);
     this.stoneTextures.clear();
     gl.deleteProgram(this.program);

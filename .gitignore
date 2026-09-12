@@ -50,3 +50,9 @@ akurock-deploy.zip
 akurock-deploy.tar.gz
 NUL
 .claude/
+
+# Python service (services/wall-ai)
+__pycache__/
+*.py[cod]
+.pytest_cache/
+services/wall-ai/.venv/

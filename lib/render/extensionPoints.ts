@@ -1,30 +1,11 @@
 /**
- * Typed stubs for the work Phase 1 deliberately does NOT do. Phase 1's
- * corner-picking and instant composite already produce a correct answer;
- * these are the seams where Phase 2 (auto wall detection) and Phase 3
- * (photoreal relight) plug in without touching the geometry/pricing layer.
- * See README.md "Extension points" for the full brief.
+ * The seam Phase 3 (photoreal relight) plugs into without touching the
+ * geometry/pricing layer. See app/visualizer/README.md.
+ *
+ * Phase 2 — automatic wall detection — is no longer a stub: it ships as the
+ * Python service in services/wall-ai, called through
+ * lib/visualizer/detectWall.ts. Its WallPlaneDetection lives there.
  */
-
-export interface WallPlaneDetection {
-  /** Image-space corners, top-left/top-right/bottom-right/bottom-left. */
-  corners: readonly [
-    { x: number; y: number },
-    { x: number; y: number },
-    { x: number; y: number },
-    { x: number; y: number },
-  ];
-  /** 0-1 confidence from the segmentation/plane-fit model. */
-  confidence: number;
-}
-
-/**
- * Phase 2: SAM 2 tap-to-select + Depth Anything v2 plane fit, replacing the
- * manual 4-corner click with an automatic mask + RANSAC plane estimate.
- * Not implemented in Phase 1 — call sites should fall back to manual corner
- * picking when this throws or is unavailable.
- */
-export declare function detectWall(image: HTMLImageElement, tapPoint: { x: number; y: number }): Promise<WallPlaneDetection>;
 
 /**
  * Phase 3: sends the instant composite + original photo + finish swatch to

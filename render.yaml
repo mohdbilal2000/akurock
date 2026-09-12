@@ -19,6 +19,43 @@ services:
         sync: false
       - key: STRIPE_WEBHOOK_SECRET
         sync: false
+      # Wall detection for /visualizer. Both are wired from the Python
+      # service below, so neither is ever pasted by hand — and neither
+      # reaches the browser: app/api/detect-wall proxies server-side.
+      - key: WALL_AI_URL
+        fromService:
+          type: web
+          name: akurock-wall-ai
+          property: hostport
+      - key: WALL_AI_API_KEY
+        fromService:
+          type: web
+          name: akurock-wall-ai
+          envVarKey: WALL_AI_API_KEY
+
+  # Segmentation + metric depth for the visualizer (services/wall-ai).
+  # Deliberately a separate service: it is CPU-heavy, slow to start, and
+  # must be able to fall over without taking the shop down — the visualizer
+  # drops back to manual corner picking when it is unreachable.
+  # A private service: only the Next.js app can reach it, over Render's
+  # internal network, so the endpoint can never be used as free GPU-less
+  # compute by anyone who finds the URL.
+  - type: pserv
+    name: akurock-wall-ai
+    runtime: docker
+    rootDir: services/wall-ai
+    dockerfilePath: ./Dockerfile
+    # Torch plus the two models need ~1.5GB resident; a 512MB instance OOMs
+    # during the first inference, not at start-up, which looks like a hang.
+    plan: standard
+    healthCheckPath: /health
+    envVars:
+      - key: WALL_AI_API_KEY
+        generateValue: true
+      - key: WALL_AI_MAX_SIDE
+        value: "1024"
+      - key: WALL_AI_WARM_ON_START
+        value: "1"
 
 databases:
   - name: stonearts-db

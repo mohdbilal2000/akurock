@@ -1,9 +1,8 @@
 /**
  * Auto panel layout + interactive coverage editing, all in wall-mm space.
- * The "auto maps the best panel grid" behaviour: as soon as the wall is
- * confirmed, suggestCoverage fills it with the largest whole/half-panel
- * grid that fits, centred — so the user sees a finished wall immediately
- * and only adjusts if they want less/more.
+ * As soon as the wall is measured, suggestFeatureWall lays out a run of
+ * whole panels on it — so the user sees a finished wall immediately and
+ * only adjusts if they want more or less of it.
  */
 
 import type { PanelOrientation, PanelSpec } from "@/config/panels";
@@ -14,48 +13,6 @@ export function panelStep(panel: PanelSpec, orientation: PanelOrientation) {
   return orientation === "horizontal"
     ? { x: panel.widthMm, y: panel.heightMm }
     : { x: panel.heightMm, y: panel.widthMm };
-}
-
-/** Largest half-panel multiple of `step` that fits `available`, min half a panel. */
-function maxFit(available: number, step: number): number {
-  return Math.max(0.5, Math.floor((available / step) * 2) / 2);
-}
-
-/** A feature wall people actually order; also the widest we auto-suggest. */
-export const DEFAULT_MAX_COVERAGE_WIDTH_MM = 4000;
-
-/**
- * Fills the wall with the biggest whole/half-panel grid that fits,
- * horizontally centred and anchored to the floor (feature walls are
- * usually panelled full-height or from the floor up).
- *
- * The width is capped at `maxWidthMm`. Wall width is inferred from the
- * corner quad and the entered wall height, so a loose corner pick can imply
- * an 8m wall — auto-filling that opens the tool on ~13 panels and a four
- * figure price, and packs the slats so tightly they render as hairlines.
- * Capping keeps the first render a believable feature wall; dragging the
- * coverage handles still covers as much wall as the user actually wants.
- */
-export function suggestCoverage(
-  wallWidthMm: number,
-  wallHeightMm: number,
-  panel: PanelSpec,
-  orientation: PanelOrientation,
-  maxWidthMm: number = DEFAULT_MAX_COVERAGE_WIDTH_MM,
-): CoverageResult {
-  const step = panelStep(panel, orientation);
-  const across = maxFit(Math.min(wallWidthMm, maxWidthMm), step.x);
-  const high = maxFit(wallHeightMm, step.y);
-  const width = across * step.x;
-  const height = high * step.y;
-
-  const rect: Rect = {
-    x: (wallWidthMm - width) / 2,
-    y: wallHeightMm - height,
-    width,
-    height,
-  };
-  return snapCoverageToPanels(rect, panel, orientation);
 }
 
 /** Clamps a coverage rect's origin so it stays within the wall (size unchanged). */
@@ -129,4 +86,101 @@ export function resizeCoverage(
   };
   const clamped = clampCoverageToWall(rectMm, wallWidthMm, wallHeightMm);
   return { ...snapped, rectMm: clamped };
+}
+
+/**
+ * Proportion of the wall a feature panel run should take. Panelling a wall
+ * corner-to-corner reads as cladding; leaving a reveal of bare wall each
+ * side reads as a designed feature — and it is what people actually order,
+ * so it is also the honest default for the price shown under it.
+ */
+export const FEATURE_WALL_WIDTH_RATIO = 0.62;
+
+/** Bare wall to leave beside the panels, as a share of the wall width. */
+const MIN_REVEAL_RATIO = 0.08;
+
+/**
+ * The layout the tool opens on: a whole number of real panels, centred on
+ * the wall and standing on the floor.
+ *
+ * Two rules make it "true to the product" rather than a pretty rectangle:
+ *
+ * 1. Width is a whole panel count. Half panels mean a rip cut down the
+ *    length of a slat panel, which is not how these are installed, so the
+ *    suggestion never proposes one (dragging the handles still can).
+ * 2. Height never exceeds the panel's own length, because a taller run
+ *    needs a horizontal butt joint the renderer would have to draw and the
+ *    installer would have to justify. On a normal 2.4-2.6m ceiling that is
+ *    a full-height wall; on a 3.5m atrium it is a 2.4m run off the floor.
+ */
+export function suggestFeatureWall(
+  wallWidthMm: number,
+  wallHeightMm: number,
+  panel: PanelSpec,
+  orientation: PanelOrientation,
+): CoverageResult {
+  const step = panelStep(panel, orientation);
+
+  // A panel's own length: the longest run that needs no butt joint. It
+  // bounds the height only — across the wall, panels simply sit side by
+  // side and the count is whatever the wall takes.
+  const maxRunMm = panel.widthMm;
+
+  const reveal = Math.max(step.x, wallWidthMm * MIN_REVEAL_RATIO);
+  const maxAcross = Math.max(1, Math.floor((wallWidthMm - reveal) / step.x));
+  const targetAcross = Math.round((wallWidthMm * FEATURE_WALL_WIDTH_RATIO) / step.x);
+  const across = Math.min(Math.max(1, targetAcross), maxAcross);
+
+  const usableHeightMm = Math.min(wallHeightMm, maxRunMm);
+  const high = Math.max(1, Math.round(usableHeightMm / step.y));
+  // Rounding up must never push the run past the ceiling.
+  const highFitted = high * step.y > wallHeightMm ? Math.max(1, high - 1) : high;
+
+  const width = Math.min(across * step.x, wallWidthMm);
+  // A wall lower than a panel is long gets full-height panels cut down on
+  // site: the drawn height is the wall, the count is still whole panels.
+  // Snapping the drawing to a 2400 multiple instead would paint panels
+  // through the ceiling.
+  const height = Math.min(highFitted * step.y, wallHeightMm);
+
+  const rectMm: Rect = {
+    x: (wallWidthMm - width) / 2,
+    y: wallHeightMm - height,
+    width,
+    height,
+  };
+
+  return {
+    rectMm,
+    panelsAcross: across,
+    panelsHigh: highFitted,
+    panelCount: across * highFitted,
+    areaM2: (width * height) / 1_000_000,
+  };
+}
+
+/**
+ * Re-widths a panel run to a whole number of panels, keeping it centred
+ * where it already sits and inside the wall. This is what the "narrower /
+ * wider" control edits — one panel at a time, because a panel is the unit
+ * the customer actually buys.
+ */
+export function setPanelsAcross(
+  rect: Rect,
+  panelsAcross: number,
+  panel: PanelSpec,
+  orientation: PanelOrientation,
+  wallWidthMm: number,
+): Rect {
+  const step = panelStep(panel, orientation);
+  const maxAcross = Math.max(1, Math.floor(wallWidthMm / step.x));
+  const across = Math.min(Math.max(1, Math.round(panelsAcross)), maxAcross);
+  const width = across * step.x;
+  const centre = rect.x + rect.width / 2;
+
+  return {
+    ...rect,
+    width,
+    x: Math.min(Math.max(centre - width / 2, 0), Math.max(0, wallWidthMm - width)),
+  };
 }

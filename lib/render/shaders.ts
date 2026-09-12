@@ -27,6 +27,14 @@ varying vec2 vUv;
 uniform sampler2D uPhotoTex;
 uniform sampler2D uStoneTex;
 uniform sampler2D uLumTex;
+// Optional AI masks (lib/visualizer/detectWall.ts). uWallMaskTex is white on
+// the panelling surface; uOccluderTex is white on everything standing in
+// front of it. Both are bound to a 1x1 white/black dummy when absent, and
+// gated by the uHas* flags so the geometry-only path is untouched.
+uniform sampler2D uWallMaskTex;
+uniform sampler2D uOccluderTex;
+uniform float uHasWallMask;
+uniform float uHasOccluder;
 
 uniform vec2 uImageSize;      // photo size in px
 uniform mat3 uImageToWallMm;  // homography: image px -> wall mm
@@ -45,8 +53,27 @@ float aa(float edge, float x) {
   return smoothstep(edge - uAAmm, edge + uAAmm, x);
 }
 
+/**
+ * How much of this pixel the panels are allowed to own: 1 on open wall, 0
+ * on anything in front of it, soft in between. Sampling the masks with
+ * LINEAR filtering and smoothing across the 0.5 crossing hides the
+ * segmenter's pixel staircase — a hard cut reads as a bad cut-out, which is
+ * exactly what gives a fake render away.
+ */
+float maskCoverage() {
+  float coverage = 1.0;
+  if (uHasWallMask > 0.5) {
+    coverage *= smoothstep(0.35, 0.65, texture2D(uWallMaskTex, vUv).r);
+  }
+  if (uHasOccluder > 0.5) {
+    coverage *= 1.0 - smoothstep(0.35, 0.65, texture2D(uOccluderTex, vUv).r);
+  }
+  return coverage;
+}
+
 void main() {
   vec4 photoColor = texture2D(uPhotoTex, vUv);
+  float coverage = maskCoverage();
 
   vec2 imagePx = vUv * uImageSize;
   vec3 wallH = uImageToWallMm * vec3(imagePx, 1.0);
@@ -65,7 +92,8 @@ void main() {
     float dOut = -dInside;
     float below = clamp(-dBottom / max(dOut, 0.001), 0.0, 1.0);
     float weight = 0.45 + 0.55 * below;
-    float shadow = (1.0 - smoothstep(0.0, 35.0, dOut)) * 0.22 * weight;
+    // The panels' shadow falls on the wall, not on the sofa in front of it.
+    float shadow = (1.0 - smoothstep(0.0, 35.0, dOut)) * 0.22 * weight * coverage;
     // Only shade points that are on the wall plane's lower/side spill.
     gl_FragColor = vec4(photoColor.rgb * (1.0 - shadow), 1.0);
     return;
@@ -138,7 +166,7 @@ void main() {
   panelColor *= lum;
 
   // Feather the outer edge over ~1.5px so the cut doesn't alias.
-  float edgeAlpha = smoothstep(0.0, uAAmm * 1.5, dInside);
+  float edgeAlpha = smoothstep(0.0, uAAmm * 1.5, dInside) * coverage;
   vec3 outColor = mix(photoColor.rgb, panelColor, edgeAlpha);
 
   gl_FragColor = vec4(outColor, 1.0);

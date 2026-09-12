@@ -15,6 +15,11 @@ interface CompositorCanvasProps {
   wallWidthMm?: number;
   wallHeightMm?: number;
   finishSlug?: string;
+  feltHex?: string;
+  /** AI wall mask (PNG data URL) — clips panels to the real wall surface. */
+  wallMaskUrl?: string | null;
+  /** AI occluder mask — keeps furniture and fittings in front of the panels. */
+  occluderMaskUrl?: string | null;
 }
 
 function loadImage(url: string): Promise<HTMLImageElement> {
@@ -30,11 +35,33 @@ function loadImage(url: string): Promise<HTMLImageElement> {
 /** Renders the instant composite (photo + warped panel texture) onto a canvas. */
 export const CompositorCanvas = forwardRef<HTMLCanvasElement, CompositorCanvasProps>(
   function CompositorCanvas(
-    { imageUrl, naturalWidth, naturalHeight, imageToWallMm, coverageMm, panelSizeMm, textureUrl, wallWidthMm = 4000, wallHeightMm = 2500, finishSlug = "whisper" },
+    {
+      imageUrl,
+      naturalWidth,
+      naturalHeight,
+      imageToWallMm,
+      coverageMm,
+      panelSizeMm,
+      textureUrl,
+      wallWidthMm = 4000,
+      wallHeightMm = 2500,
+      finishSlug = "whisper",
+      feltHex = "#b9b8bc",
+      wallMaskUrl = null,
+      occluderMaskUrl = null,
+    },
     forwardedRef,
   ) {
     const localRef = useRef<HTMLCanvasElement>(null);
     const compositorRef = useRef<WallCompositor | null>(null);
+    // Masks are decoded and uploaded once per photo, not once per render:
+    // re-decoding two PNGs on every slider tick would drop the frame rate
+    // exactly when the user is dragging.
+    const loadedMasksRef = useRef<string>("");
+    // setPhoto() re-reads every pixel of the photo to build its luminance
+    // mask — seconds on a 12MP phone shot. It must happen once per photo,
+    // not once per render, or dragging a slider janks the whole tool.
+    const loadedPhotoRef = useRef<string>("");
 
     useEffect(() => {
       const canvas = localRef.current;
@@ -47,8 +74,22 @@ export const CompositorCanvas = forwardRef<HTMLCanvasElement, CompositorCanvasPr
           if (cancelled) return;
 
           const compositor = (compositorRef.current ??= new WallCompositor(canvas));
-          compositor.setPhoto(photo, naturalWidth, naturalHeight);
+          if (loadedPhotoRef.current !== imageUrl || !compositor.hasPhoto()) {
+            compositor.setPhoto(photo, naturalWidth, naturalHeight);
+            loadedPhotoRef.current = imageUrl;
+          }
           compositor.setStoneTexture(finishSlug, panel);
+
+          const maskKey = `${wallMaskUrl ?? ""}|${occluderMaskUrl ?? ""}`;
+          if (loadedMasksRef.current !== maskKey) {
+            const [wallMask, occluder] = await Promise.all([
+              wallMaskUrl ? loadImage(wallMaskUrl) : Promise.resolve(null),
+              occluderMaskUrl ? loadImage(occluderMaskUrl) : Promise.resolve(null),
+            ]);
+            if (cancelled) return;
+            compositor.setMasks(wallMask, occluder);
+            loadedMasksRef.current = maskKey;
+          }
 
           const isVertical = panelSizeMm.height > panelSizeMm.width;
           compositor.render({
@@ -58,7 +99,7 @@ export const CompositorCanvas = forwardRef<HTMLCanvasElement, CompositorCanvasPr
             wallWidthMm,
             wallHeightMm,
             slatsVertical: isVertical,
-            feltHex: "#b9b8bc",
+            feltHex,
             slatPitchMm: 64,
             slatWidthMm: 42,
             panelLengthMm: 2400,
@@ -72,7 +113,21 @@ export const CompositorCanvas = forwardRef<HTMLCanvasElement, CompositorCanvasPr
       return () => {
         cancelled = true;
       };
-    }, [imageUrl, naturalWidth, naturalHeight, imageToWallMm, coverageMm, panelSizeMm, textureUrl, wallWidthMm, wallHeightMm, finishSlug]);
+    }, [
+      imageUrl,
+      naturalWidth,
+      naturalHeight,
+      imageToWallMm,
+      coverageMm,
+      panelSizeMm,
+      textureUrl,
+      wallWidthMm,
+      wallHeightMm,
+      finishSlug,
+      feltHex,
+      wallMaskUrl,
+      occluderMaskUrl,
+    ]);
 
     return (
       <canvas
