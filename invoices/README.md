@@ -25,6 +25,23 @@ check-character test.
 Correct or add anything, then press **Save my details**; what you save on
 that device wins over what ships in the file.
 
+## Bill type
+
+The toolbar has a **Bill type** switch. The file opens on **Bill without GST**:
+the sheet is titled "Invoice", the tax columns, HSN summary, place of supply
+and reverse-charge block are removed (not greyed out), and the total is
+exactly rate × quantity — 352 sq ft × ₹90 = ₹31,680.00, no round-off.
+
+Switch to **GST tax invoice** to get the full Rule 46 sheet. The typed rate is
+then treated as the taxable rate and GST is added on top, so the same line
+becomes ₹31,680 + 18% = ₹37,382.
+
+A bill without GST is correct only for composition-scheme or exempt supplies.
+For a regular GST dealer, selling plywood is still taxable: the tax is owed by
+the firm out of the amount received, and a GST-registered buyer gets no input
+credit. The red/amber box above the sheet says this, with the rupee figure,
+every time the no-GST mode is on.
+
 ## Prices quoted with GST already inside
 
 Trade rates here are usually quoted per sq ft *including* GST. A tax invoice

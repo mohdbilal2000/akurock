@@ -70,6 +70,9 @@
   input::placeholder, textarea::placeholder { color: #a8a4a0; }
   .num { text-align: right; font-variant-numeric: tabular-nums; }
   .dateprint { display: none; }
+  /* "Bill without GST" removes every GST-only element rather than greying it
+     out, so nothing on the sheet hints at a tax that was not charged. */
+  body.plain .gst-only, body.plain .gst-col { display: none !important; }
   .req-missing { background: #fdf3f2; border-bottom: 1px solid var(--warn); }
 
   /* Draft mode keeps the blanks visible, so a document shared for review
@@ -182,6 +185,7 @@
     input[type="date"] { display: none; }
     .dateprint { display: inline; }
     .print-hide { display: none !important; }
+    body.plain .gst-only, body.plain .gst-col { display: none !important; }
     .cell.unused > *:not(.cell-head) { visibility: hidden; }
     .cell.unused .cell-head::after { content: " — not applicable"; text-transform: none; letter-spacing: 0; }
     .req-missing { background: transparent !important; }
@@ -200,8 +204,15 @@
 
 <div class="toolbar no-print">
   <strong>AKUROCK · Tax Invoice</strong>
+  <label class="btn" style="display:flex;gap:7px;align-items:center;font-weight:600">
+    Bill type
+    <select id="bill_type" style="width:auto;border:0;background:transparent;color:inherit;font-weight:700">
+      <option value="plain" style="color:#000">Bill without GST</option>
+      <option value="tax" style="color:#000">GST tax invoice</option>
+    </select>
+  </label>
   <button type="button" class="btn" id="add-row">Add item</button>
-  <button type="button" class="btn" id="incl-gst" title="Treat the rates you typed as GST-inclusive and convert them to taxable rates">Rate incl. GST &rarr; convert</button>
+  <button type="button" class="btn gst-only" id="incl-gst" title="Treat the rates you typed as GST-inclusive and convert them to taxable rates">Rate incl. GST &rarr; convert</button>
   <button type="button" class="btn" id="save-seller">Save my details</button>
   <button type="button" class="btn" id="new-invoice">New invoice</button>
   <label class="btn" style="display:flex;gap:7px;align-items:center;font-weight:600">
@@ -238,7 +249,7 @@
       </dl>
     </div>
     <div class="doc-title">
-      <h1>Tax Invoice</h1>
+      <h1 id="doc_title">Tax Invoice</h1>
       <div class="copy-line">
         <select id="copy_type" aria-label="Copy type">
           <option>Original for Recipient</option>
@@ -257,11 +268,11 @@
         <span>Invoice no.</span><input id="inv_no" data-req placeholder="[ e.g. AKU/25-26/001 ]">
         <span>Invoice date</span><div class="datewrap"><span class="dateprint" id="inv_date_p"></span><input id="inv_date" type="date" data-req></div>
         <span>Due date</span><div class="datewrap"><span class="dateprint" id="due_date_p"></span><input id="due_date" type="date"></div>
-        <span>Place of supply</span><input id="pos" data-req placeholder="Rajasthan (08)">
-        <span>Reverse charge</span>
-        <select id="rcm"><option>No</option><option>Yes</option></select>
-        <span>Supply type</span>
-        <select id="supply_type">
+        <span class="gst-only">Place of supply</span><input class="gst-only" id="pos" data-req placeholder="Rajasthan (08)">
+        <span class="gst-only">Reverse charge</span>
+        <select class="gst-only" id="rcm"><option>No</option><option>Yes</option></select>
+        <span class="gst-only">Supply type</span>
+        <select class="gst-only" id="supply_type">
           <option value="intra">Intra-state — CGST + SGST</option>
           <option value="inter">Inter-state — IGST</option>
         </select>
@@ -306,18 +317,18 @@
       <tr>
         <th rowspan="2" style="width:22px">#</th>
         <th rowspan="2" class="desc">Description of goods</th>
-        <th rowspan="2" style="width:50px">HSN</th>
+        <th rowspan="2" class="gst-col" style="width:50px">HSN</th>
         <th rowspan="2" style="width:46px">Qty</th>
         <th rowspan="2" style="width:40px">UQC</th>
         <th rowspan="2" style="width:52px">Rate (₹)</th>
         <th rowspan="2" style="width:48px">Disc. (₹)</th>
-        <th rowspan="2" style="width:62px">Taxable (₹)</th>
-        <th colspan="2" id="tax1_head">CGST</th>
-        <th colspan="2" id="tax2_head">SGST</th>
-        <th rowspan="2" style="width:66px">Total (₹)</th>
+        <th rowspan="2" id="amount_head" style="width:62px">Taxable (₹)</th>
+        <th colspan="2" class="gst-col" id="tax1_head">CGST</th>
+        <th colspan="2" class="gst-col" id="tax2_head">SGST</th>
+        <th rowspan="2" class="gst-col" style="width:66px">Total (₹)</th>
         <th rowspan="2" class="row-actions"></th>
       </tr>
-      <tr>
+      <tr class="gst-col">
         <th style="width:34px">%</th><th style="width:56px">Amt</th>
         <th style="width:34px">%</th><th style="width:56px">Amt</th>
       </tr>
@@ -330,21 +341,24 @@
     <div>
       <div class="cell-head">Amount chargeable (in words)</div>
       <div class="words"><b id="words">—</b></div>
-      <div class="section-gap"></div>
-      <div class="cell-head">Tax amount (in words)</div>
-      <div class="words"><b id="tax_words">—</b></div>
+      <div class="gst-only">
+        <div class="section-gap"></div>
+        <div class="cell-head">Tax amount (in words)</div>
+        <div class="words"><b id="tax_words">—</b></div>
+      </div>
     </div>
     <div>
-      <div class="total-line"><span>Taxable value</span><span class="num" id="t_taxable">0.00</span></div>
-      <div class="total-line"><span id="t_tax1_label">CGST</span><span class="num" id="t_tax1">0.00</span></div>
-      <div class="total-line"><span id="t_tax2_label">SGST</span><span class="num" id="t_tax2">0.00</span></div>
-      <div class="total-line"><span>Round off</span><span class="num" id="t_round">0.00</span></div>
-      <div class="total-line grand"><span>Grand total</span><span class="num" id="t_grand">₹0</span></div>
+      <div class="total-line"><span id="t_taxable_label">Taxable value</span><span class="num" id="t_taxable">0.00</span></div>
+      <div class="total-line gst-only"><span id="t_tax1_label">CGST</span><span class="num" id="t_tax1">0.00</span></div>
+      <div class="total-line gst-only"><span id="t_tax2_label">SGST</span><span class="num" id="t_tax2">0.00</span></div>
+      <div class="total-line gst-only"><span>Round off</span><span class="num" id="t_round">0.00</span></div>
+      <div class="total-line grand"><span id="t_grand_label">Grand total</span><span class="num" id="t_grand">₹0</span></div>
     </div>
   </div>
 
   <div class="section-gap"></div>
 
+  <div class="gst-only">
   <div class="cell-head">HSN / SAC summary</div>
   <div class="table-scroll">
   <table class="hsn">
@@ -358,6 +372,7 @@
     </thead>
     <tbody id="hsn-body"></tbody>
   </table>
+  </div>
   </div>
 
   <div class="section-gap"></div>
@@ -382,7 +397,7 @@
       </ol>
     </div>
     <div class="sign">
-      <div>
+      <div class="gst-only">
         <div class="cell-head">Tax payable on reverse charge</div>
         <div id="rcm_echo" style="font-size:11px">No</div>
       </div>
@@ -394,7 +409,7 @@
     </div>
   </div>
 
-  <div class="eoe">E. &amp; O.E. · This is a computer-generated tax invoice.</div>
+  <div class="eoe">E. &amp; O.E. · This is a computer-generated <span id="eoe_kind">tax invoice</span>.</div>
 </div>
 
 <script>
@@ -451,17 +466,17 @@
     tr.innerHTML =
       '<td class="num idx"></td>' +
       '<td><textarea class="f-desc" rows="1" placeholder="Item description"></textarea></td>' +
-      '<td><input class="f-hsn" placeholder="4412"></td>' +
+      '<td class="gst-col"><input class="f-hsn" placeholder="4412"></td>' +
       '<td><input class="f-qty num" inputmode="decimal"></td>' +
       '<td><input class="f-uqc" placeholder="SQF"></td>' +
       '<td><input class="f-rate num" inputmode="decimal"></td>' +
       '<td><input class="f-disc num" inputmode="decimal"></td>' +
       '<td class="num f-taxable">0.00</td>' +
-      '<td><input class="f-rate1 num" inputmode="decimal"></td>' +
-      '<td class="num f-amt1">0.00</td>' +
-      '<td class="num f-rate2"></td>' +
-      '<td class="num f-amt2">0.00</td>' +
-      '<td class="num f-total">0.00</td>' +
+      '<td class="gst-col"><input class="f-rate1 num" inputmode="decimal"></td>' +
+      '<td class="num f-amt1 gst-col">0.00</td>' +
+      '<td class="num f-rate2 gst-col"></td>' +
+      '<td class="num f-amt2 gst-col">0.00</td>' +
+      '<td class="num f-total gst-col">0.00</td>' +
       '<td class="row-actions"><button type="button" class="del" aria-label="Remove line">×</button></td>';
 
     tr.querySelector(".f-desc").value = item.desc || "";
@@ -492,8 +507,18 @@
     recalc();
   }
 
+  function isPlain() { return el("bill_type").value === "plain"; }
+
   function recalc() {
+    var plain = isPlain();
+    document.body.classList.toggle("plain", plain);
     var inter = el("supply_type").value === "inter";
+
+    el("doc_title").textContent = plain ? "Invoice" : "Tax Invoice";
+    el("eoe_kind").textContent = plain ? "invoice" : "tax invoice";
+    el("amount_head").textContent = plain ? "Amount (\u20b9)" : "Taxable (\u20b9)";
+    el("t_taxable_label").textContent = plain ? "Amount" : "Taxable value";
+    el("t_grand_label").textContent = plain ? "Total" : "Grand total";
 
     el("tax1_head").textContent = inter ? "IGST" : "CGST";
     el("tax2_head").textContent = inter ? "—" : "SGST";
@@ -518,7 +543,7 @@
       // One rate box is typed; intra-state splits it in half, inter-state
       // charges the whole thing as IGST. Typing 9 must never silently
       // become 9% IGST on an inter-state invoice.
-      var typed = num(tr.querySelector(".f-rate1").value);
+      var typed = plain ? 0 : num(tr.querySelector(".f-rate1").value);
       var r1 = inter ? typed * 2 : typed;
       var r2 = inter ? 0 : typed;
 
@@ -542,16 +567,20 @@
     });
 
     var gross = taxable + tax1 + tax2;
-    var grand = Math.round(gross);
+    // A bill with no tax on it totals exactly what was multiplied out
+    // (352 x 90 = 31,680.00); rounding to the rupee is a tax-invoice habit.
+    var grand = plain ? Math.round(gross * 100) / 100 : Math.round(gross);
     var roundOff = grand - gross;
 
     el("t_taxable").textContent = money(taxable);
     el("t_tax1").textContent = money(tax1);
     el("t_tax2").textContent = inter ? "—" : money(tax2);
     el("t_round").textContent = (roundOff >= 0 ? "" : "−") + money(Math.abs(roundOff));
-    el("t_grand").textContent = "₹" + grand.toLocaleString("en-IN");
+    el("t_grand").textContent = "₹" + (plain
+      ? grand.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+      : grand.toLocaleString("en-IN"));
     el("words").textContent = inWords(grand);
-    el("tax_words").textContent = inWords(tax1 + tax2);
+    el("tax_words").textContent = plain ? "" : inWords(tax1 + tax2);
 
     var body = el("hsn-body");
     body.innerHTML = "";
@@ -626,7 +655,43 @@
     ["bk_ifsc", "IFSC code (needed for any domestic transfer \u2014 SWIFT is not)"]
   ];
 
+  function checkPlain(grand) {
+    var basics = [
+      ["s_legal", "Supplier's name"], ["s_addr", "Supplier's address"],
+      ["inv_no", "Bill number"], ["inv_date", "Bill date"],
+      ["b_name", "Customer's name"], ["b_addr", "Customer's address"]
+    ];
+    var missing = [];
+    basics.forEach(function (pair) {
+      var field = el(pair[0]);
+      var empty = !field.value.trim();
+      field.classList.toggle("req-missing", empty);
+      if (empty) missing.push(pair[1]);
+    });
+    ["pos", "s_state", "s_gstin", "b_state", "bk_acc", "bk_ifsc"].forEach(function (id) {
+      el(id).classList.remove("req-missing");
+    });
+
+    // Worked out on the typed amount so the number in the warning is the
+    // one the dealer would actually owe, not a generic 18%.
+    var rate = 18;
+    var owed = grand - grand / (1 + rate / 100);
+
+    var box = el("checklist");
+    var html = "";
+    if (missing.length) {
+      html += "<b>Still missing:</b><ul>" + missing.map(function (m) { return "<li>" + m + "</li>"; }).join("") + "</ul>";
+    }
+    html += "<b>No GST is charged on this bill.</b> If this firm is a regular (non-composition) GST dealer, " +
+      "selling goods is still taxable: about ₹" + money(owed) + " of this ₹" + money(grand) +
+      " would be GST payable by the firm out of what it receives, and a GST-registered buyer gets no input tax credit. " +
+      "A bill with no GST is only correct for composition-scheme or exempt supplies. Check with your CA if unsure.";
+    box.className = missing.length ? "notice" : "notice warn-soft";
+    box.innerHTML = html;
+  }
+
   function checkCompliance(grand) {
+    if (isPlain()) { checkPlain(grand); return; }
     var missing = [];
 
     MANDATORY.forEach(function (pair) {
@@ -736,6 +801,7 @@
     recalc();
   });
   document.addEventListener("change", recalc);
+  el("bill_type").addEventListener("change", recalc);
   el("add-row").addEventListener("click", function () { addRow(); });
   // Trade here is quoted at a per-sqft price that already contains the tax.
   // A tax invoice has to show the taxable value, so the typed rate is divided
@@ -774,16 +840,17 @@
   autoGrow(el("bk_bank"));
   el("inv_date").value = new Date().toISOString().slice(0, 10);
   el("pos").value = el("pos").value || "Rajasthan (08)";
+  el("bill_type").value = "plain";
   el("inv_no").value = "SAI/26-27/001";
   el("b_name").value = "Shree Balaji Plylam";
   el("b_addr").value = "127, Shiv Vatika A, Mangyawas, Mansarovar, Jaipur, Rajasthan \u2014 302020";
   el("b_state").value = "Rajasthan — 08";
   el("b_gstin").value = "08ACPFS4093L1ZB";
-  // 11 sheets of 8x4 ft = 352 sq ft, quoted at Rs.90/sq ft inclusive of GST,
-  // so the taxable rate is 90 / 1.18 and the invoice lands on Rs.31,680.
+  // 11 sheets of 8x4 ft = 352 sq ft at Rs.90 per sq ft = Rs.31,680.00. The
+  // rate stays at the full 90; no GST is carved out of it or added to it.
   addRow({
-    desc: "Plywood sheet 8 ft × 4 ft — 11 sheets (@ ₹90/sq ft incl. GST)",
-    hsn: "4412", qty: 352, uqc: "SQF", rate: 76.27, gst: 18
+    desc: "Plywood sheet 8 ft × 4 ft — 11 sheets (@ ₹90 per sq ft)",
+    hsn: "4412", qty: 352, uqc: "SQF", rate: 90, gst: 18
   });
   recalc();
 })();
