@@ -71,6 +71,26 @@
   .dateprint { display: none; }
   .req-missing { background: #fdf3f2; border-bottom: 1px solid var(--warn); }
 
+  /* Draft mode keeps the blanks visible, so a document shared for review
+     reads as unfinished instead of looking like an issued invoice. */
+  .draft-banner { display: none; }
+  body.draft .draft-banner {
+    display: block; margin-bottom: 9px; padding: 7px 10px;
+    border: 1px solid var(--warn); color: var(--warn);
+    font-size: 9.5px; letter-spacing: .04em; text-transform: uppercase; line-height: 1.5;
+  }
+  body.draft input::placeholder, body.draft textarea::placeholder { color: #8d8a87; }
+  body.draft .doc-title h1::after {
+    content: " · DRAFT"; color: var(--warn); font-size: 13px; letter-spacing: .08em;
+  }
+  body.draft .sheet { position: relative; }
+  body.draft .sheet::before {
+    content: "DRAFT"; position: absolute; inset: 0; display: grid; place-items: center;
+    font-family: var(--font-display); font-size: 150px; letter-spacing: .16em;
+    color: rgba(242, 70, 22, .07); pointer-events: none; z-index: 1;
+    transform: rotate(-24deg);
+  }
+
   /* ---------- masthead ---------- */
   .masthead { display: flex; gap: 16px; align-items: flex-start; border-bottom: 2px solid var(--ink); padding-bottom: 8px; }
   .wordmark { font-family: var(--font-display); font-size: 27px; letter-spacing: .14em; line-height: 1; font-weight: 700; }
@@ -159,6 +179,9 @@
     .dateprint { display: inline; }
     .req-missing { background: transparent !important; }
     input::placeholder, textarea::placeholder { color: transparent !important; }
+    body.draft input::placeholder, body.draft textarea::placeholder { color: #8d8a87 !important; }
+    body.draft .sheet::before { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    body.draft .draft-banner { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     textarea { resize: none; overflow: hidden; }
     select { appearance: none; -webkit-appearance: none; }
     .items thead th, .hsn thead th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -173,24 +196,32 @@
   <button type="button" class="btn" id="add-row">Add item</button>
   <button type="button" class="btn" id="save-seller">Save my details</button>
   <button type="button" class="btn" id="new-invoice">New invoice</button>
+  <label class="btn" style="display:flex;gap:7px;align-items:center;font-weight:600">
+    <input type="checkbox" id="draft_mode" style="width:auto;margin:0"> Draft mode
+  </label>
   <button type="button" class="btn btn-primary" id="print">Print / Save PDF</button>
 </div>
 
 <div class="notice" id="checklist" role="status"></div>
 
-<div class="sheet">
+<div class="sheet" id="sheet">
+
+  <div class="draft-banner" id="draft_banner">
+    DRAFT FOR REVIEW — not a valid tax invoice. Bracketed fields are still to be filled,
+    and no invoice number has been issued against this document.
+  </div>
 
   <div class="masthead">
     <div class="seller">
       <div class="wordmark">AKUROCK<span>.</span></div>
       <div class="tagline">Stone acoustic wall panels</div>
       <dl class="seller-id">
-        <dt>Legal name</dt><dd><input id="s_legal" data-req placeholder="Registered firm / company name"></dd>
-        <dt>Address</dt><dd><textarea id="s_addr" data-req placeholder="Building, street, area, city, PIN"></textarea></dd>
-        <dt>State</dt><dd><input id="s_state" data-req placeholder="e.g. Rajasthan — code 08"></dd>
-        <dt>GSTIN</dt><dd><input id="s_gstin" data-req placeholder="15-character GSTIN"></dd>
-        <dt>PAN</dt><dd><input id="s_pan" placeholder="PAN"></dd>
-        <dt>Contact</dt><dd><input id="s_contact" placeholder="Phone · email"></dd>
+        <dt>Legal name</dt><dd><input id="s_legal" data-req placeholder="[ Registered firm / company name ]"></dd>
+        <dt>Address</dt><dd><textarea id="s_addr" data-req placeholder="[ Building, street, area, city, PIN ]"></textarea></dd>
+        <dt>State</dt><dd><input id="s_state" data-req placeholder="[ State — code ]"></dd>
+        <dt>GSTIN</dt><dd><input id="s_gstin" data-req placeholder="[ 15-character GSTIN ]"></dd>
+        <dt>PAN</dt><dd><input id="s_pan" placeholder="[ PAN ]"></dd>
+        <dt>Contact</dt><dd><input id="s_contact" placeholder="[ Phone · email ]"></dd>
       </dl>
     </div>
     <div class="doc-title">
@@ -210,7 +241,7 @@
     <div class="cell">
       <div class="cell-head">Invoice details</div>
       <div class="kv">
-        <span>Invoice no.</span><input id="inv_no" data-req placeholder="AKU/25-26/001">
+        <span>Invoice no.</span><input id="inv_no" data-req placeholder="[ e.g. AKU/25-26/001 ]">
         <span>Invoice date</span><span class="dateprint" id="inv_date_p"></span><input id="inv_date" type="date" data-req>
         <span>Due date</span><span class="dateprint" id="due_date_p"></span><input id="due_date" type="date">
         <span>Place of supply</span><input id="pos" data-req placeholder="Rajasthan (08)">
@@ -322,11 +353,11 @@
     <div>
       <div class="cell-head">Bank details for payment</div>
       <div class="kv">
-        <span>Account name</span><input id="bk_name" data-req placeholder="Account holder name">
-        <span>Account no.</span><input id="bk_acc" data-req placeholder="Account number">
-        <span>IFSC</span><input id="bk_ifsc" data-req placeholder="IFSC code">
-        <span>Bank &amp; branch</span><input id="bk_bank" placeholder="Bank, branch">
-        <span>UPI</span><input id="bk_upi" placeholder="UPI ID">
+        <span>Account name</span><input id="bk_name" data-req placeholder="[ Account holder name ]">
+        <span>Account no.</span><input id="bk_acc" data-req placeholder="[ Account number ]">
+        <span>IFSC</span><input id="bk_ifsc" data-req placeholder="[ IFSC code ]">
+        <span>Bank &amp; branch</span><input id="bk_bank" placeholder="[ Bank, branch ]">
+        <span>UPI</span><input id="bk_upi" placeholder="[ UPI ID ]">
       </div>
       <div class="section-gap"></div>
       <div class="cell-head">Declaration &amp; terms</div>
@@ -619,6 +650,9 @@
   el("add-row").addEventListener("click", function () { addRow(); });
   el("print").addEventListener("click", function () { window.print(); });
   el("save-seller").addEventListener("click", saveSeller);
+  el("draft_mode").addEventListener("change", function () {
+    document.body.classList.toggle("draft", this.checked);
+  });
   el("new-invoice").addEventListener("click", function () {
     ["inv_no", "po_no", "vehicle", "eway", "b_name", "b_addr", "b_state", "b_gstin",
       "d_name", "d_addr", "d_state", "d_gstin"].forEach(function (id) { el(id).value = ""; });

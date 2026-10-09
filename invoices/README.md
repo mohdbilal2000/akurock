@@ -21,6 +21,14 @@ them for every future invoice on that device. Nothing is uploaded anywhere.
    SGST, or doubles it into IGST on an inter-state invoice.
 5. **Print / Save PDF** → in the print dialog choose "Save as PDF", A4.
 
+## Draft mode
+
+Tick **Draft mode** in the toolbar before sharing a bill for review. The
+sheet then prints with a DRAFT watermark, a line saying it is not a valid
+tax invoice, and every unfilled mandatory field shown in brackets, so nobody
+can mistake a review copy for an issued invoice. Untick it once the real
+details are in — the final invoice must never carry the watermark.
+
 ## The red checklist
 
 The red box above the sheet lists every mandatory particular that is still
@@ -53,4 +61,4 @@ authorised-signatory block.
 - Everything is one file. To change the terms, the wordmark or the colours,
   edit the HTML directly.
 - `sample-output.pdf` is the layout filled with one example line, for
-  reference.
+  reference. `AKUROCK-tax-invoice-DRAFT.pdf` is the same sheet in draft mode.
