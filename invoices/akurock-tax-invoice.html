@@ -846,7 +846,7 @@
   autoGrow(el("bk_bank"));
   el("inv_date").value = new Date().toISOString().slice(0, 10);
   el("pos").value = el("pos").value || "Rajasthan (08)";
-  el("bill_type").value = "tax";
+  el("bill_type").value = "plain";
   el("rate_mode").value = "incl";
   el("inv_no").value = "SAI/26-27/001";
   el("b_name").value = "Shree Balaji Plylam";
@@ -856,7 +856,7 @@
   // 11 sheets of 8x4 ft = 352 sq ft at Rs.90 per sq ft = Rs.31,680.00. The
   // rate stays at the full 90; no GST is carved out of it or added to it.
   addRow({
-    desc: "Plywood sheet 8 ft × 4 ft — 11 sheets (@ ₹90 per sq ft, incl. GST)",
+    desc: "Plywood sheet 8 ft × 4 ft — 11 sheets (@ ₹90 per sq ft)",
     hsn: "4412", qty: 352, uqc: "SQF", rate: 90, gst: 18
   });
   recalc();

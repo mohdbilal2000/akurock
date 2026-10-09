@@ -27,7 +27,7 @@ that device wins over what ships in the file.
 
 ## Bill type and how the rate is read
 
-The file opens on a **GST tax invoice** with the rate shown as typed:
+The file opens on **Bill without GST**; switch Bill type to **GST tax invoice** for the tax version, where the rate is shown as typed:
 **₹90 per sq ft, GST included**. The taxable value is worked out from it, so
 the line reads 352 sq ft × ₹90 = ₹31,680.00, of which ₹26,847.46 is taxable
 and ₹4,832.54 is GST (CGST ₹2,416.27 + SGST ₹2,416.27). The columns add up
