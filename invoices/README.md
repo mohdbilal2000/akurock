@@ -8,11 +8,15 @@ No internet, no install, no account.
 
 Stone Art Installation's particulars ship with the file: legal name, address,
 Rajasthan — 08, GSTIN 08BSFPA0657M1ZO, PAN BSFPA0657M, and the SBI account.
-Two things are still blank and have to come from you:
+The branch IFSC is **SBIN0031503** (State Bank of India, Malviya Nagar Ind.
+Area, Jaipur 302017 — MICR 302002120), looked up from the RBI-sourced IFSC
+directory and matched against the branch address on file. Note it is not the
+same as SBIN0006912, which is the other Malviya Nagar branch in the same PIN
+code. An IFSC identifies the branch, not the account, so check it once
+against a cheque leaf.
 
-- **IFSC code.** SWIFT (SBININBBJ58) only works for money arriving from
-  abroad; a domestic NEFT/RTGS/IMPS transfer needs the IFSC of the Malviya
-  Nagar Industrial Area branch. It is printed on any cheque leaf.
+One thing is still blank and has to come from you:
+
 - **Invoice number.** It must come from your own books as the next number in
   an unbroken series — nobody can make one up for you.
 
