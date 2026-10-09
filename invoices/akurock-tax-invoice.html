@@ -1,0 +1,644 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AKUROCK — Tax Invoice</title>
+<style>
+  /* Indian GST tax invoice. Ruled-box layout on purpose: that is the form
+     accountants and GST officers read fastest. Brand shows up only in the
+     wordmark and one hairline rule, so the document stays formal.
+     ink #0d0d0d · accent #f24616 · rule #c9c6c3 · paper #ffffff */
+  :root {
+    --ink: #0d0d0d;
+    --muted: #5d5a57;
+    --rule: #c9c6c3;
+    --rule-strong: #0d0d0d;
+    --accent: #f24616;
+    --paper: #ffffff;
+    --wash: #f7f5f4;
+    --warn: #b42318;
+    --font-display: "Playfair Display", "Iowan Old Style", Georgia, serif;
+    --font-body: "Helvetica Neue", Arial, "Segoe UI", system-ui, sans-serif;
+    color-scheme: light;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--wash); color: var(--ink); }
+  body { font-family: var(--font-body); font-size: 11px; line-height: 1.35; }
+
+  /* ---------- screen chrome (never printed) ---------- */
+  .toolbar {
+    position: sticky; top: 0; z-index: 10;
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+    padding: 10px 16px; background: var(--ink); color: #fff;
+  }
+  .toolbar strong { font-family: var(--font-display); font-size: 15px; letter-spacing: .04em; margin-right: auto; }
+  .btn {
+    font: inherit; font-weight: 700; cursor: pointer;
+    padding: 8px 14px; border-radius: 999px; border: 1px solid rgba(255,255,255,.35);
+    background: transparent; color: #fff;
+  }
+  .btn:hover { border-color: #fff; }
+  .btn-primary { background: var(--accent); border-color: var(--accent); }
+  .btn:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  .notice {
+    margin: 12px auto; max-width: 210mm; padding: 10px 14px;
+    border-left: 3px solid var(--warn); background: #fdf3f2; color: var(--warn);
+    font-size: 12px; border-radius: 0 4px 4px 0;
+  }
+  .notice ul { margin: 6px 0 0; padding-left: 18px; }
+  .notice.ok { border-left-color: #0a7c3f; background: #f1f8f3; color: #0a7c3f; }
+
+  /* ---------- the sheet ---------- */
+  .sheet {
+    width: 210mm; min-height: 297mm; margin: 12px auto 40px;
+    padding: 10mm; background: var(--paper);
+    box-shadow: 0 2px 18px rgba(0,0,0,.13);
+    border: 1px solid var(--rule-strong);
+  }
+
+  input, select, textarea {
+    font: inherit; color: inherit; width: 100%;
+    border: 0; border-bottom: 1px dotted var(--rule);
+    background: transparent; padding: 1px 0; border-radius: 0;
+  }
+  textarea { resize: vertical; min-height: 2.9em; border-bottom: 1px dotted var(--rule); }
+  select { border-bottom: 1px dotted var(--rule); }
+  input::placeholder, textarea::placeholder { color: #a8a4a0; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .dateprint { display: none; }
+  .req-missing { background: #fdf3f2; border-bottom: 1px solid var(--warn); }
+
+  /* ---------- masthead ---------- */
+  .masthead { display: flex; gap: 16px; align-items: flex-start; border-bottom: 2px solid var(--ink); padding-bottom: 8px; }
+  .wordmark { font-family: var(--font-display); font-size: 27px; letter-spacing: .14em; line-height: 1; font-weight: 700; }
+  .wordmark span { color: var(--accent); }
+  .tagline { font-size: 8.5px; letter-spacing: .22em; text-transform: uppercase; color: var(--muted); margin-top: 5px; }
+  .seller { flex: 1; min-width: 0; }
+  .seller-id { display: grid; grid-template-columns: auto 1fr; gap: 2px 8px; margin-top: 6px; font-size: 10px; }
+  .seller-id dt { color: var(--muted); }
+  .doc-title { text-align: right; }
+  .doc-title h1 { font-family: var(--font-display); font-size: 19px; letter-spacing: .1em; margin: 0; text-transform: uppercase; }
+  .copy-line { font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-top: 4px; }
+  .accent-rule { height: 3px; background: var(--accent); margin-bottom: 10px; }
+
+  /* ---------- boxed grid ---------- */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--rule-strong); border-bottom: 0; }
+  .grid2 > .cell + .cell { border-left: 1px solid var(--rule-strong); }
+  .cell { padding: 6px 8px; min-width: 0; }
+  .cell-head {
+    font-size: 8.5px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 4px;
+  }
+  .kv { display: grid; grid-template-columns: 92px 1fr; gap: 2px 8px; align-items: baseline; }
+  .kv > span { color: var(--muted); font-size: 10px; }
+
+  /* ---------- items ---------- */
+  table { width: 100%; border-collapse: collapse; }
+  .items { border: 1px solid var(--rule-strong); }
+  .items th, .items td { border: 1px solid var(--rule); padding: 4px 5px; vertical-align: top; }
+  .items thead th {
+    background: var(--wash); font-size: 8.5px; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--ink); font-weight: 700; text-align: center; border-color: var(--rule-strong);
+  }
+  .items tbody td { height: 22px; }
+  .items .desc { width: 27%; }
+  .items input { border-bottom: 0; }
+  .del {
+    border: 0; background: transparent; color: var(--warn); cursor: pointer;
+    font-size: 13px; line-height: 1; padding: 0 2px;
+  }
+  .row-actions { width: 18px; text-align: center; }
+
+  .totals { display: grid; grid-template-columns: 1fr 78mm; gap: 0; border: 1px solid var(--rule-strong); border-top: 0; }
+  .totals > div { padding: 7px 8px; min-width: 0; }
+  .totals > div + div { border-left: 1px solid var(--rule-strong); }
+  .total-line { display: flex; justify-content: space-between; gap: 10px; padding: 2px 0; }
+  .total-line.grand {
+    border-top: 1px solid var(--rule-strong); margin-top: 4px; padding-top: 5px;
+    font-size: 13px; font-weight: 700;
+  }
+  .words { font-size: 10px; margin-top: 4px; }
+  .words b { text-transform: uppercase; letter-spacing: .02em; }
+
+  .hsn th, .hsn td { border: 1px solid var(--rule); padding: 3px 5px; font-size: 9.5px; }
+  .hsn thead th { background: var(--wash); font-size: 8.5px; letter-spacing: .06em; text-transform: uppercase; }
+
+  .foot { display: grid; grid-template-columns: 1fr 70mm; border: 1px solid var(--rule-strong); border-top: 0; }
+  .foot > div { padding: 7px 8px; min-width: 0; }
+  .foot > div + div { border-left: 1px solid var(--rule-strong); }
+  .sign { display: flex; flex-direction: column; justify-content: space-between; min-height: 30mm; text-align: right; }
+  .sign-line { border-top: 1px solid var(--ink); padding-top: 3px; font-size: 9.5px; }
+  .terms { font-size: 9px; color: var(--muted); line-height: 1.45; }
+  .terms li { margin-bottom: 1px; }
+  .section-gap { height: 9px; }
+  .eoe { font-size: 8.5px; color: var(--muted); text-align: right; margin-top: 6px; letter-spacing: .08em; }
+
+  @media screen and (max-width: 820px) {
+    .sheet { width: auto; min-height: 0; margin: 12px; padding: 14px; }
+    .masthead { flex-direction: column; gap: 10px; }
+    .doc-title { text-align: left; }
+    .grid2, .totals, .foot { grid-template-columns: 1fr; }
+    .grid2 > .cell + .cell, .totals > div + div, .foot > div + div {
+      border-left: 0; border-top: 1px solid var(--rule-strong);
+    }
+    .table-scroll { overflow-x: auto; }
+    .table-scroll table { min-width: 700px; }
+    .sign { text-align: left; }
+  }
+
+  @media print {
+    @page { size: A4; margin: 10mm; }
+    html, body { background: #fff; }
+    .toolbar, .notice, .no-print, .del, .row-actions { display: none !important; }
+    .sheet { width: auto; min-height: 0; margin: 0; padding: 0; border: 0; box-shadow: none; }
+    input, select, textarea { border-bottom: 0 !important; background: transparent !important; }
+    input[type="date"] { display: none; }
+    .dateprint { display: inline; }
+    .req-missing { background: transparent !important; }
+    input::placeholder, textarea::placeholder { color: transparent !important; }
+    textarea { resize: none; overflow: hidden; }
+    select { appearance: none; -webkit-appearance: none; }
+    .items thead th, .hsn thead th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .accent-rule { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar no-print">
+  <strong>AKUROCK · Tax Invoice</strong>
+  <button type="button" class="btn" id="add-row">Add item</button>
+  <button type="button" class="btn" id="save-seller">Save my details</button>
+  <button type="button" class="btn" id="new-invoice">New invoice</button>
+  <button type="button" class="btn btn-primary" id="print">Print / Save PDF</button>
+</div>
+
+<div class="notice" id="checklist" role="status"></div>
+
+<div class="sheet">
+
+  <div class="masthead">
+    <div class="seller">
+      <div class="wordmark">AKUROCK<span>.</span></div>
+      <div class="tagline">Stone acoustic wall panels</div>
+      <dl class="seller-id">
+        <dt>Legal name</dt><dd><input id="s_legal" data-req placeholder="Registered firm / company name"></dd>
+        <dt>Address</dt><dd><textarea id="s_addr" data-req placeholder="Building, street, area, city, PIN"></textarea></dd>
+        <dt>State</dt><dd><input id="s_state" data-req placeholder="e.g. Rajasthan — code 08"></dd>
+        <dt>GSTIN</dt><dd><input id="s_gstin" data-req placeholder="15-character GSTIN"></dd>
+        <dt>PAN</dt><dd><input id="s_pan" placeholder="PAN"></dd>
+        <dt>Contact</dt><dd><input id="s_contact" placeholder="Phone · email"></dd>
+      </dl>
+    </div>
+    <div class="doc-title">
+      <h1>Tax Invoice</h1>
+      <div class="copy-line">
+        <select id="copy_type" aria-label="Copy type">
+          <option>Original for Recipient</option>
+          <option>Duplicate for Transporter</option>
+          <option>Triplicate for Supplier</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="accent-rule"></div>
+
+  <div class="grid2">
+    <div class="cell">
+      <div class="cell-head">Invoice details</div>
+      <div class="kv">
+        <span>Invoice no.</span><input id="inv_no" data-req placeholder="AKU/25-26/001">
+        <span>Invoice date</span><span class="dateprint" id="inv_date_p"></span><input id="inv_date" type="date" data-req>
+        <span>Due date</span><span class="dateprint" id="due_date_p"></span><input id="due_date" type="date">
+        <span>Place of supply</span><input id="pos" data-req placeholder="Rajasthan (08)">
+        <span>Reverse charge</span>
+        <select id="rcm"><option>No</option><option>Yes</option></select>
+        <span>Supply type</span>
+        <select id="supply_type">
+          <option value="intra">Intra-state — CGST + SGST</option>
+          <option value="inter">Inter-state — IGST</option>
+        </select>
+      </div>
+    </div>
+    <div class="cell">
+      <div class="cell-head">Transport / reference</div>
+      <div class="kv">
+        <span>Buyer order no.</span><input id="po_no" placeholder="Optional">
+        <span>Transport mode</span><input id="transport" placeholder="By road / hand delivery">
+        <span>Vehicle no.</span><input id="vehicle" placeholder="Optional">
+        <span>E-way bill no.</span><input id="eway" placeholder="Required above ₹50,000 consignment">
+        <span>Date of supply</span><span class="dateprint" id="supply_date_p"></span><input id="supply_date" type="date">
+      </div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="cell">
+      <div class="cell-head">Bill to (recipient)</div>
+      <div class="kv">
+        <span>Name</span><input id="b_name" data-req placeholder="Customer name">
+        <span>Address</span><textarea id="b_addr" data-req placeholder="Billing address"></textarea>
+        <span>State</span><input id="b_state" data-req placeholder="State — code">
+        <span>GSTIN / UIN</span><input id="b_gstin" placeholder="Leave blank if unregistered">
+      </div>
+    </div>
+    <div class="cell">
+      <div class="cell-head">Ship to (delivery address)</div>
+      <div class="kv">
+        <span>Name</span><input id="d_name" placeholder="Same as billing">
+        <span>Address</span><textarea id="d_addr" placeholder="Same as billing"></textarea>
+        <span>State</span><input id="d_state" placeholder="State — code">
+        <span>GSTIN / UIN</span><input id="d_gstin" placeholder="If different">
+      </div>
+    </div>
+  </div>
+
+  <div class="table-scroll">
+  <table class="items">
+    <thead>
+      <tr>
+        <th rowspan="2" style="width:22px">#</th>
+        <th rowspan="2" class="desc">Description of goods</th>
+        <th rowspan="2" style="width:50px">HSN</th>
+        <th rowspan="2" style="width:46px">Qty</th>
+        <th rowspan="2" style="width:40px">UQC</th>
+        <th rowspan="2" style="width:52px">Rate (₹)</th>
+        <th rowspan="2" style="width:48px">Disc. (₹)</th>
+        <th rowspan="2" style="width:62px">Taxable (₹)</th>
+        <th colspan="2" id="tax1_head">CGST</th>
+        <th colspan="2" id="tax2_head">SGST</th>
+        <th rowspan="2" style="width:66px">Total (₹)</th>
+        <th rowspan="2" class="row-actions"></th>
+      </tr>
+      <tr>
+        <th style="width:34px">%</th><th style="width:56px">Amt</th>
+        <th style="width:34px">%</th><th style="width:56px">Amt</th>
+      </tr>
+    </thead>
+    <tbody id="items"></tbody>
+  </table>
+  </div>
+
+  <div class="totals">
+    <div>
+      <div class="cell-head">Amount chargeable (in words)</div>
+      <div class="words"><b id="words">—</b></div>
+      <div class="section-gap"></div>
+      <div class="cell-head">Tax amount (in words)</div>
+      <div class="words"><b id="tax_words">—</b></div>
+    </div>
+    <div>
+      <div class="total-line"><span>Taxable value</span><span class="num" id="t_taxable">0.00</span></div>
+      <div class="total-line"><span id="t_tax1_label">CGST</span><span class="num" id="t_tax1">0.00</span></div>
+      <div class="total-line"><span id="t_tax2_label">SGST</span><span class="num" id="t_tax2">0.00</span></div>
+      <div class="total-line"><span>Round off</span><span class="num" id="t_round">0.00</span></div>
+      <div class="total-line grand"><span>Grand total</span><span class="num" id="t_grand">₹0</span></div>
+    </div>
+  </div>
+
+  <div class="section-gap"></div>
+
+  <div class="cell-head">HSN / SAC summary</div>
+  <div class="table-scroll">
+  <table class="hsn">
+    <thead>
+      <tr>
+        <th>HSN / SAC</th><th class="num">Taxable value</th>
+        <th class="num" id="h1_rate">CGST %</th><th class="num" id="h1_amt">CGST amount</th>
+        <th class="num" id="h2_rate">SGST %</th><th class="num" id="h2_amt">SGST amount</th>
+        <th class="num">Total tax</th>
+      </tr>
+    </thead>
+    <tbody id="hsn-body"></tbody>
+  </table>
+  </div>
+
+  <div class="section-gap"></div>
+
+  <div class="foot">
+    <div>
+      <div class="cell-head">Bank details for payment</div>
+      <div class="kv">
+        <span>Account name</span><input id="bk_name" data-req placeholder="Account holder name">
+        <span>Account no.</span><input id="bk_acc" data-req placeholder="Account number">
+        <span>IFSC</span><input id="bk_ifsc" data-req placeholder="IFSC code">
+        <span>Bank &amp; branch</span><input id="bk_bank" placeholder="Bank, branch">
+        <span>UPI</span><input id="bk_upi" placeholder="UPI ID">
+      </div>
+      <div class="section-gap"></div>
+      <div class="cell-head">Declaration &amp; terms</div>
+      <ol class="terms">
+        <li>We declare that this invoice shows the actual price of the goods described and that all particulars are true and correct.</li>
+        <li>Goods once sold are taken back only on prior written agreement. Claims for shortage or damage must be raised within 48 hours of delivery.</li>
+        <li>Interest at 18% per annum is chargeable on payments not received by the due date.</li>
+        <li>Subject to <input id="jurisdiction" class="no-print-border" placeholder="city" style="width:70px;display:inline-block"> jurisdiction only.</li>
+      </ol>
+    </div>
+    <div class="sign">
+      <div>
+        <div class="cell-head">Tax payable on reverse charge</div>
+        <div id="rcm_echo" style="font-size:11px">No</div>
+      </div>
+      <div>
+        <div style="font-size:9.5px;color:var(--muted)">For <b id="sign_firm">AKUROCK</b></div>
+        <div style="height:16mm"></div>
+        <div class="sign-line">Authorised signatory</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="eoe">E. &amp; O.E. · This is a computer-generated tax invoice.</div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var itemsBody = document.getElementById("items");
+
+  function el(id) { return document.getElementById(id); }
+  function money(n) {
+    return (Math.round(n * 100) / 100).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  function num(v) { var n = parseFloat(v); return isFinite(n) ? n : 0; }
+
+  /* Indian numbering: 1,23,45,678 reads as crore-lakh-thousand, which is what
+     "amount in words" on an Indian invoice has to say. */
+  var ONES = ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
+    "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"];
+  var TENS = ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"];
+
+  function twoDigits(n) {
+    if (n < 20) return ONES[n];
+    return TENS[Math.floor(n / 10)] + (n % 10 ? " " + ONES[n % 10] : "");
+  }
+  function threeDigits(n) {
+    var out = "";
+    if (n > 99) { out = ONES[Math.floor(n / 100)] + " hundred"; n %= 100; if (n) out += " and "; }
+    if (n) out += twoDigits(n);
+    return out;
+  }
+  function inWords(amount) {
+    var rupees = Math.floor(Math.abs(amount));
+    var paise = Math.round((Math.abs(amount) - rupees) * 100);
+    if (rupees === 0 && paise === 0) return "Rupees zero only";
+
+    var parts = [];
+    var crore = Math.floor(rupees / 10000000); rupees %= 10000000;
+    var lakh = Math.floor(rupees / 100000); rupees %= 100000;
+    var thousand = Math.floor(rupees / 1000); rupees %= 1000;
+
+    if (crore) parts.push(threeDigits(crore) + " crore");
+    if (lakh) parts.push(twoDigits(lakh) + " lakh");
+    if (thousand) parts.push(twoDigits(thousand) + " thousand");
+    if (rupees) parts.push(threeDigits(rupees));
+
+    var text = "Rupees " + (parts.join(" ") || "zero");
+    if (paise) text += " and " + twoDigits(paise) + " paise";
+    return (text + " only").replace(/\s+/g, " ").replace(/^./, function (c) { return c.toUpperCase(); });
+  }
+
+  function rowTemplate(item) {
+    item = item || {};
+    var tr = document.createElement("tr");
+    tr.innerHTML =
+      '<td class="num idx"></td>' +
+      '<td><input class="f-desc" placeholder="Item description"></td>' +
+      '<td><input class="f-hsn" placeholder="4412"></td>' +
+      '<td><input class="f-qty num" inputmode="decimal"></td>' +
+      '<td><input class="f-uqc" placeholder="SQF"></td>' +
+      '<td><input class="f-rate num" inputmode="decimal"></td>' +
+      '<td><input class="f-disc num" inputmode="decimal"></td>' +
+      '<td class="num f-taxable">0.00</td>' +
+      '<td><input class="f-rate1 num" inputmode="decimal"></td>' +
+      '<td class="num f-amt1">0.00</td>' +
+      '<td class="num f-rate2"></td>' +
+      '<td class="num f-amt2">0.00</td>' +
+      '<td class="num f-total">0.00</td>' +
+      '<td class="row-actions"><button type="button" class="del" aria-label="Remove line">×</button></td>';
+
+    tr.querySelector(".f-desc").value = item.desc || "";
+    tr.querySelector(".f-hsn").value = item.hsn || "";
+    tr.querySelector(".f-qty").value = item.qty != null ? item.qty : "";
+    tr.querySelector(".f-uqc").value = item.uqc || "";
+    tr.querySelector(".f-rate").value = item.rate != null ? item.rate : "";
+    tr.querySelector(".f-disc").value = item.disc || "";
+    tr.querySelector(".f-rate1").value = item.gst != null ? item.gst / 2 : 9;
+    tr.querySelector(".del").addEventListener("click", function () {
+      tr.remove();
+      if (!itemsBody.children.length) addRow();
+      recalc();
+    });
+    return tr;
+  }
+
+  function addRow(item) { itemsBody.appendChild(rowTemplate(item)); recalc(); }
+
+  function recalc() {
+    var inter = el("supply_type").value === "inter";
+
+    el("tax1_head").textContent = inter ? "IGST" : "CGST";
+    el("tax2_head").textContent = inter ? "—" : "SGST";
+    el("t_tax1_label").textContent = inter ? "IGST" : "CGST";
+    el("t_tax2_label").textContent = inter ? "—" : "SGST";
+    el("h1_rate").textContent = inter ? "IGST %" : "CGST %";
+    el("h1_amt").textContent = inter ? "IGST amount" : "CGST amount";
+    el("h2_rate").textContent = inter ? "" : "SGST %";
+    el("h2_amt").textContent = inter ? "" : "SGST amount";
+
+    var taxable = 0, tax1 = 0, tax2 = 0;
+    var byHsn = {};
+
+    Array.prototype.forEach.call(itemsBody.children, function (tr, i) {
+      tr.querySelector(".idx").textContent = i + 1;
+
+      var qty = num(tr.querySelector(".f-qty").value);
+      var rate = num(tr.querySelector(".f-rate").value);
+      var disc = num(tr.querySelector(".f-disc").value);
+      var lineTaxable = Math.max(0, qty * rate - disc);
+
+      // One rate box is typed; intra-state splits it in half, inter-state
+      // charges the whole thing as IGST. Typing 9 must never silently
+      // become 9% IGST on an inter-state invoice.
+      var typed = num(tr.querySelector(".f-rate1").value);
+      var r1 = inter ? typed * 2 : typed;
+      var r2 = inter ? 0 : typed;
+
+      var a1 = lineTaxable * r1 / 100;
+      var a2 = lineTaxable * r2 / 100;
+
+      tr.querySelector(".f-taxable").textContent = money(lineTaxable);
+      tr.querySelector(".f-rate2").textContent = inter ? "" : (r2 ? r2 : "");
+      tr.querySelector(".f-amt1").textContent = money(a1);
+      tr.querySelector(".f-amt2").textContent = inter ? "" : money(a2);
+      tr.querySelector(".f-total").textContent = money(lineTaxable + a1 + a2);
+
+      taxable += lineTaxable; tax1 += a1; tax2 += a2;
+
+      var hsn = tr.querySelector(".f-hsn").value.trim();
+      if (lineTaxable > 0 && hsn) {
+        var k = hsn + "|" + r1 + "|" + r2;
+        byHsn[k] = byHsn[k] || { hsn: hsn, r1: r1, r2: r2, taxable: 0, a1: 0, a2: 0 };
+        byHsn[k].taxable += lineTaxable; byHsn[k].a1 += a1; byHsn[k].a2 += a2;
+      }
+    });
+
+    var gross = taxable + tax1 + tax2;
+    var grand = Math.round(gross);
+    var roundOff = grand - gross;
+
+    el("t_taxable").textContent = money(taxable);
+    el("t_tax1").textContent = money(tax1);
+    el("t_tax2").textContent = inter ? "—" : money(tax2);
+    el("t_round").textContent = (roundOff >= 0 ? "" : "−") + money(Math.abs(roundOff));
+    el("t_grand").textContent = "₹" + grand.toLocaleString("en-IN");
+    el("words").textContent = inWords(grand);
+    el("tax_words").textContent = inWords(tax1 + tax2);
+
+    var body = el("hsn-body");
+    body.innerHTML = "";
+    Object.keys(byHsn).forEach(function (k) {
+      var g = byHsn[k];
+      var tr = document.createElement("tr");
+      tr.innerHTML =
+        "<td>" + g.hsn + "</td>" +
+        '<td class="num">' + money(g.taxable) + "</td>" +
+        '<td class="num">' + g.r1 + "</td>" +
+        '<td class="num">' + money(g.a1) + "</td>" +
+        '<td class="num">' + (inter ? "" : g.r2) + "</td>" +
+        '<td class="num">' + (inter ? "" : money(g.a2)) + "</td>" +
+        '<td class="num">' + money(g.a1 + g.a2) + "</td>";
+      body.appendChild(tr);
+    });
+
+    ["inv_date", "due_date", "supply_date"].forEach(function (id) {
+      var raw = el(id).value;
+      // dd/mm/yyyy, because a date input prints in the reader's locale and
+      // 10/09 must not be read as the tenth of September in one office and
+      // the ninth of October in the next.
+      el(id + "_p").textContent = raw ? raw.slice(8, 10) + "/" + raw.slice(5, 7) + "/" + raw.slice(0, 4) : "";
+    });
+
+    el("rcm_echo").textContent = el("rcm").value;
+    el("sign_firm").textContent = el("s_legal").value.trim() || "AKUROCK";
+    checkCompliance(grand);
+  }
+
+  /* Rule 46 of the CGST Rules lists what a tax invoice must carry. Anything
+     missing here makes the document something other than a tax invoice, so
+     it is called out on screen rather than discovered by an auditor. */
+  var MANDATORY = [
+    ["s_legal", "Supplier's legal name"],
+    ["s_addr", "Supplier's address"],
+    ["s_state", "Supplier's state and code"],
+    ["s_gstin", "Supplier's GSTIN"],
+    ["inv_no", "Invoice number"],
+    ["inv_date", "Invoice date"],
+    ["pos", "Place of supply"],
+    ["b_name", "Recipient's name"],
+    ["b_addr", "Recipient's address"],
+    ["b_state", "Recipient's state and code"],
+    ["bk_acc", "Bank account number"],
+    ["bk_ifsc", "IFSC code"]
+  ];
+
+  function checkCompliance(grand) {
+    var missing = [];
+
+    MANDATORY.forEach(function (pair) {
+      var field = el(pair[0]);
+      var empty = !field.value.trim();
+      field.classList.toggle("req-missing", empty);
+      if (empty) missing.push(pair[1]);
+    });
+
+    var gstin = el("s_gstin").value.trim().toUpperCase();
+    if (gstin && !/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][0-9A-Z]Z[0-9A-Z]$/.test(gstin)) {
+      missing.push("Supplier GSTIN is not in the 15-character GSTIN format");
+    }
+    var bGstin = el("b_gstin").value.trim().toUpperCase();
+    if (bGstin && !/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][0-9A-Z]Z[0-9A-Z]$/.test(bGstin)) {
+      missing.push("Recipient GSTIN is not in the 15-character GSTIN format");
+    }
+    if (!bGstin && grand >= 50000) {
+      missing.push("Unregistered recipient above ₹50,000 — recipient's address and state are mandatory");
+    }
+    if (gstin && bGstin && gstin.slice(0, 2) !== bGstin.slice(0, 2) && el("supply_type").value === "intra") {
+      missing.push("State codes differ between the two GSTINs — this looks like an inter-state supply (IGST)");
+    }
+    if (gstin && bGstin && gstin.slice(0, 2) === bGstin.slice(0, 2) && el("supply_type").value === "inter") {
+      missing.push("Both GSTINs are from the same state — this should be CGST + SGST");
+    }
+    var anyHsn = Array.prototype.some.call(itemsBody.children, function (tr) {
+      return tr.querySelector(".f-hsn").value.trim();
+    });
+    if (!anyHsn) missing.push("HSN code on at least one line");
+    if (grand >= 50000 && !el("eway").value.trim()) {
+      missing.push("Consignment value is ₹50,000 or more — an e-way bill number is normally required");
+    }
+
+    var box = el("checklist");
+    if (missing.length) {
+      box.className = "notice";
+      box.innerHTML = "<b>Before you send this, fill in:</b><ul>" +
+        missing.map(function (m) { return "<li>" + m + "</li>"; }).join("") + "</ul>";
+    } else {
+      box.className = "notice ok";
+      box.textContent = "All mandatory tax-invoice particulars are present.";
+    }
+  }
+
+  /* ---------- seller profile saved locally, so the GSTIN is typed once ---------- */
+  var SELLER_FIELDS = ["s_legal", "s_addr", "s_state", "s_gstin", "s_pan", "s_contact",
+    "bk_name", "bk_acc", "bk_ifsc", "bk_bank", "bk_upi", "jurisdiction"];
+
+  function loadSeller() {
+    try {
+      var saved = JSON.parse(localStorage.getItem("akurock-invoice-seller") || "{}");
+      SELLER_FIELDS.forEach(function (id) { if (saved[id]) el(id).value = saved[id]; });
+    } catch (e) { /* private window or blocked storage: the form still works */ }
+  }
+  function saveSeller() {
+    try {
+      var data = {};
+      SELLER_FIELDS.forEach(function (id) { data[id] = el(id).value; });
+      localStorage.setItem("akurock-invoice-seller", JSON.stringify(data));
+      var btn = el("save-seller");
+      btn.textContent = "Saved ✓";
+      setTimeout(function () { btn.textContent = "Save my details"; }, 1600);
+    } catch (e) {
+      el("save-seller").textContent = "Can't save here";
+    }
+  }
+
+  document.addEventListener("input", recalc);
+  document.addEventListener("change", recalc);
+  el("add-row").addEventListener("click", function () { addRow(); });
+  el("print").addEventListener("click", function () { window.print(); });
+  el("save-seller").addEventListener("click", saveSeller);
+  el("new-invoice").addEventListener("click", function () {
+    ["inv_no", "po_no", "vehicle", "eway", "b_name", "b_addr", "b_state", "b_gstin",
+      "d_name", "d_addr", "d_state", "d_gstin"].forEach(function (id) { el(id).value = ""; });
+    itemsBody.innerHTML = "";
+    addRow();
+    el("inv_date").value = new Date().toISOString().slice(0, 10);
+  });
+
+  // Opens on the job from the WhatsApp thread so the layout is readable at a
+  // glance; overwrite the lines for the next customer.
+  loadSeller();
+  el("inv_date").value = new Date().toISOString().slice(0, 10);
+  el("pos").value = el("pos").value || "Rajasthan (08)";
+  el("b_name").value = "Shree Balaji Plylam";
+  el("b_addr").value = "127, Shiv Vatika A, Mangyawas, Mansarovar, Jaipur, Rajasthan";
+  el("b_state").value = "Rajasthan — 08";
+  el("b_gstin").value = "08ACPFS4093L1ZB";
+  addRow({ desc: "Plywood sheet 8 ft × 4 ft (11 sheets)", hsn: "4412", qty: 352, uqc: "SQF", rate: 90, gst: 18 });
+  recalc();
+})();
+</script>
+</body>
+</html>
