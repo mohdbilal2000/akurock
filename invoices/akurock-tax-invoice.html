@@ -181,6 +181,7 @@
     input, select, textarea { border-bottom: 0 !important; background: transparent !important; }
     input[type="date"] { display: none; }
     .dateprint { display: inline; }
+    .print-hide { display: none !important; }
     .cell.unused > *:not(.cell-head) { visibility: hidden; }
     .cell.unused .cell-head::after { content: " — not applicable"; text-transform: none; letter-spacing: 0; }
     .req-missing { background: transparent !important; }
@@ -254,8 +255,8 @@
       <div class="cell-head">Invoice details</div>
       <div class="kv">
         <span>Invoice no.</span><input id="inv_no" data-req placeholder="[ e.g. AKU/25-26/001 ]">
-        <span>Invoice date</span><span class="dateprint" id="inv_date_p"></span><input id="inv_date" type="date" data-req>
-        <span>Due date</span><span class="dateprint" id="due_date_p"></span><input id="due_date" type="date">
+        <span>Invoice date</span><div class="datewrap"><span class="dateprint" id="inv_date_p"></span><input id="inv_date" type="date" data-req></div>
+        <span>Due date</span><div class="datewrap"><span class="dateprint" id="due_date_p"></span><input id="due_date" type="date"></div>
         <span>Place of supply</span><input id="pos" data-req placeholder="Rajasthan (08)">
         <span>Reverse charge</span>
         <select id="rcm"><option>No</option><option>Yes</option></select>
@@ -273,7 +274,7 @@
         <span>Transport mode</span><input id="transport" placeholder="By road / hand delivery">
         <span>Vehicle no.</span><input id="vehicle" placeholder="Optional">
         <span>E-way bill no.</span><input id="eway" placeholder="Required above ₹50,000 consignment">
-        <span>Date of supply</span><span class="dateprint" id="supply_date_p"></span><input id="supply_date" type="date">
+        <span>Date of supply</span><div class="datewrap"><span class="dateprint" id="supply_date_p"></span><input id="supply_date" type="date"></div>
       </div>
     </div>
   </div>
@@ -585,6 +586,19 @@
       el(pair[0]).classList.toggle("unused", !used);
     });
 
+    ["s_contact", "bk_upi", "due_date", "s_pan"].forEach(function (id) {
+      var field = el(id);
+      var holder = field.parentElement;
+      var cell = (holder.tagName === "DD" || holder.classList.contains("datewrap")) ? holder : field;
+      var label = cell.previousElementSibling;
+      var empty = !field.value.trim();
+      cell.classList.toggle("print-hide", empty);
+      if (label) label.classList.toggle("print-hide", empty);
+    });
+
+    var jur = el("jurisdiction");
+    jur.style.width = Math.max(5, jur.value.length + 1) + "ch";
+
     el("rcm_echo").textContent = el("rcm").value;
     el("sign_firm").textContent = el("s_legal").value.trim() || "AKUROCK";
     checkCompliance(grand);
@@ -680,7 +694,7 @@
   // GSTIN, which is how a GSTIN is constructed.
   var SELLER_DEFAULTS = {
     s_legal: "Stone Art Installation",
-    s_addr: "75/04 Tagore Lane, Shipra Path, Mansarovar, Jaipur, Rajasthan",
+    s_addr: "75/04 Tagore Lane, Shipra Path, Mansarovar, Jaipur, Rajasthan \u2014 302020",
     s_state: "Rajasthan \u2014 08",
     s_gstin: "08BSFPA0657M1ZO",
     s_pan: "BSFPA0657M",
@@ -760,9 +774,9 @@
   autoGrow(el("bk_bank"));
   el("inv_date").value = new Date().toISOString().slice(0, 10);
   el("pos").value = el("pos").value || "Rajasthan (08)";
-  el("inv_no").value = "";
+  el("inv_no").value = "SAI/26-27/001";
   el("b_name").value = "Shree Balaji Plylam";
-  el("b_addr").value = "127, Shiv Vatika A, Mangyawas, Mansarovar, Jaipur, Rajasthan";
+  el("b_addr").value = "127, Shiv Vatika A, Mangyawas, Mansarovar, Jaipur, Rajasthan \u2014 302020";
   el("b_state").value = "Rajasthan — 08";
   el("b_gstin").value = "08ACPFS4093L1ZB";
   // 11 sheets of 8x4 ft = 352 sq ft, quoted at Rs.90/sq ft inclusive of GST,

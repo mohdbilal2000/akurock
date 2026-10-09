@@ -15,10 +15,12 @@ same as SBIN0006912, which is the other Malviya Nagar branch in the same PIN
 code. An IFSC identifies the branch, not the account, so check it once
 against a cheque leaf.
 
-One thing is still blank and has to come from you:
-
-- **Invoice number.** It must come from your own books as the next number in
-  an unbroken series — nobody can make one up for you.
+The file opens on invoice **SAI/26-27/001**, the first number of the FY
+2026-27 series. If Stone Art Installation has already issued invoices this
+financial year, change it to the next number in the books — GST wants one
+unbroken series, so no gaps and no reuse. Both PIN codes are 302020
+(Mansarovar, post office S.F.S. Mansarovar), and both GSTINs pass the
+check-character test.
 
 Correct or add anything, then press **Save my details**; what you save on
 that device wins over what ships in the file.
@@ -82,4 +84,4 @@ authorised-signatory block.
 - Everything is one file. To change the terms, the wordmark or the colours,
   edit the HTML directly.
 - `sample-output.pdf` is the layout filled with one example line, for
-  reference. `AKUROCK-tax-invoice-DRAFT.pdf` is the same sheet in draft mode.
+  reference. 
