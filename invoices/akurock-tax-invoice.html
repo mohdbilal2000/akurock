@@ -50,6 +50,7 @@
   }
   .notice ul { margin: 6px 0 0; padding-left: 18px; }
   .notice.ok { border-left-color: #0a7c3f; background: #f1f8f3; color: #0a7c3f; }
+  .notice.warn-soft { border-left-color: #a16207; background: #fdf8ec; color: #854d0e; }
 
   /* ---------- the sheet ---------- */
   .sheet {
@@ -93,8 +94,7 @@
 
   /* ---------- masthead ---------- */
   .masthead { display: flex; gap: 16px; align-items: flex-start; border-bottom: 2px solid var(--ink); padding-bottom: 8px; }
-  .wordmark { font-family: var(--font-display); font-size: 27px; letter-spacing: .14em; line-height: 1; font-weight: 700; }
-  .wordmark span { color: var(--accent); }
+  .logo { width: 146px; height: auto; display: block; }
   .tagline { font-size: 8.5px; letter-spacing: .22em; text-transform: uppercase; color: var(--muted); margin-top: 5px; }
   .seller { flex: 1; min-width: 0; }
   .seller-id { display: grid; grid-template-columns: auto 1fr; gap: 2px 8px; margin-top: 6px; font-size: 10px; }
@@ -125,7 +125,11 @@
   }
   .items tbody td { height: 22px; }
   .items .desc { width: 27%; }
-  .items input { border-bottom: 0; }
+  .items input, .items textarea { border-bottom: 0; }
+  .f-desc, #bk_bank {
+    resize: none; overflow: hidden; min-height: 1.35em; line-height: 1.35;
+    padding: 0; display: block;
+  }
   .del {
     border: 0; background: transparent; color: var(--warn); cursor: pointer;
     font-size: 13px; line-height: 1; padding: 0 2px;
@@ -177,6 +181,8 @@
     input, select, textarea { border-bottom: 0 !important; background: transparent !important; }
     input[type="date"] { display: none; }
     .dateprint { display: inline; }
+    .cell.unused > *:not(.cell-head) { visibility: hidden; }
+    .cell.unused .cell-head::after { content: " — not applicable"; text-transform: none; letter-spacing: 0; }
     .req-missing { background: transparent !important; }
     input::placeholder, textarea::placeholder { color: transparent !important; }
     body.draft input::placeholder, body.draft textarea::placeholder { color: #8d8a87 !important; }
@@ -194,6 +200,7 @@
 <div class="toolbar no-print">
   <strong>AKUROCK · Tax Invoice</strong>
   <button type="button" class="btn" id="add-row">Add item</button>
+  <button type="button" class="btn" id="incl-gst" title="Treat the rates you typed as GST-inclusive and convert them to taxable rates">Rate incl. GST &rarr; convert</button>
   <button type="button" class="btn" id="save-seller">Save my details</button>
   <button type="button" class="btn" id="new-invoice">New invoice</button>
   <label class="btn" style="display:flex;gap:7px;align-items:center;font-weight:600">
@@ -213,8 +220,13 @@
 
   <div class="masthead">
     <div class="seller">
-      <div class="wordmark">AKUROCK<span>.</span></div>
-      <div class="tagline">Stone acoustic wall panels</div>
+      <svg class="logo" role="img" aria-label="stonearts" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 337 85" xml:space="preserve">
+<style type="text/css"> .st0{fill:#0D0D0D;}
+</style>
+<g> <g> <path class="st0" d="M51.4,41.6H39.7c-0.5-2.4-1.7-3.8-3.8-3.8c-1.6,0-2.8,1.1-2.8,2.6c0,2,1.6,3.3,8.3,5c6.4,1.6,11,4.4,11,11.2 c0,7.5-7.1,11-15.6,11c-9.6,0-16.1-4-17-11.9h11.7c0.7,2.7,2.8,4.5,5.3,4.5c2.1,0,3.8-0.9,3.8-2.7c0-2.2-2.2-3.5-8.5-5 c-6.7-1.6-10.8-4.7-10.8-10.7c0-7,6.1-11.4,15.4-11.4C45.4,30.3,50.4,35.2,51.4,41.6z"/> <path class="st0" d="M68.7,51.9c0,1.2,0,2.5,0.1,3.4c0.3,3.6,1.4,4.4,7,4.1v7.4c-2.3,0.4-4.5,0.6-7,0.6c-8.8,0-11.4-2.7-11.8-8.1 c-0.1-2-0.1-3.7-0.1-5.7V38.9h-5.6v-7.4h5.6v-9.1h11.9v9.1h7.8v7.4h-7.8V51.9z"/> <path class="st0" d="M111.9,48.9c0,11.3-7.4,18.5-18.9,18.5C81.4,67.4,74,60.2,74,48.9c0-11.4,7.4-18.5,18.9-18.5 C104.5,30.3,111.9,37.5,111.9,48.9z M99.7,48.9c0-7.1-2.6-10.5-6.8-10.5s-6.8,3.4-6.8,10.5c0,7,2.6,10.5,6.8,10.5 S99.7,55.9,99.7,48.9z"/> <path class="st0" d="M148.3,46.6v19.9h-11.9v-18c0-1.1,0-3-0.1-4.8c-0.3-3.4-2.1-5.3-5.7-5.3c-3.6,0-6.2,3.5-6.2,11.5v16.6h-11.9 V31.3h11.9v5.5l3.2-4.4c2.2-1.3,4.7-2,7.9-2c7.3,0,11.5,3.4,12.5,9.6C148.2,41.7,148.3,43.7,148.3,46.6z"/> <path class="st0" d="M185.9,51.9h-24.6c0.6,5.9,3.2,7.5,6.5,7.5c3.4,0,5.4-1.7,5.9-4.4h11.7c-2,8-8.6,12.5-17.7,12.5 c-10.1,0-18.1-6-18.1-18.4c0-10.3,7.1-18.7,18.8-18.7s17.7,9,17.7,18.1C186.1,49.5,186,50.7,185.9,51.9z M161.7,44.6h11.9 c-0.7-4.2-2.7-6.2-5.9-6.2C164.7,38.4,162.5,40.2,161.7,44.6z"/> <path class="st0" d="M206.6,61.4l-1.5,3.7c-2.5,1.6-5.5,2.4-8.7,2.4c-5.8,0-11.3-3.6-11.3-10.4c0-7.5,7.1-12.1,19.1-12.1h2.2v-0.5 c0-0.7,0-1.5-0.1-2.6c-0.2-1.8-1.7-3.4-4.2-3.4c-2.8,0-4.4,1.8-4.6,4.8l-11.2,0.1c0.1-8.3,7.4-12.9,16.3-12.9 c11.2,0,15,5,15.5,11.4c0.1,1.8,0.2,3.8,0.2,6v9.9c0,2.6,0.1,5,0.7,8.9h-11.6L206.6,61.4z M206.5,53.9v-2.3 c-5.3-0.4-9.2,1-9.2,4.5c0,2.1,1.6,3.3,4,3.3S206.5,57.6,206.5,53.9z"/> <path class="st0" d="M245,30.5v9.7c-8.9-0.6-12.1,2.7-12.1,13.3v12.9H221V31.3h11.9v7.1l2.5-5c1.9-2.1,4.7-3.1,6.9-3.1 C243.4,30.3,244.2,30.4,245,30.5z"/> <path class="st0" d="M255.5,51.9c0,1.2,0,2.5,0.1,3.4c0.3,3.6,1.4,4.4,7,4.1v7.4c-2.3,0.4-4.5,0.6-7,0.6c-8.8,0-11.4-2.7-11.8-8.1 c-0.1-2-0.1-3.7-0.1-5.7V38.9H238v-7.4h5.6v-9.1h11.9v9.1h7.8v7.4h-7.8V51.9z"/> <path class="st0" d="M294.5,41.6h-11.7c-0.5-2.4-1.7-3.8-3.8-3.8c-1.7,0-2.8,1.1-2.8,2.6c0,2,1.6,3.3,8.3,5 c6.4,1.6,11,4.4,11,11.2c0,7.5-7.1,11-15.6,11c-9.6,0-16.1-4-17-11.9h11.7c0.7,2.7,2.8,4.5,5.3,4.5c2.1,0,3.8-0.9,3.8-2.7 c0-2.2-2.2-3.5-8.5-5c-6.7-1.6-10.8-4.7-10.8-10.7c0-7,6.1-11.4,15.4-11.4C288.5,30.3,293.5,35.2,294.5,41.6z"/> <path class="st0" d="M322,23.9c0,8.1-5.7,13.9-13.9,13.9c-8.2,0-13.9-5.7-13.9-13.9s5.7-13.9,13.9-13.9 C316.3,10.1,322,15.8,322,23.9z M318,23.9c0-5.9-4.1-10.2-9.9-10.2c-5.8,0-9.9,4.2-9.9,10.2s4.1,10.2,9.9,10.2 C314,34.1,318,29.9,318,23.9z M313.6,27c0.2,1.8,0.5,2.8,0.9,3.6H310c-0.2-0.8-0.3-1.7-0.5-2.7c-0.2-1.3-0.7-1.9-1.9-1.9h-0.9v4.6 h-4V16.5h5.1c0.7,0,1.2,0,1.8,0.1c3.2,0.3,4.6,1.9,4.6,4c0,1.8-1.1,3-2.6,3.4C313,24.4,313.4,25.6,313.6,27z M310,21.2 c0-0.9-0.5-1.6-1.3-1.7c-0.5-0.1-0.7-0.1-1.3-0.1h-0.7V23h0.6c0.5,0,0.9,0,1.3-0.1C309.5,22.8,310,22,310,21.2z"/> </g>
+</g>
+</svg>
+      <div class="tagline">AKUROCK® stone acoustic wall panels</div>
       <dl class="seller-id">
         <dt>Legal name</dt><dd><input id="s_legal" data-req placeholder="[ Registered firm / company name ]"></dd>
         <dt>Address</dt><dd><textarea id="s_addr" data-req placeholder="[ Building, street, area, city, PIN ]"></textarea></dd>
@@ -254,7 +266,7 @@
         </select>
       </div>
     </div>
-    <div class="cell">
+    <div class="cell" id="transport_cell">
       <div class="cell-head">Transport / reference</div>
       <div class="kv">
         <span>Buyer order no.</span><input id="po_no" placeholder="Optional">
@@ -276,7 +288,7 @@
         <span>GSTIN / UIN</span><input id="b_gstin" placeholder="Leave blank if unregistered">
       </div>
     </div>
-    <div class="cell">
+    <div class="cell" id="ship_cell">
       <div class="cell-head">Ship to (delivery address)</div>
       <div class="kv">
         <span>Name</span><input id="d_name" placeholder="Same as billing">
@@ -356,7 +368,7 @@
         <span>Account name</span><input id="bk_name" data-req placeholder="[ Account holder name ]">
         <span>Account no.</span><input id="bk_acc" data-req placeholder="[ Account number ]">
         <span>IFSC</span><input id="bk_ifsc" data-req placeholder="[ IFSC code ]">
-        <span>Bank &amp; branch</span><input id="bk_bank" placeholder="[ Bank, branch ]">
+        <span>Bank &amp; branch</span><textarea id="bk_bank" rows="1" placeholder="[ Bank, branch ]"></textarea>
         <span>UPI</span><input id="bk_upi" placeholder="[ UPI ID ]">
       </div>
       <div class="section-gap"></div>
@@ -437,7 +449,7 @@
     var tr = document.createElement("tr");
     tr.innerHTML =
       '<td class="num idx"></td>' +
-      '<td><input class="f-desc" placeholder="Item description"></td>' +
+      '<td><textarea class="f-desc" rows="1" placeholder="Item description"></textarea></td>' +
       '<td><input class="f-hsn" placeholder="4412"></td>' +
       '<td><input class="f-qty num" inputmode="decimal"></td>' +
       '<td><input class="f-uqc" placeholder="SQF"></td>' +
@@ -466,7 +478,18 @@
     return tr;
   }
 
-  function addRow(item) { itemsBody.appendChild(rowTemplate(item)); recalc(); }
+  function autoGrow(field) {
+    if (!field) return;
+    field.style.height = "auto";
+    field.style.height = field.scrollHeight + "px";
+  }
+
+  function addRow(item) {
+    var tr = rowTemplate(item);
+    itemsBody.appendChild(tr);
+    autoGrow(tr.querySelector(".f-desc"));
+    recalc();
+  }
 
   function recalc() {
     var inter = el("supply_type").value === "inter";
@@ -553,6 +576,15 @@
       el(id + "_p").textContent = raw ? raw.slice(8, 10) + "/" + raw.slice(5, 7) + "/" + raw.slice(0, 4) : "";
     });
 
+    // An empty "Ship to" or transport block is clutter on paper. Hide the
+    // ones nobody filled so the printed invoice stays as short as the job is.
+    [["ship_cell", ["d_name", "d_addr", "d_state", "d_gstin"]],
+     ["transport_cell", ["po_no", "transport", "vehicle", "eway", "supply_date"]]
+    ].forEach(function (pair) {
+      var used = pair[1].some(function (id) { return el(id).value.trim(); });
+      el(pair[0]).classList.toggle("unused", !used);
+    });
+
     el("rcm_echo").textContent = el("rcm").value;
     el("sign_firm").textContent = el("s_legal").value.trim() || "AKUROCK";
     checkCompliance(grand);
@@ -571,9 +603,13 @@
     ["pos", "Place of supply"],
     ["b_name", "Recipient's name"],
     ["b_addr", "Recipient's address"],
-    ["b_state", "Recipient's state and code"],
+    ["b_state", "Recipient's state and code"]
+  ];
+
+  // Not required by Rule 46, but a bill without them is a bill nobody can pay.
+  var RECOMMENDED = [
     ["bk_acc", "Bank account number"],
-    ["bk_ifsc", "IFSC code"]
+    ["bk_ifsc", "IFSC code (needed for any domestic transfer \u2014 SWIFT is not)"]
   ];
 
   function checkCompliance(grand) {
@@ -611,23 +647,58 @@
       missing.push("Consignment value is ₹50,000 or more — an e-way bill number is normally required");
     }
 
+    var advisory = [];
+    RECOMMENDED.forEach(function (pair) {
+      var field = el(pair[0]);
+      var empty = !field.value.trim();
+      field.classList.toggle("req-missing", empty);
+      if (empty) advisory.push(pair[1]);
+    });
+
     var box = el("checklist");
+    var html = "";
     if (missing.length) {
-      box.className = "notice";
-      box.innerHTML = "<b>Before you send this, fill in:</b><ul>" +
+      html += "<b>Required by law \u2014 still missing:</b><ul>" +
         missing.map(function (m) { return "<li>" + m + "</li>"; }).join("") + "</ul>";
+    }
+    if (advisory.length) {
+      html += (html ? "<div style=\"height:6px\"></div>" : "") +
+        "<b>Recommended before sending:</b><ul>" +
+        advisory.map(function (m) { return "<li>" + m + "</li>"; }).join("") + "</ul>";
+    }
+    if (html) {
+      box.className = missing.length ? "notice" : "notice warn-soft";
+      box.innerHTML = html;
     } else {
       box.className = "notice ok";
       box.textContent = "All mandatory tax-invoice particulars are present.";
     }
   }
 
+
+  // Stone Art Installation's own particulars. PAN is characters 3-12 of the
+  // GSTIN, which is how a GSTIN is constructed.
+  var SELLER_DEFAULTS = {
+    s_legal: "Stone Art Installation",
+    s_addr: "75/04 Tagore Lane, Shipra Path, Mansarovar, Jaipur, Rajasthan",
+    s_state: "Rajasthan \u2014 08",
+    s_gstin: "08BSFPA0657M1ZO",
+    s_pan: "BSFPA0657M",
+    bk_name: "Stone Art Installation",
+    bk_acc: "37990375434",
+    bk_bank: "State Bank of India, Malviya Nagar Industrial Area, Jaipur, Rajasthan 302017 \u00b7 SWIFT SBININBBJ58",
+    jurisdiction: "Jaipur"
+  };
+
   /* ---------- seller profile saved locally, so the GSTIN is typed once ---------- */
   var SELLER_FIELDS = ["s_legal", "s_addr", "s_state", "s_gstin", "s_pan", "s_contact",
     "bk_name", "bk_acc", "bk_ifsc", "bk_bank", "bk_upi", "jurisdiction"];
 
   function loadSeller() {
+    Object.keys(SELLER_DEFAULTS).forEach(function (id) { el(id).value = SELLER_DEFAULTS[id]; });
     try {
+      // Anything edited and saved on this device wins over the built-in
+      // defaults, so correcting a detail once is permanent.
       var saved = JSON.parse(localStorage.getItem("akurock-invoice-seller") || "{}");
       SELLER_FIELDS.forEach(function (id) { if (saved[id]) el(id).value = saved[id]; });
     } catch (e) { /* private window or blocked storage: the form still works */ }
@@ -645,9 +716,30 @@
     }
   }
 
-  document.addEventListener("input", recalc);
+  document.addEventListener("input", function (e) {
+    if (e.target.classList.contains("f-desc") || e.target.id === "bk_bank") autoGrow(e.target);
+    recalc();
+  });
   document.addEventListener("change", recalc);
   el("add-row").addEventListener("click", function () { addRow(); });
+  // Trade here is quoted at a per-sqft price that already contains the tax.
+  // A tax invoice has to show the taxable value, so the typed rate is divided
+  // back out once, in place, rather than left to be worked out by hand.
+  el("incl-gst").addEventListener("click", function () {
+    var inter = el("supply_type").value === "inter";
+    Array.prototype.forEach.call(itemsBody.children, function (tr) {
+      var rate = num(tr.querySelector(".f-rate").value);
+      var typed = num(tr.querySelector(".f-rate1").value);
+      var gst = inter ? typed * 2 : typed * 2;
+      if (rate > 0 && gst > 0) {
+        tr.querySelector(".f-rate").value = (rate / (1 + gst / 100)).toFixed(2);
+      }
+    });
+    recalc();
+    var btn = el("incl-gst");
+    btn.textContent = "Converted \u2713";
+    setTimeout(function () { btn.innerHTML = "Rate incl. GST &rarr; convert"; }, 1800);
+  });
   el("print").addEventListener("click", function () { window.print(); });
   el("save-seller").addEventListener("click", saveSeller);
   el("draft_mode").addEventListener("change", function () {
@@ -664,13 +756,20 @@
   // Opens on the job from the WhatsApp thread so the layout is readable at a
   // glance; overwrite the lines for the next customer.
   loadSeller();
+  autoGrow(el("bk_bank"));
   el("inv_date").value = new Date().toISOString().slice(0, 10);
   el("pos").value = el("pos").value || "Rajasthan (08)";
+  el("inv_no").value = "";
   el("b_name").value = "Shree Balaji Plylam";
   el("b_addr").value = "127, Shiv Vatika A, Mangyawas, Mansarovar, Jaipur, Rajasthan";
   el("b_state").value = "Rajasthan — 08";
   el("b_gstin").value = "08ACPFS4093L1ZB";
-  addRow({ desc: "Plywood sheet 8 ft × 4 ft (11 sheets)", hsn: "4412", qty: 352, uqc: "SQF", rate: 90, gst: 18 });
+  // 11 sheets of 8x4 ft = 352 sq ft, quoted at Rs.90/sq ft inclusive of GST,
+  // so the taxable rate is 90 / 1.18 and the invoice lands on Rs.31,680.
+  addRow({
+    desc: "Plywood sheet 8 ft × 4 ft — 11 sheets (@ ₹90/sq ft incl. GST)",
+    hsn: "4412", qty: 352, uqc: "SQF", rate: 76.27, gst: 18
+  });
   recalc();
 })();
 </script>

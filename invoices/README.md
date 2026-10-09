@@ -4,11 +4,28 @@
 in any browser (phone or laptop), fill the fields, then **Print / Save PDF**.
 No internet, no install, no account.
 
-## First time
+## Already filled in
 
-Fill your own details once — legal name, address, state, GSTIN, PAN, contact,
-and the bank block — then press **Save my details**. The browser remembers
-them for every future invoice on that device. Nothing is uploaded anywhere.
+Stone Art Installation's particulars ship with the file: legal name, address,
+Rajasthan — 08, GSTIN 08BSFPA0657M1ZO, PAN BSFPA0657M, and the SBI account.
+Two things are still blank and have to come from you:
+
+- **IFSC code.** SWIFT (SBININBBJ58) only works for money arriving from
+  abroad; a domestic NEFT/RTGS/IMPS transfer needs the IFSC of the Malviya
+  Nagar Industrial Area branch. It is printed on any cheque leaf.
+- **Invoice number.** It must come from your own books as the next number in
+  an unbroken series — nobody can make one up for you.
+
+Correct or add anything, then press **Save my details**; what you save on
+that device wins over what ships in the file.
+
+## Prices quoted with GST already inside
+
+Trade rates here are usually quoted per sq ft *including* GST. A tax invoice
+has to show the taxable value, so type the inclusive rate and press
+**Rate incl. GST → convert** once: each rate is divided by 1 + the GST rate
+in place. ₹90/sq ft becomes ₹76.27, and the grand total lands back on the
+₹31,680 that was quoted.
 
 ## Every invoice after that
 
