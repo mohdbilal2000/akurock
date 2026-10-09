@@ -212,7 +212,13 @@
     </select>
   </label>
   <button type="button" class="btn" id="add-row">Add item</button>
-  <button type="button" class="btn gst-only" id="incl-gst" title="Treat the rates you typed as GST-inclusive and convert them to taxable rates">Rate incl. GST &rarr; convert</button>
+  <label class="btn gst-only" style="display:flex;gap:7px;align-items:center;font-weight:600" title="Whether the rate you type already contains the GST">
+    Rate
+    <select id="rate_mode" style="width:auto;border:0;background:transparent;color:inherit;font-weight:700">
+      <option value="incl" style="color:#000">includes GST</option>
+      <option value="excl" style="color:#000">excludes GST</option>
+    </select>
+  </label>
   <button type="button" class="btn" id="save-seller">Save my details</button>
   <button type="button" class="btn" id="new-invoice">New invoice</button>
   <label class="btn" style="display:flex;gap:7px;align-items:center;font-weight:600">
@@ -320,7 +326,7 @@
         <th rowspan="2" class="gst-col" style="width:50px">HSN</th>
         <th rowspan="2" style="width:46px">Qty</th>
         <th rowspan="2" style="width:40px">UQC</th>
-        <th rowspan="2" style="width:52px">Rate (₹)</th>
+        <th rowspan="2" id="rate_head" style="width:52px">Rate (₹)</th>
         <th rowspan="2" style="width:48px">Disc. (₹)</th>
         <th rowspan="2" id="amount_head" style="width:62px">Taxable (₹)</th>
         <th colspan="2" class="gst-col" id="tax1_head">CGST</th>
@@ -508,12 +514,15 @@
   }
 
   function isPlain() { return el("bill_type").value === "plain"; }
+  function round2(n) { return Math.round(n * 100) / 100; }
 
   function recalc() {
     var plain = isPlain();
     document.body.classList.toggle("plain", plain);
     var inter = el("supply_type").value === "inter";
+    var inclusive = el("rate_mode").value === "incl";
 
+    el("rate_head").textContent = (!plain && inclusive) ? "Rate incl. GST (₹)" : "Rate (₹)";
     el("doc_title").textContent = plain ? "Invoice" : "Tax Invoice";
     el("eoe_kind").textContent = plain ? "invoice" : "tax invoice";
     el("amount_head").textContent = plain ? "Amount (\u20b9)" : "Taxable (\u20b9)";
@@ -538,7 +547,7 @@
       var qty = num(tr.querySelector(".f-qty").value);
       var rate = num(tr.querySelector(".f-rate").value);
       var disc = num(tr.querySelector(".f-disc").value);
-      var lineTaxable = Math.max(0, qty * rate - disc);
+      var lineAmount = Math.max(0, qty * rate - disc);
 
       // One rate box is typed; intra-state splits it in half, inter-state
       // charges the whole thing as IGST. Typing 9 must never silently
@@ -547,8 +556,21 @@
       var r1 = inter ? typed * 2 : typed;
       var r2 = inter ? 0 : typed;
 
-      var a1 = lineTaxable * r1 / 100;
-      var a2 = lineTaxable * r2 / 100;
+      var lineTaxable, a1, a2;
+      if (!plain && inclusive) {
+        // The typed rate already contains the tax (Rs.90 per sq ft, GST
+        // inside). Show the rate as typed and derive the taxable value from
+        // it, rounded to the paisa at each step so the printed columns add
+        // up to the printed total without a stray paisa.
+        lineTaxable = round2(lineAmount / (1 + (r1 + r2) / 100));
+        var lineTax = round2(lineAmount - lineTaxable);
+        a1 = (r1 + r2) ? round2(lineTax * r1 / (r1 + r2)) : 0;
+        a2 = round2(lineTax - a1);
+      } else {
+        lineTaxable = lineAmount;
+        a1 = lineTaxable * r1 / 100;
+        a2 = lineTaxable * r2 / 100;
+      }
 
       tr.querySelector(".f-taxable").textContent = money(lineTaxable);
       tr.querySelector(".f-rate2").textContent = inter ? "" : (r2 ? r2 : "");
@@ -802,25 +824,9 @@
   });
   document.addEventListener("change", recalc);
   el("bill_type").addEventListener("change", recalc);
+  el("rate_mode").addEventListener("change", recalc);
   el("add-row").addEventListener("click", function () { addRow(); });
-  // Trade here is quoted at a per-sqft price that already contains the tax.
-  // A tax invoice has to show the taxable value, so the typed rate is divided
-  // back out once, in place, rather than left to be worked out by hand.
-  el("incl-gst").addEventListener("click", function () {
-    var inter = el("supply_type").value === "inter";
-    Array.prototype.forEach.call(itemsBody.children, function (tr) {
-      var rate = num(tr.querySelector(".f-rate").value);
-      var typed = num(tr.querySelector(".f-rate1").value);
-      var gst = inter ? typed * 2 : typed * 2;
-      if (rate > 0 && gst > 0) {
-        tr.querySelector(".f-rate").value = (rate / (1 + gst / 100)).toFixed(2);
-      }
-    });
-    recalc();
-    var btn = el("incl-gst");
-    btn.textContent = "Converted \u2713";
-    setTimeout(function () { btn.innerHTML = "Rate incl. GST &rarr; convert"; }, 1800);
-  });
+
   el("print").addEventListener("click", function () { window.print(); });
   el("save-seller").addEventListener("click", saveSeller);
   el("draft_mode").addEventListener("change", function () {
@@ -840,7 +846,8 @@
   autoGrow(el("bk_bank"));
   el("inv_date").value = new Date().toISOString().slice(0, 10);
   el("pos").value = el("pos").value || "Rajasthan (08)";
-  el("bill_type").value = "plain";
+  el("bill_type").value = "tax";
+  el("rate_mode").value = "incl";
   el("inv_no").value = "SAI/26-27/001";
   el("b_name").value = "Shree Balaji Plylam";
   el("b_addr").value = "127, Shiv Vatika A, Mangyawas, Mansarovar, Jaipur, Rajasthan \u2014 302020";
@@ -849,7 +856,7 @@
   // 11 sheets of 8x4 ft = 352 sq ft at Rs.90 per sq ft = Rs.31,680.00. The
   // rate stays at the full 90; no GST is carved out of it or added to it.
   addRow({
-    desc: "Plywood sheet 8 ft × 4 ft — 11 sheets (@ ₹90 per sq ft)",
+    desc: "Plywood sheet 8 ft × 4 ft — 11 sheets (@ ₹90 per sq ft, incl. GST)",
     hsn: "4412", qty: 352, uqc: "SQF", rate: 90, gst: 18
   });
   recalc();
