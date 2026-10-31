@@ -23,6 +23,7 @@ const nextConfig: NextConfig = {
       './public/data/mock-cms-data.json',
     ],
     '/api/data/mock-cms-data': ['./public/data/mock-cms-data.json'],
+    '/admin/invoice': ['./invoices/akurock-tax-invoice.html'],
   },
 
   async redirects() {
