@@ -83,6 +83,11 @@ export function proxy(request: NextRequest) {
   // CMS page — it must not get locale-prefixed to /de/visualizer, which
   // would fall through to the [locale]/[...slug] catch-all and serve the
   // legacy public/html/visualizer.html 2D tool instead.
+  // Public invoice demo: a route handler, not a CMS page, so no locale prefix.
+  if (pathname === '/invoice-demo') {
+    return NextResponse.next();
+  }
+
   if (pathname === '/visualizer' || pathname.startsWith('/visualizer/')) {
     return NextResponse.next();
   }
