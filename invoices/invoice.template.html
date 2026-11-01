@@ -276,6 +276,12 @@
     </div>
   </div>
   <div class="setup-row">
+    <span>Discount</span>
+    <div class="inline">
+      <label><input type="checkbox" id="disc-on"> Give a discount on items (₹ off per line)</label>
+    </div>
+  </div>
+  <div class="setup-row">
     <span>PDF folder</span>
     <div class="inline">
       <button type="button" class="add-row" id="folder-pick" style="margin:0">Choose folder</button>
@@ -745,9 +751,11 @@
     $("ref-head").textContent = isExport ? "Order & shipment" : doc === "proforma" ? "Order & validity" : "Order & transport";
 
     // ----- item table header -----
+    var showDisc = $("disc-on").checked || Array.prototype.some.call(body.querySelectorAll(".f-disc"), function (f) { return Number(f.value) > 0; });
+    if (showDisc && !$("disc-on").checked) $("disc-on").checked = true;
     var rateLabel = "Rate" + (isExport ? " (" + cur + ")" : " (₹)") + (res.inclusive ? " incl. GST" : "");
     var h = '<th>#</th><th class="c-desc">Description</th><th class="c-hsn">HSN/SAC</th><th>Qty</th><th>Unit</th>' +
-      "<th>" + rateLabel + '</th><th>Disc.</th><th>' + (res.chargesTax && !isExport ? "Taxable" : "Amount") + (isExport ? " (" + cur + ")" : " (₹)") + "</th>";
+      "<th>" + rateLabel + "</th>" + (showDisc ? "<th>Discount" + (isExport ? " (" + cur + ")" : " (₹)") + "</th>" : "") + "<th>" + (res.chargesTax && !isExport ? "Taxable" : "Amount") + (isExport ? " (" + cur + ")" : " (₹)") + "</th>";
     if (res.chargesTax) h += '<th class="c-gst">GST %</th>';
     if (showLineTax) h += "<th>" + heads[0] + " (₹)</th>" + (heads[1] ? "<th>" + heads[1] + " (₹)</th>" : "");
     if (showLineTax) h += "<th>Total (₹)</th>";
@@ -762,7 +770,7 @@
       var l = res.lines[i];
       tr.querySelector(".c-idx").textContent = i + 1;
       Array.prototype.forEach.call(tr.querySelectorAll(".c-pk"), function (c) { c.hidden = !packing; });
-      Array.prototype.forEach.call(tr.querySelectorAll(".f-rate, .f-disc"), function (f) { f.parentElement.hidden = packing; });
+      Array.prototype.forEach.call(tr.querySelectorAll(".f-rate, .f-disc"), function (f) { f.parentElement.hidden = packing || (f.classList.contains("f-disc") && !showDisc); });
       tr.querySelector(".c-taxable").hidden = packing;
       if (packing) {
         ["c-gst", "c-t1", "c-t2", "c-total"].forEach(function (k) { tr.querySelector("." + k).hidden = true; });
