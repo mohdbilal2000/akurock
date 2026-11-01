@@ -10,7 +10,13 @@ export function buildInvoiceHtml() {
   const template = readFileSync(path.join(root, "invoices/invoice.template.html"), "utf8");
   const engine = readFileSync(path.join(root, "lib/invoice/engine.js"), "utf8");
   const logo = readFileSync(path.join(root, "invoices/logo.svg.html"), "utf8").trim();
-  return template.replace("/*@ENGINE@*/", () => engine).replace("/*@LOGO@*/", () => logo);
+  const h2c = readFileSync(path.join(root, "lib/invoice/vendor/html2canvas.min.js"), "utf8");
+  const jspdf = readFileSync(path.join(root, "lib/invoice/vendor/jspdf.umd.min.js"), "utf8");
+  return template
+    .replace("/*@HTML2CANVAS@*/", () => h2c)
+    .replace("/*@JSPDF@*/", () => jspdf)
+    .replace("/*@ENGINE@*/", () => engine)
+    .replace("/*@LOGO@*/", () => logo);
 }
 
 // The installable app is the same sheet plus a manifest link and the

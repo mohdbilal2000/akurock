@@ -25,6 +25,24 @@ opened straight from WhatsApp.
 Numbers you print are remembered on that device. **Save my details** keeps
 your firm and bank details; the current invoice is kept as a draft.
 
+## Saving PDFs into month folders
+
+Choose a folder once (setup → *PDF folder*, Chrome or Edge on a computer).
+Every **Save PDF** then files the document itself:
+
+    <folder>\FY 2026-27\2026-11 November\
+        2026-11-01  SAI-26-27-001  Tax Invoice  Shree Balaji Plylam.pdf
+        2026-11-01  SAI-26-27-001  Packing List  Shree Balaji Plylam.pdf
+
+Financial-year folders roll over on 1 April; the date leads the file name
+so each month folder sorts in date order; number, type and customer make
+any document findable with Windows search. Without a chosen folder (or on a
+phone) the same file name goes to Downloads. PDFs are drawn with the
+bundled html2canvas and jsPDF (MIT, `lib/invoice/vendor/`), so this works
+offline too.
+
+The stamp prints **as it is** by default; *Clean background* is optional.
+
 ## Measurement and sharing
 
 - **Pieces × size**: under each description, type pieces and a size such as
