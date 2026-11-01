@@ -237,3 +237,69 @@ describe("compliance checks", () => {
     expect(run(full({ items })).warnings.join(" ")).toMatch(/not a standard GST rate/);
   });
 });
+
+describe("other charges (freight etc.)", () => {
+  // Khandelwal Packaging invoice 1037: five items 12,795 + freight 500, all
+  // 18% intra-state, CGST 1,196.55 + SGST 1,196.55, round off -0.10 = 15,688.
+  const khandelwal = inv({
+    items: [
+      { desc: "Paint Roller", hsn: "9603", qty: 1000, unit: "NOS", rate: 6.5, gstRate: 18 },
+      { desc: "Self Adhesive Tape", hsn: "3919", qty: 1, unit: "BOX", rate: 3350, gstRate: 18 },
+      { desc: "16 mm Pet Strip", hsn: "3920", qty: 1, unit: "ROLL", rate: 1760, gstRate: 18 },
+      { desc: "Clip 3/4\"", hsn: "7326", qty: 5, unit: "KGS", rate: 85, gstRate: 18 },
+      { desc: "Packing Machine (Plier)", hsn: "8207", qty: 2, unit: "NOS", rate: 380, gstRate: 18 },
+    ],
+    charges: [{ label: "Freight Charges", sac: "996521", amount: 500, gstRate: 18 }],
+  });
+
+  it("reproduces a real supplier's invoice to the paisa", () => {
+    const r = E.computeInvoice(khandelwal);
+    expect(r.totals.taxable).toBe(13295);
+    expect(r.totals.tax.CGST).toBe(1196.55);
+    expect(r.totals.tax.SGST).toBe(1196.55);
+    expect(r.roundOff).toBe(-0.1);
+    expect(r.payable).toBe(15688);
+    expect(r.taxWords).toBe("Rupees two thousand three hundred and ninety-three and ten paise only");
+    expect(r.hsnSummary.find((h: { hsn: string }) => h.hsn === "996521").taxTotal).toBe(90);
+  });
+  it("never treats a charge as GST-inclusive, even when item rates are", () => {
+    const r = E.computeInvoice(inv({ rateIncludesTax: true, charges: [{ label: "Freight", sac: "996521", amount: 500, gstRate: 18 }] }));
+    const freight = r.lines.find((l: { isCharge: boolean }) => l.isCharge);
+    expect(freight.taxable).toBe(500);
+    expect(freight.taxTotal).toBe(90);
+    expect(r.payable).toBe(31680 + 590);
+  });
+  it("ignores blank charge rows and checks filled ones", () => {
+    const blank = E.computeInvoice(inv({ charges: [{ label: "", sac: "", amount: "", gstRate: 18 }] }));
+    expect(blank.lines).toHaveLength(1);
+    const o = { ...khandelwal, number: "1037", date: "2026-10-29", posStateCode: "08",
+      seller: { legalName: "x", address: "y", gstin: "08BSFPA0657M1ZO" }, customer: { name: "a", address: "b" },
+      charges: [{ label: "", sac: "99", amount: 0, gstRate: 18 }] };
+    const errs = E.checkInvoice(o, E.computeInvoice(o)).errors.join(" ");
+    expect(errs).toMatch(/Charge 1: name is missing/);
+    expect(errs).toMatch(/Charge 1: amount/);
+    expect(errs).toMatch(/Charge 1: SAC/);
+  });
+});
+
+describe("packing list", () => {
+  it("totals boxes and weights, and a single-unit quantity", () => {
+    const p = E.computePacking([
+      { desc: "Holder", qty: 500, unit: "PCS", boxes: 14, grossKg: 17.5, netKg: 16 },
+      { desc: "Bowls", qty: 954, unit: "PCS", boxes: 23, grossKg: 720, netKg: 700 },
+      { desc: "Sticks", qty: 58, unit: "PCS", boxes: "", grossKg: "", netKg: "" },
+    ]);
+    expect(p.totals).toMatchObject({ qty: 1512, boxes: 37, grossKg: 737.5, netKg: 716, unit: "PCS", mixedUnits: false });
+  });
+  it("flags mixed units instead of adding pieces to kilograms", () => {
+    expect(E.computePacking([{ qty: 1, unit: "PCS" }, { qty: 2, unit: "KGS" }]).totals.mixedUnits).toBe(true);
+  });
+  it("adds weights without floating-point drift", () => {
+    const rows = Array.from({ length: 12 }, () => ({ qty: 448, unit: "PCS", boxes: 4, grossKg: 114.8 }));
+    expect(E.computePacking(rows).totals.grossKg).toBe(1377.6);
+  });
+  it("refuses net weight above gross weight", () => {
+    expect(E.checkPacking([{ grossKg: 10, netKg: 12 }]).errors[0]).toMatch(/net weight is more than gross/);
+    expect(E.checkPacking([{ grossKg: 12, netKg: 10, boxes: 2 }]).errors).toEqual([]);
+  });
+});

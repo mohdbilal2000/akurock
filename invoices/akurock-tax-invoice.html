@@ -130,6 +130,20 @@
   .eoe { font-size: 8.5px; color: var(--muted); text-align: right; margin-top: 6px; letter-spacing: .06em; }
 
   [hidden] { display: none !important; }
+  .view-seg button { color: #fff; background: transparent; border-color: rgba(255,255,255,.4); }
+  .view-seg button[aria-pressed="true"] { background: #fff; color: var(--ink); border-color: #fff; }
+  .charges { border-top: 0; margin-top: 8px; }
+  .stamp-slot { height: 22mm; display: flex; justify-content: flex-end; align-items: flex-end; }
+  .stamp-slot img { max-height: 22mm; max-width: 60mm; }
+  .cust-seal { margin-top: 8mm; padding-top: 3px; border-top: 1px dashed var(--rule); font-size: 9px; color: var(--muted); text-align: left; width: 60mm; }
+  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 20; display: flex; align-items: flex-start; justify-content: center; padding: 40px 16px; overflow: auto; }
+  .panel { background: #fff; border-radius: 10px; width: min(900px, 100%); padding: 16px; font-size: 12px; }
+  .panel h2 { font-family: var(--font-display); margin: 0 0 10px; font-size: 18px; }
+  .panel table { font-size: 12px; }
+  .panel th, .panel td { border-bottom: 1px solid var(--wash); padding: 6px 4px; text-align: left; }
+  .panel .tools { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; align-items: center; }
+  .panel input[type=search] { flex: 1; min-width: 160px; border: 1px solid var(--rule); border-radius: 6px; padding: 6px 8px; }
+  .panel .act { cursor: pointer; border: 1px solid var(--rule); background: #fff; border-radius: 6px; padding: 3px 8px; margin-right: 4px; }
 
   @media screen and (max-width: 820px) {
     .setup, .notice { margin-left: 12px; margin-right: 12px; }
@@ -146,7 +160,8 @@
   @media print {
     @page { size: A4; margin: 10mm; }
     html, body { background: #fff; }
-    .no-print, .toolbar, .setup, .notice, .del, .add-row, .c-x { display: none !important; }
+    .no-print, .toolbar, .setup, .notice, .del, .add-row, .c-x, .overlay { display: none !important; }
+    .charges-empty { display: none !important; }
     .sheet { width: auto; min-height: 0; margin: 0; padding: 0; border: 0; box-shadow: none; }
     .sheet input, .sheet select, .sheet textarea { border-bottom: 0 !important; background: transparent !important; }
     .sheet select { appearance: none; -webkit-appearance: none; }
@@ -165,6 +180,11 @@
 
 <div class="toolbar">
   <strong>Invoices</strong>
+  <div class="seg view-seg" id="view-seg" role="group" aria-label="Document view">
+    <button type="button" data-view="invoice" aria-pressed="true">Invoice</button>
+    <button type="button" data-view="packing" aria-pressed="false">Packing list</button>
+  </div>
+  <button type="button" class="btn" id="btn-history">History</button>
   <button type="button" class="btn" id="btn-new">New invoice</button>
   <button type="button" class="btn" id="btn-save">Save my details</button>
   <button type="button" class="btn btn-primary" id="btn-print">Print / Save PDF</button>
@@ -212,6 +232,16 @@
     <span>LUT ARN</span>
     <div class="inline"><input id="lutArn" size="22" placeholder="e.g. AD0804260012345"><span class="hint">Your Letter of Undertaking for this financial year.</span></div>
   </div>
+  <div class="setup-row">
+    <span>Stamp &amp; sign</span>
+    <div class="inline">
+      <label class="add-row" style="margin:0">Upload stamp image<input type="file" id="stamp-file" accept="image/*" hidden></label>
+      <button type="button" class="add-row" id="stamp-remove" style="margin:0">Remove</button>
+      <label><input type="checkbox" id="stamp-show" checked> Show on documents</label>
+      <img id="stamp-preview" alt="" style="max-height:40px;display:none">
+      <span class="hint">Saved only on this computer. The white background is removed automatically.</span>
+    </div>
+  </div>
   <div class="setup-row" id="row-bos">
     <span>Reason no GST</span>
     <div class="seg" data-field="bosReason">
@@ -241,6 +271,7 @@
         <dt>PAN</dt><dd class="readonly" id="s_pan_out">—</dd>
         <dt class="opt-row" data-for="s_contact">Contact</dt><dd class="opt-row" data-for="s_contact"><input id="s_contact" data-seller placeholder="Phone · email"></dd>
         <dt class="export-only opt-row" data-for="s_iec">IEC</dt><dd class="export-only opt-row" data-for="s_iec"><input id="s_iec" data-seller placeholder="Import Export Code"></dd>
+        <dt class="export-only opt-row" data-for="lutArn">LUT</dt><dd class="export-only opt-row readonly" data-for="lutArn" id="s_lut_out"></dd>
       </dl>
     </div>
     <div class="doc-title">
@@ -264,8 +295,8 @@
         <div style="display:flex;gap:6px"><input id="inv_no" placeholder="SAI/26-27/001"><button type="button" class="add-row no-print" id="btn-next" style="margin:0;padding:1px 8px">Next no.</button></div>
         <span class="k">Date</span><input id="inv_date" type="date">
         <span class="k opt-row" data-for="due_date" id="due-label">Due date</span><input class="opt-row" data-for="due_date" id="due_date" type="date">
-        <span class="k">Place of supply</span>
-        <div><select id="pos" class="domestic-only"></select><span class="export-only readonly">96 — Outside India</span></div>
+        <span class="k inv-only">Place of supply</span>
+        <div class="inv-only"><select id="pos" class="domestic-only"></select><span class="export-only readonly">96 — Outside India</span></div>
         <span class="k tax-only">Supply</span><span class="readonly tax-only" id="supply-out">—</span>
         <span class="k tax-only">Reverse charge</span><span class="readonly tax-only">No</span>
       </div>
@@ -277,7 +308,12 @@
         <span class="k opt-row domestic-only" data-for="eway">E-way bill no.</span><input class="opt-row domestic-only" data-for="eway" id="eway" placeholder="Needed above ₹50,000">
         <span class="k opt-row domestic-only" data-for="vehicle">Vehicle no.</span><input class="opt-row domestic-only" data-for="vehicle" id="vehicle">
         <span class="k opt-row export-only" data-for="port_load">Port of loading</span><input class="opt-row export-only" data-for="port_load" id="port_load">
-        <span class="k opt-row export-only" data-for="destination">Final destination</span><input class="opt-row export-only" data-for="destination" id="destination">
+        <span class="k opt-row domestic-only" data-for="dispatch">Dispatched through</span><input class="opt-row domestic-only" data-for="dispatch" id="dispatch" placeholder="Transporter">
+        <span class="k opt-row export-only" data-for="port_discharge">Port of discharge</span><input class="opt-row export-only" data-for="port_discharge" id="port_discharge">
+        <span class="k opt-row export-only" data-for="via">Shipped by</span>
+        <select class="opt-row export-only" data-for="via" id="via"><option value=""></option><option>By sea</option><option>By air</option><option>By road</option><option>By courier</option></select>
+        <span class="k opt-row" data-for="destination">Destination</span><input class="opt-row" data-for="destination" id="destination">
+        <span class="k opt-row" data-for="pay_terms">Payment terms</span><input class="opt-row" data-for="pay_terms" id="pay_terms" list="pay-terms" placeholder="e.g. 100% advance">
         <span class="k opt-row export-only" data-for="incoterms">Incoterms</span>
         <select class="opt-row export-only" data-for="incoterms" id="incoterms"><option value=""></option><option>EXW</option><option>FCA</option><option>FOB</option><option>CFR</option><option>CIF</option><option>CPT</option><option>CIP</option><option>DAP</option><option>DPU</option><option>DDP</option></select>
         <span class="k opt-row export-only" data-for="sb_no">Shipping bill no.</span><input class="opt-row export-only" data-for="sb_no" id="sb_no">
@@ -311,11 +347,34 @@
   <table class="items">
     <thead><tr id="items-head"></tr></thead>
     <tbody id="items"></tbody>
+    <tfoot id="pk-foot" hidden><tr>
+      <td></td><td><b>Total</b></td><td class="c-hsn"></td><td class="num"><b id="pk-qty"></b></td><td id="pk-unit"></td>
+      <td class="num"><b id="pk-boxes"></b></td><td class="num"><b id="pk-gw"></b></td><td class="num"><b id="pk-nw"></b></td><td class="c-x"></td>
+    </tr></tfoot>
   </table>
   </div>
   <button type="button" class="add-row" id="btn-add">+ Add item</button>
 
-  <div class="totals">
+  <div id="charges-wrap" class="inv-only">
+    <div class="table-scroll" id="charges-table-wrap">
+    <table class="items charges">
+      <thead><tr id="charges-head"></tr></thead>
+      <tbody id="charges"></tbody>
+    </table>
+    </div>
+    <button type="button" class="add-row" id="btn-add-charge">+ Add freight / other charge</button>
+  </div>
+
+  <div id="pk-summary" class="pk-only" hidden>
+    <div class="gap"></div>
+    <div class="kv" style="grid-template-columns:120px 1fr">
+      <span class="k">Total packages</span><b id="pk-sum-boxes"></b>
+      <span class="k">Net weight</span><b id="pk-sum-nw"></b>
+      <span class="k">Gross weight</span><b id="pk-sum-gw"></b>
+    </div>
+  </div>
+
+  <div class="totals inv-only">
     <div>
       <div class="cell-head">Amount chargeable (in words)</div>
       <div class="words"><b id="words">—</b></div>
@@ -324,7 +383,7 @@
     <div id="totals-box"></div>
   </div>
 
-  <div id="hsn-wrap">
+  <div id="hsn-wrap" class="inv-only">
     <div class="gap"></div>
     <div class="cell-head">HSN / SAC summary</div>
     <div class="table-scroll"><table class="hsn"><thead><tr id="hsn-head"></tr></thead><tbody id="hsn-body"></tbody></table></div>
@@ -333,6 +392,7 @@
   <div class="gap"></div>
   <div class="foot">
     <div>
+      <div class="inv-only">
       <div class="cell-head">Bank details</div>
       <div class="kv">
         <span class="k">Account name</span><input id="bk_name" data-seller>
@@ -342,14 +402,18 @@
         <span class="k">Bank &amp; branch</span><textarea id="bk_bank" data-seller rows="1"></textarea>
         <span class="k opt-row domestic-only" data-for="bk_upi">UPI</span><input class="opt-row domestic-only" data-for="bk_upi" id="bk_upi" data-seller>
       </div>
+      </div>
       <div class="decl" id="declaration"></div>
       <ol class="terms" id="terms"></ol>
     </div>
     <div class="sign">
-      <div class="note" id="sign-note"></div>
+      <div>
+        <div class="note" id="sign-note"></div>
+        <div class="cust-seal inv-only" id="cust-seal">Customer's seal and signature</div>
+      </div>
       <div>
         <div style="font-size:9.5px;color:var(--muted)">For <b id="sign-firm">—</b></div>
-        <div style="height:16mm"></div>
+        <div class="stamp-slot"><img id="stamp-img" alt="" hidden></div>
         <div class="sign-line">Authorised signatory</div>
       </div>
     </div>
@@ -495,6 +559,21 @@
    *   items: [{ desc, hsn, qty, unit, rate, discount, gstRate }]
    * }
    */
+  /**
+   * Item lines plus "other charges" (freight, packing, insurance...). A charge
+   * is one line of quantity 1, always typed before GST — that is how
+   * freight is billed (SAC 996521 etc.) even when goods are priced inclusive.
+   */
+  function allLines(inv) {
+    var items = (inv.items || []).map(function (it) { return Object.assign({}, it, { isCharge: false }); });
+    var charges = (inv.charges || []).filter(function (c) {
+      return String(c.label || "").trim() || num(c.amount) || String(c.sac || "").trim();
+    }).map(function (c) {
+      return { desc: c.label, hsn: c.sac, qty: 1, unit: "", rate: c.amount, discount: 0, gstRate: c.gstRate, isCharge: true };
+    });
+    return items.concat(charges);
+  }
+
   function computeInvoice(inv) {
     var structure = taxHeads(inv);
     var heads = structure.heads;
@@ -509,7 +588,7 @@
     var hsnMap = {};
     var t = { gross: 0, discount: 0, taxable: 0, tax: { CGST: 0, SGST: 0, UTGST: 0, IGST: 0 }, taxTotal: 0, taxableInr: 0 };
 
-    (inv.items || []).forEach(function (it, i) {
+    allLines(inv).forEach(function (it, i) {
       var qty = num(it.qty), rate = num(it.rate), disc = Math.max(0, num(it.discount));
       var gstRate = charges ? Math.max(0, num(it.gstRate)) : 0;
       var gross = round2(qty * rate);
@@ -518,7 +597,7 @@
       // Tax is always computed in rupees. For an export the line is priced in
       // foreign currency and converted at the notified rate first.
       var taxable, taxableInr, a = { CGST: 0, SGST: 0, UTGST: 0, IGST: 0 };
-      if (inclusive && gstRate > 0) {
+      if (inclusive && gstRate > 0 && !it.isCharge) {
         taxable = round2(net / (1 + gstRate / 100));
       } else {
         taxable = net;
@@ -540,7 +619,7 @@
       var lineTotal = isExport ? taxable : round2(taxable + lineTax);
 
       lines.push({
-        index: i + 1, desc: it.desc || "", hsn: String(it.hsn || "").trim(), qty: qty, unit: it.unit || "",
+        index: i + 1, isCharge: !!it.isCharge, desc: it.desc || "", hsn: String(it.hsn || "").trim(), qty: qty, unit: it.unit || "",
         rate: rate, gross: gross, discount: round2(gross - net), taxable: taxable, taxableInr: taxableInr,
         gstRate: gstRate, tax: a, taxTotal: lineTax, total: lineTotal
       });
@@ -585,6 +664,42 @@
       result.taxWords = charges ? amountInWords(t.taxTotal, "INR") : "";
     }
     return result;
+  }
+
+  /* ---------------- packing list ---------------- */
+
+  /**
+   * Totals for the packing list. Quantity is summed only across lines that
+   * share one unit — adding 500 pieces to 2.5 kg would print a number that
+   * means nothing — so mixedUnits tells the sheet to say so instead.
+   */
+  function computePacking(items) {
+    var t = { qty: 0, boxes: 0, gross: 0, net: 0, units: {} };
+    var lines = (items || []).map(function (it, i) {
+      var qty = num(it.qty), boxes = num(it.boxes), gross = num(it.grossKg), net = num(it.netKg);
+      t.qty = round2(t.qty + qty);
+      t.boxes = round2(t.boxes + boxes);
+      t.gross = round2(t.gross + gross);
+      t.net = round2(t.net + net);
+      var u = String(it.unit || "").trim().toUpperCase() || "-";
+      t.units[u] = 1;
+      return { index: i + 1, desc: it.desc || "", hsn: String(it.hsn || "").trim(), qty: qty, unit: it.unit || "",
+        boxes: boxes, grossKg: gross, netKg: net };
+    });
+    var units = Object.keys(t.units);
+    return { lines: lines, totals: { qty: t.qty, boxes: t.boxes, grossKg: t.gross, netKg: t.net,
+      unit: units.length === 1 && units[0] !== "-" ? units[0] : "", mixedUnits: units.length > 1 } };
+  }
+
+  function checkPacking(items) {
+    var errors = [], warnings = [];
+    (items || []).forEach(function (it, i) {
+      var n = i + 1, g = num(it.grossKg), nt = num(it.netKg);
+      if (g && nt && nt > g) errors.push("Packing line " + n + ": net weight is more than gross weight.");
+      if (num(it.boxes) < 0 || g < 0 || nt < 0) errors.push("Packing line " + n + ": boxes and weights cannot be negative.");
+      if (num(it.boxes) && !Number.isInteger(num(it.boxes))) warnings.push("Packing line " + n + ": boxes is not a whole number.");
+    });
+    return { errors: errors, warnings: warnings };
   }
 
   /* ---------------- amount in words ---------------- */
@@ -701,6 +816,18 @@
         warnings.push("Item " + n + ": " + num(it.gstRate) + "% is not a standard GST rate (0, 0.25, 3, 5, 18, 40). Check it.");
     });
 
+    (inv.charges || []).forEach(function (c, i) {
+      var used = String(c.label || "").trim() || num(c.amount) || String(c.sac || "").trim();
+      if (!used) return;
+      var n = i + 1;
+      if (!String(c.label || "").trim()) errors.push("Charge " + n + ": name is missing (e.g. Freight).");
+      if (!(num(c.amount) > 0)) errors.push("Charge " + n + ": amount must be more than zero.");
+      var sac = String(c.sac || "").trim();
+      if (inv.docType !== "proforma" && !/^\d{4,8}$/.test(sac)) errors.push("Charge " + n + ": SAC/HSN must be 4 to 8 digits (freight by road is 996511/996521).");
+      if (res && res.chargesTax && GST_RATES.indexOf(num(c.gstRate)) === -1)
+        warnings.push("Charge " + n + ": " + num(c.gstRate) + "% is not a standard GST rate.");
+    });
+
     if (res && res.chargesTax && res.structure.nature === "unknown") errors.push("Cannot tell same-state from inter-state: fill in your GSTIN and the place of supply.");
     if (inv.docType === "bos")
       warnings.push("A bill of supply is only correct for a composition dealer or for exempt goods. A regular GST dealer selling taxable goods must issue a tax invoice.");
@@ -718,7 +845,8 @@
     STATES: STATES, UT_WITHOUT_LEGISLATURE: UT_WITHOUT_LEGISLATURE, GST_RATES: GST_RATES, CURRENCIES: CURRENCIES,
     round2: round2, validateGstin: validateGstin, gstinCheckChar: gstinCheckChar, financialYear: financialYear,
     validateInvoiceNumber: validateInvoiceNumber, taxHeads: taxHeads, computeInvoice: computeInvoice,
-    amountInWords: amountInWords, checkInvoice: checkInvoice
+    amountInWords: amountInWords, checkInvoice: checkInvoice,
+    computePacking: computePacking, checkPacking: checkPacking
   };
 });
 
@@ -733,13 +861,14 @@
   var SELLER_DEFAULTS = {
     s_legal: "Stone Art Installation",
     s_addr: "75/04 Tagore Lane, Shipra Path, Mansarovar, Jaipur, Rajasthan — 302020",
-    s_gstin: "08BSFPA0657M1ZO", s_contact: "", s_iec: "",
+    s_gstin: "08BSFPA0657M1ZO", s_contact: "", s_iec: "BSFPA0657M", lutArn: "AD081026005516D",
     bk_name: "Stone Art Installation", bk_acc: "37990375434", bk_ifsc: "SBIN0031503",
     bk_swift: "SBININBB851",
     bk_bank: "State Bank of India, Malviya Nagar Ind. Area, Jaipur, Rajasthan 302017", bk_upi: "",
     prefix: "SAI"
   };
 
+  var view = "invoice";
   var opts = { market: "domestic", docType: "tax", rateMode: "excl", exportMode: "lut", bosReason: "composition" };
 
   function store(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); return true; } catch (e) { return false; } }
@@ -789,6 +918,9 @@
       '<td class="c-gst"><select class="f-gst num"></select></td>' +
       '<td class="num c-t1"></td><td class="num c-t2"></td>' +
       '<td class="num c-total"></td>' +
+      '<td class="c-pk"><input class="f-boxes num" inputmode="numeric"></td>' +
+      '<td class="c-pk"><input class="f-gw num" inputmode="decimal"></td>' +
+      '<td class="c-pk"><input class="f-nw num" inputmode="decimal"></td>' +
       '<td class="c-x"><button type="button" class="del" aria-label="Remove item">×</button></td>';
     tr.querySelector(".f-gst").innerHTML = E.GST_RATES.map(function (r) { return '<option value="' + r + '">' + r + "%</option>"; }).join("");
     tr.querySelector(".f-desc").value = it.desc || "";
@@ -798,12 +930,49 @@
     tr.querySelector(".f-rate").value = it.rate != null ? it.rate : "";
     tr.querySelector(".f-disc").value = it.discount || "";
     tr.querySelector(".f-gst").value = String(it.gstRate != null ? it.gstRate : 18);
+    tr.querySelector(".f-boxes").value = it.boxes || "";
+    tr.querySelector(".f-gw").value = it.grossKg || "";
+    tr.querySelector(".f-nw").value = it.netKg || "";
     tr.querySelector(".del").addEventListener("click", function () {
       tr.remove(); if (!body.children.length) addRow(); render();
     });
     body.appendChild(tr);
     grow(tr.querySelector(".f-desc"));
   }
+  var chargesBody = $("charges");
+  function addCharge(c) {
+    c = c || {};
+    var tr = document.createElement("tr");
+    tr.innerHTML =
+      '<td class="c-desc"><input class="g-label" list="charge-names" placeholder="Freight charges"></td>' +
+      '<td class="c-hsn"><input class="g-sac" inputmode="numeric" placeholder="996521"></td>' +
+      '<td><input class="g-amt num" inputmode="decimal" placeholder="0.00"></td>' +
+      '<td class="c-gst"><select class="g-gst num"></select></td>' +
+      '<td class="num g-t1"></td><td class="num g-t2"></td><td class="num g-total"></td>' +
+      '<td class="c-x"><button type="button" class="del" aria-label="Remove charge">×</button></td>';
+    tr.querySelector(".g-gst").innerHTML = E.GST_RATES.map(function (r) { return '<option value="' + r + '">' + r + "%</option>"; }).join("");
+    tr.querySelector(".g-label").value = c.label || "";
+    tr.querySelector(".g-sac").value = c.sac || "";
+    tr.querySelector(".g-amt").value = c.amount || "";
+    tr.querySelector(".g-gst").value = String(c.gstRate != null ? c.gstRate : 18);
+    tr.querySelector(".del").addEventListener("click", function () { tr.remove(); render(); });
+    chargesBody.appendChild(tr);
+  }
+  function readCharges() {
+    return Array.prototype.map.call(chargesBody.children, function (tr) {
+      return { label: tr.querySelector(".g-label").value, sac: tr.querySelector(".g-sac").value,
+        amount: tr.querySelector(".g-amt").value, gstRate: tr.querySelector(".g-gst").value };
+    });
+  }
+  var chargeNames = document.createElement("datalist"); chargeNames.id = "charge-names";
+  chargeNames.innerHTML = ["Freight charges", "Packing charges", "Loading charges", "Insurance", "Installation charges"]
+    .map(function (u) { return '<option value="' + u + '">'; }).join("");
+  document.body.appendChild(chargeNames);
+
+  var payTerms = document.createElement("datalist"); payTerms.id = "pay-terms";
+  payTerms.innerHTML = ["100% advance payment", "50% advance, 50% before dispatch", "Immediate", "15 days", "30 days", "Against delivery"]
+    .map(function (u) { return '<option value="' + u + '">'; }).join("");
+  document.body.appendChild(payTerms);
   var units = document.createElement("datalist"); units.id = "units";
   units.innerHTML = ["SQF", "SQM", "NOS", "PCS", "SET", "BOX", "MTR", "KGS"].map(function (u) { return '<option value="' + u + '">'; }).join("");
   document.body.appendChild(units);
@@ -814,7 +983,8 @@
         desc: tr.querySelector(".f-desc").value, hsn: tr.querySelector(".f-hsn").value,
         qty: tr.querySelector(".f-qty").value, unit: tr.querySelector(".f-unit").value,
         rate: tr.querySelector(".f-rate").value, discount: tr.querySelector(".f-disc").value,
-        gstRate: tr.querySelector(".f-gst").value
+        gstRate: tr.querySelector(".f-gst").value,
+        boxes: tr.querySelector(".f-boxes").value, grossKg: tr.querySelector(".f-gw").value, netKg: tr.querySelector(".f-nw").value
       };
     });
   }
@@ -833,7 +1003,7 @@
       shipToDifferent: !!$("d_addr").value.trim(),
       seller: { legalName: $("s_legal").value, address: $("s_addr").value, gstin: $("s_gstin").value, iec: $("s_iec").value, swift: $("bk_swift").value },
       customer: { name: $("c_name").value, address: $("c_addr").value, gstin: $("c_gstin").value, country: $("c_country").value, gstinValid: cg.ok },
-      items: readItems()
+      items: readItems(), charges: readCharges()
     };
   }
 
@@ -875,24 +1045,40 @@
     $("c_state_out").textContent = cg.ok ? cg.stateCode + " — " + E.STATES[cg.stateCode] : (posSel.value ? posSel.value + " — " + E.STATES[posSel.value] : "—");
     if (cg.ok && (!posSel.value || posSel.value === lastAutoPos)) { posSel.value = cg.stateCode; lastAutoPos = cg.stateCode; }
 
+    var packing = view === "packing";
+    document.body.classList.toggle("packing", packing);
+    Array.prototype.forEach.call(document.querySelectorAll("#view-seg button"), function (b) {
+      b.setAttribute("aria-pressed", String(b.dataset.view === view));
+    });
+    setVisible(".inv-only", !packing);
+    setVisible(".pk-only", packing);
+
     var inv = readInvoice();
     var res = E.computeInvoice(inv);
     var check = E.checkInvoice(inv, res);
+    var pk = E.computePacking(inv.items);
+    if (packing) {
+      var pc = E.checkPacking(inv.items);
+      check = { errors: pc.errors, warnings: pc.warnings.concat(check.errors.filter(function (m) {
+        return /name is missing|address is missing|Invoice number|date is missing|country/.test(m);
+      })) };
+    }
     var heads = res.heads, cur = res.currency;
     var showLineTax = heads.length > 0 && !isExport;
 
     // ----- titles -----
-    var title = { tax: isExport ? "Export Invoice" : "Tax Invoice", bos: "Bill of Supply", proforma: "Proforma Invoice" }[doc];
+    var title = packing ? "Packing List" : { tax: isExport ? "Export Invoice" : "Tax Invoice", bos: "Bill of Supply", proforma: "Proforma Invoice" }[doc];
     $("doc-title").textContent = title;
     var sub = "";
     if (isExport && doc === "tax") sub = opts.exportMode === "lut"
       ? "Supply meant for export under bond or letter of undertaking without payment of integrated tax"
       : "Supply meant for export on payment of integrated tax";
-    $("doc-sub").textContent = sub;
-    setVisible("#copy-wrap", doc !== "proforma");
+    $("doc-sub").textContent = packing ? "" : sub;
+    setVisible("#copy-wrap", doc !== "proforma" && !packing);
+    $("btn-print").textContent = packing ? "Print / Save packing list" : "Print / Save PDF";
     $("no-label").textContent = doc === "proforma" ? "Proforma no." : doc === "bos" ? "Bill no." : "Invoice no.";
     $("details-head").textContent = doc === "proforma" ? "Proforma details" : doc === "bos" ? "Bill details" : "Invoice details";
-    setVisible(".tax-only", doc !== "bos");
+    setVisible(".tax-only", doc !== "bos" && !packing);
     $("supply-out").textContent = {
       intra: "Intra-state (" + heads.join(" + ") + ")", inter: "Inter-state (IGST)",
       "export-lut": "Export, zero-rated under LUT", "export-igst": "Export, IGST paid", unknown: "—", none: "—"
@@ -907,11 +1093,22 @@
     if (showLineTax) h += "<th>" + heads[0] + " (₹)</th>" + (heads[1] ? "<th>" + heads[1] + " (₹)</th>" : "");
     if (showLineTax) h += "<th>Total (₹)</th>";
     h += '<th class="c-x"></th>';
+    if (packing) {
+      h = '<th>#</th><th class="c-desc">Description</th><th class="c-hsn">HSN</th><th>Qty</th><th>Unit</th>' +
+        '<th>Boxes</th><th>Gross wt (kg)</th><th>Net wt (kg)</th><th class="c-x"></th>';
+    }
     $("items-head").innerHTML = h;
 
     Array.prototype.forEach.call(body.children, function (tr, i) {
       var l = res.lines[i];
       tr.querySelector(".c-idx").textContent = i + 1;
+      Array.prototype.forEach.call(tr.querySelectorAll(".c-pk"), function (c) { c.hidden = !packing; });
+      Array.prototype.forEach.call(tr.querySelectorAll(".f-rate, .f-disc"), function (f) { f.parentElement.hidden = packing; });
+      tr.querySelector(".c-taxable").hidden = packing;
+      if (packing) {
+        ["c-gst", "c-t1", "c-t2", "c-total"].forEach(function (k) { tr.querySelector("." + k).hidden = true; });
+        return;
+      }
       tr.querySelector(".c-taxable").textContent = fmt(l.taxable, cur);
       tr.querySelector(".c-gst").hidden = !res.chargesTax;
       tr.querySelector(".c-t1").hidden = !showLineTax;
@@ -925,15 +1122,60 @@
       }
     });
 
+    // ----- packing list totals -----
+    $("pk-foot").hidden = !packing;
+    var kg = function (n) { return n ? n.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "—"; };
+    $("pk-qty").textContent = pk.totals.mixedUnits ? "mixed units" : pk.totals.qty.toLocaleString("en-IN");
+    $("pk-unit").textContent = pk.totals.unit;
+    $("pk-boxes").textContent = pk.totals.boxes ? pk.totals.boxes.toLocaleString("en-IN") : "—";
+    $("pk-gw").textContent = kg(pk.totals.grossKg);
+    $("pk-nw").textContent = kg(pk.totals.netKg);
+    $("pk-sum-boxes").textContent = pk.totals.boxes ? pk.totals.boxes.toLocaleString("en-IN") + " boxes" : "—";
+    $("pk-sum-nw").textContent = pk.totals.netKg ? kg(pk.totals.netKg) + " kg" : "—";
+    $("pk-sum-gw").textContent = pk.totals.grossKg ? kg(pk.totals.grossKg) + " kg" : "—";
+
+    // ----- other charges (freight etc.) -----
+    var chargeLines = res.lines.filter(function (l) { return l.isCharge; });
+    var ch = '<th class="c-desc">Other charges (before GST)</th><th class="c-hsn">SAC</th><th>Amount' + (isExport ? " (" + cur + ")" : " (₹)") + "</th>";
+    if (res.chargesTax) ch += '<th class="c-gst">GST %</th>';
+    if (showLineTax) ch += "<th>" + heads[0] + " (₹)</th>" + (heads[1] ? "<th>" + heads[1] + " (₹)</th>" : "") + "<th>Total (₹)</th>";
+    ch += '<th class="c-x"></th>';
+    $("charges-head").innerHTML = ch;
+    var ci = 0;
+    Array.prototype.forEach.call(chargesBody.children, function (tr) {
+      var c = readCharges()[Array.prototype.indexOf.call(chargesBody.children, tr)];
+      var used = String(c.label).trim() || parseFloat(c.amount) || String(c.sac).trim();
+      var l = used ? chargeLines[ci++] : null;
+      tr.querySelector(".c-gst").hidden = !res.chargesTax;
+      tr.querySelector(".g-t1").hidden = !showLineTax;
+      tr.querySelector(".g-t2").hidden = !(showLineTax && heads[1]);
+      tr.querySelector(".g-total").hidden = !showLineTax;
+      if (l && showLineTax) {
+        var half = heads.length === 2 ? l.gstRate / 2 : l.gstRate;
+        tr.querySelector(".g-t1").innerHTML = fmt(l.tax[heads[0]]) + '<span class="sub">@ ' + half + "%</span>";
+        if (heads[1]) tr.querySelector(".g-t2").innerHTML = fmt(l.tax[heads[1]]) + '<span class="sub">@ ' + half + "%</span>";
+        tr.querySelector(".g-total").textContent = fmt(l.total);
+      } else {
+        tr.querySelector(".g-t1").textContent = ""; tr.querySelector(".g-t2").textContent = ""; tr.querySelector(".g-total").textContent = "";
+      }
+    });
+    $("charges-table-wrap").classList.toggle("charges-empty", chargeLines.length === 0);
+
     // ----- totals -----
     var t = res.totals, box = "";
     function line(label, val, cls) { return '<div class="tline ' + (cls || "") + '"><span>' + label + '</span><span class="num">' + val + "</span></div>"; }
     if (t.discount) box += line("Gross amount", fmt(t.gross, cur)) + line("Less discount", "−" + fmt(t.discount, cur));
     if (isExport) {
+      chargeLines.forEach(function (l) { box += line(esc(l.desc), fmt(l.taxable, cur)); });
       box += line("Invoice value (" + cur + ")", fmt(res.payable, cur), "grand");
       box += line("Value in ₹ @ " + fmt(res.fxRate) + " per " + cur, fmt(res.inr.taxable), "inr");
       if (res.chargesTax) box += line("IGST (₹), paid by exporter", fmt(res.inr.igst), "inr");
     } else {
+      if (chargeLines.length) {
+        var goods = res.lines.filter(function (l) { return !l.isCharge; }).reduce(function (a, l) { return a + l.taxable; }, 0);
+        box += line("Goods", fmt(goods));
+        chargeLines.forEach(function (l) { box += line(esc(l.desc), fmt(l.taxable)); });
+      }
       box += line(res.chargesTax ? "Taxable value" : "Amount", fmt(t.taxable));
       heads.forEach(function (hd) { box += line(hd, fmt(t.tax[hd])); });
       box += line("Round off", (res.roundOff < 0 ? "−" : res.roundOff > 0 ? "+" : "") + fmt(Math.abs(res.roundOff)));
@@ -964,6 +1206,7 @@
       : "Supply of goods exempt from GST.";
     if (doc === "proforma") decl = "This is a proforma invoice (quotation), not a tax invoice." + (res.chargesTax ? " Tax shown is an estimate." : "");
     if (isExport && doc === "tax" && opts.exportMode === "lut" && $("lutArn").value.trim()) decl = "LUT ARN: " + $("lutArn").value.trim();
+    if (packing) decl = "";
     $("declaration").textContent = decl;
     var terms = [
       "We declare that this " + (doc === "proforma" ? "quotation" : "document") + " shows the actual price of the goods described and that all particulars are true and correct.",
@@ -972,15 +1215,22 @@
       "Subject to Jaipur jurisdiction."
     ];
     if (isExport) terms.splice(1, 1, "Bank charges outside India are borne by the buyer.");
+    if (packing) terms = ["We declare that this packing list shows the actual contents and weights of the consignment and that all particulars are true and correct."];
     $("terms").innerHTML = terms.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("");
-    $("sign-note").textContent = isExport && res.chargesTax ? "IGST is paid by the exporter and claimed as a refund; it is not payable by the buyer." : "";
+    $("sign-note").textContent = !packing && isExport && res.chargesTax ? "IGST is paid by the exporter and claimed as a refund; it is not payable by the buyer." : "";
     $("sign-firm").textContent = $("s_legal").value.trim() || "—";
     setVisible("#swift-label, #bk_swift", isExport);
+    renderStamp();
+    $("s_lut_out").textContent = opts.exportMode === "lut" ? $("lutArn").value.trim() : "";
 
     // ----- empty optional rows stay off paper -----
     Array.prototype.forEach.call(document.querySelectorAll(".opt-row"), function (n) {
       var f = $(n.dataset.for);
       n.classList.toggle("empty-print", !f || !String(f.value).trim());
+    });
+    // The LUT line belongs only on a zero-rated (LUT) export.
+    Array.prototype.forEach.call(document.querySelectorAll('[data-for="lutArn"]'), function (n) {
+      if (opts.exportMode !== "lut") n.classList.add("empty-print");
     });
     Array.prototype.forEach.call(document.querySelectorAll(".dateprint"), function (sp) {
       sp.textContent = dmy($(sp.getAttribute("data-date-for")).value);
@@ -1019,6 +1269,175 @@
     saveDraft();
   }
 
+  /* ---------- stamp (kept on this computer only) ---------- */
+  var STAMP_KEY = "akurock-invoice-stamp", STAMP_SHOW_KEY = "akurock-invoice-stamp-show";
+  function rawGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function rawSet(k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); return true; } catch (e) { return false; } }
+  function renderStamp() {
+    var src = rawGet(STAMP_KEY), show = $("stamp-show").checked;
+    $("stamp-img").hidden = !(src && show);
+    if (src) $("stamp-img").src = src;
+    $("stamp-preview").style.display = src ? "inline" : "none";
+    if (src) $("stamp-preview").src = src;
+  }
+  // A phone photo of a rubber stamp is ink on off-white paper. Paper and the
+  // grey speckle become transparent so the stamp sits on the invoice like
+  // real ink instead of as a white rectangle.
+  function cleanStamp(img) {
+    var scale = Math.min(1, 700 / Math.max(img.width, img.height));
+    var w = Math.round(img.width * scale), h = Math.round(img.height * scale);
+    var c = document.createElement("canvas"); c.width = w; c.height = h;
+    var ctx = c.getContext("2d"); ctx.drawImage(img, 0, 0, w, h);
+    var d = ctx.getImageData(0, 0, w, h), px = d.data;
+    var minX = w, minY = h, maxX = 0, maxY = 0;
+    for (var i = 0; i < px.length; i += 4) {
+      var lum = 0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2];
+      var a = lum > 205 ? 0 : Math.min(255, Math.round((205 - lum) * 255 / 110));
+      px[i + 3] = a;
+      if (a > 40) { var x = (i / 4) % w, y = Math.floor(i / 4 / w); if (x < minX) minX = x; if (x > maxX) maxX = x; if (y < minY) minY = y; if (y > maxY) maxY = y; }
+    }
+    ctx.putImageData(d, 0, 0);
+    if (maxX <= minX || maxY <= minY) return c.toDataURL("image/png");
+    var out = document.createElement("canvas"); out.width = maxX - minX + 1; out.height = maxY - minY + 1;
+    out.getContext("2d").drawImage(c, minX, minY, out.width, out.height, 0, 0, out.width, out.height);
+    return out.toDataURL("image/png");
+  }
+  $("stamp-file").addEventListener("change", function () {
+    var f = this.files && this.files[0]; if (!f) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      var img = new Image();
+      img.onload = function () {
+        if (!rawSet(STAMP_KEY, cleanStamp(img))) alert("Could not save the stamp on this computer (storage full or blocked).");
+        renderStamp();
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(f);
+    this.value = "";
+  });
+  $("stamp-remove").addEventListener("click", function () { rawSet(STAMP_KEY, null); renderStamp(); });
+  $("stamp-show").checked = rawGet(STAMP_SHOW_KEY) !== "0";
+  $("stamp-show").addEventListener("change", function () { rawSet(STAMP_SHOW_KEY, this.checked ? "1" : "0"); });
+
+  /* ---------- history (IndexedDB, this computer only) ---------- */
+  var HISTORY_DB = "akurock-invoice-history";
+  function db() {
+    return new Promise(function (resolve, reject) {
+      if (!window.indexedDB) return reject(new Error("no IndexedDB"));
+      var req = indexedDB.open(HISTORY_DB, 1);
+      req.onupgradeneeded = function () { req.result.createObjectStore("docs", { keyPath: "id" }); };
+      req.onsuccess = function () { resolve(req.result); };
+      req.onerror = function () { reject(req.error); };
+    });
+  }
+  function tx(mode, fn) {
+    return db().then(function (d) {
+      return new Promise(function (resolve, reject) {
+        var t = d.transaction("docs", mode), st = t.objectStore("docs"), out = fn(st);
+        t.oncomplete = function () { resolve(out && out.result !== undefined ? out.result : out); };
+        t.onerror = function () { reject(t.error); };
+      });
+    });
+  }
+  function snapshot() {
+    var fields = {}, seller = {};
+    DOC_FIELDS.forEach(function (id) { fields[id] = $(id).value; });
+    SELLER_FIELDS.forEach(function (id) { seller[id] = $(id).value; });
+    return { opts: JSON.parse(JSON.stringify(opts)), view: view, items: readItems(), charges: readCharges(), fields: fields, seller: seller };
+  }
+  function saveToHistory() {
+    var res = window.__lastResult, no = $("inv_no").value.trim() || "(no number)";
+    var title = $("doc-title").textContent;
+    var rec = {
+      id: title + "|" + no, title: title, number: no, date: $("inv_date").value,
+      customer: $("c_name").value.trim(), savedAt: new Date().toISOString(),
+      total: view === "packing" ? "" : (res.currency === "INR" ? "₹" + res.payable.toLocaleString("en-IN") : res.currency + " " + fmt(res.payable, res.currency)),
+      snap: snapshot()
+    };
+    // Printing the same document again replaces its record rather than
+    // stacking duplicates; a different document type keeps its own.
+    return tx("readwrite", function (st) { st.put(rec); }).catch(function () {});
+  }
+  function loadSnapshot(sn) {
+    Object.keys(sn.opts || {}).forEach(function (k) { opts[k] = sn.opts[k]; });
+    view = sn.view || "invoice";
+    DOC_FIELDS.forEach(function (id) { $(id).value = sn.fields && sn.fields[id] != null ? sn.fields[id] : ""; });
+    SELLER_FIELDS.forEach(function (id) { if (sn.seller && sn.seller[id] != null) $(id).value = sn.seller[id]; });
+    body.innerHTML = ""; chargesBody.innerHTML = "";
+    (sn.items && sn.items.length ? sn.items : [{}]).forEach(addRow);
+    (sn.charges || []).forEach(addCharge);
+    Array.prototype.forEach.call(document.querySelectorAll("textarea"), grow);
+    render();
+  }
+  function download(name, text) {
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([text], { type: "application/json" }));
+    a.download = name; document.body.appendChild(a); a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  }
+  function openHistory() {
+    var ov = document.createElement("div");
+    ov.className = "overlay";
+    ov.innerHTML = '<div class="panel" role="dialog" aria-label="History">' +
+      '<h2>History</h2><div class="tools"><input type="search" id="h-q" placeholder="Search number or customer">' +
+      '<button type="button" class="act" id="h-export">Download backup</button>' +
+      '<label class="act">Restore backup<input type="file" id="h-import" accept="application/json,.json" hidden></label>' +
+      '<button type="button" class="act" id="h-close">Close</button></div>' +
+      '<p class="hint" style="margin:0 0 8px;color:var(--muted)">Every document you print is saved here, on this computer. Keep a backup file somewhere safe.</p>' +
+      '<div class="table-scroll"><table><thead><tr><th>Date</th><th>Document</th><th>No.</th><th>Customer</th><th>Total</th><th></th></tr></thead><tbody id="h-rows"><tr><td colspan="6">Loading…</td></tr></tbody></table></div></div>';
+    document.body.appendChild(ov);
+    var all = [];
+    function close() { ov.remove(); }
+    function draw() {
+      var q = ov.querySelector("#h-q").value.trim().toLowerCase();
+      var rows = all.filter(function (r) { return !q || (r.number + " " + r.customer + " " + r.title).toLowerCase().indexOf(q) !== -1; });
+      ov.querySelector("#h-rows").innerHTML = rows.length ? rows.map(function (r) {
+        return "<tr><td>" + esc(dmy(r.date)) + "</td><td>" + esc(r.title) + "</td><td>" + esc(r.number) + "</td><td>" + esc(r.customer) +
+          "</td><td>" + esc(r.total) + '</td><td style="white-space:nowrap"><button type="button" class="act" data-open="' + esc(r.id) +
+          '">Open</button><button type="button" class="act" data-del="' + esc(r.id) + '">Delete</button></td></tr>';
+      }).join("") : '<tr><td colspan="6">' + (all.length ? "Nothing matches." : "No documents yet. Print one and it appears here.") + "</td></tr>";
+    }
+    function refresh() {
+      return tx("readonly", function (st) { return st.getAll(); }).then(function (list) {
+        all = (list || []).sort(function (a, b) { return (b.date + b.savedAt).localeCompare(a.date + a.savedAt); });
+        draw();
+      }).catch(function () { ov.querySelector("#h-rows").innerHTML = '<tr><td colspan="6">History is not available in this browser.</td></tr>'; });
+    }
+    ov.addEventListener("click", function (e) {
+      if (e.target === ov) return close();
+      var o = e.target.getAttribute("data-open"), d = e.target.getAttribute("data-del");
+      if (o) {
+        var rec = all.filter(function (r) { return r.id === o; })[0];
+        if (rec && confirm("Open " + rec.title + " " + rec.number + "? The document on screen now is replaced.")) { loadSnapshot(rec.snap); close(); }
+      }
+      if (d && confirm("Delete this document from history? This cannot be undone.")) {
+        tx("readwrite", function (st) { st.delete(d); }).then(refresh);
+      }
+    });
+    ov.querySelector("#h-close").addEventListener("click", close);
+    ov.querySelector("#h-q").addEventListener("input", draw);
+    ov.querySelector("#h-export").addEventListener("click", function () {
+      download("invoice-history-" + new Date().toISOString().slice(0, 10) + ".json", JSON.stringify({ app: "akurock-invoices", version: 1, docs: all }, null, 1));
+    });
+    ov.querySelector("#h-import").addEventListener("change", function () {
+      var f = this.files && this.files[0]; if (!f) return;
+      var r = new FileReader();
+      r.onload = function () {
+        try {
+          var data = JSON.parse(r.result), docs = (data && data.docs) || [];
+          if (!Array.isArray(docs) || !docs.every(function (x) { return x && x.id && x.snap; })) throw new Error("not a backup");
+          tx("readwrite", function (st) { docs.forEach(function (x) { st.put(x); }); }).then(function () {
+            alert(docs.length + " document(s) restored."); refresh();
+          });
+        } catch (err) { alert("That file is not an invoice history backup."); }
+      };
+      r.readAsText(f);
+      this.value = "";
+    });
+    refresh();
+  }
+
   /* ---------- numbering ---------- */
   function seriesFor(dateIso) {
     var fy = E.financialYear(dateIso) || E.financialYear(new Date().toISOString().slice(0, 10));
@@ -1040,9 +1459,10 @@
   }
 
   /* ---------- persistence ---------- */
-  var SELLER_FIELDS = ["s_legal", "s_addr", "s_gstin", "s_contact", "s_iec", "bk_name", "bk_acc", "bk_ifsc", "bk_swift", "bk_bank", "bk_upi"];
+  var SELLER_FIELDS = ["s_legal", "s_addr", "s_gstin", "s_contact", "s_iec", "bk_name", "bk_acc", "bk_ifsc", "bk_swift", "bk_bank", "bk_upi", "lutArn"];
   var DOC_FIELDS = ["inv_no", "inv_date", "due_date", "pos", "po_no", "eway", "vehicle", "port_load", "destination", "incoterms", "sb_no", "valid_until",
-    "c_name", "c_addr", "c_gstin", "c_country", "c_taxid", "d_name", "d_addr", "currency", "fxRate", "lutArn", "copyType"];
+    "dispatch", "port_discharge", "via", "pay_terms",
+    "c_name", "c_addr", "c_gstin", "c_country", "c_taxid", "d_name", "d_addr", "currency", "fxRate", "copyType"];
 
   function loadSeller() {
     var saved = load(SELLER_KEY) || {};
@@ -1056,25 +1476,33 @@
     setTimeout(function () { $("btn-save").textContent = "Save my details"; }, 1600);
   }
   var draftTimer = 0;
+  function writeDraft() {
+    clearTimeout(draftTimer);
+    var d = { opts: opts, view: view, items: readItems(), charges: readCharges(), fields: {} };
+    DOC_FIELDS.forEach(function (id) { d.fields[id] = $(id).value; });
+    store(DRAFT_KEY, d);
+  }
   function saveDraft() {
     clearTimeout(draftTimer);
-    draftTimer = setTimeout(function () {
-      var d = { opts: opts, items: readItems(), fields: {} };
-      DOC_FIELDS.forEach(function (id) { d.fields[id] = $(id).value; });
-      store(DRAFT_KEY, d);
-    }, 300);
+    draftTimer = setTimeout(writeDraft, 300);
   }
+  // Closing the window inside the 300 ms debounce would lose the last keystrokes.
+  window.addEventListener("pagehide", writeDraft);
+  document.addEventListener("visibilitychange", function () { if (document.visibilityState === "hidden") writeDraft(); });
   function restoreDraft() {
     var d = load(DRAFT_KEY);
     if (!d) return false;
     Object.keys(d.opts || {}).forEach(function (k) { opts[k] = d.opts[k]; });
     DOC_FIELDS.forEach(function (id) { if (d.fields && d.fields[id] != null) $(id).value = d.fields[id]; });
     (d.items && d.items.length ? d.items : [{}]).forEach(addRow);
+    (d.charges || []).forEach(addCharge);
+    if (d.view) view = d.view;
     return true;
   }
   function freshInvoice() {
-    DOC_FIELDS.forEach(function (id) { if (id !== "currency" && id !== "fxRate" && id !== "lutArn" && id !== "copyType") $(id).value = ""; });
+    DOC_FIELDS.forEach(function (id) { if (id !== "currency" && id !== "fxRate" && id !== "copyType") $(id).value = ""; });
     body.innerHTML = "";
+    chargesBody.innerHTML = "";
     addRow({ unit: "SQF", gstRate: 18 });
     $("inv_date").value = new Date().toISOString().slice(0, 10);
     $("inv_no").value = nextNumber();
@@ -1092,6 +1520,11 @@
     addRow({ unit: last.unit || "SQF", gstRate: last.gstRate != null ? last.gstRate : 18 });
     render();
   });
+  Array.prototype.forEach.call(document.querySelectorAll("#view-seg button"), function (b) {
+    b.addEventListener("click", function () { view = b.dataset.view; render(); });
+  });
+  $("btn-add-charge").addEventListener("click", function () { addCharge({ gstRate: 18 }); render(); });
+  $("btn-history").addEventListener("click", openHistory);
   $("btn-next").addEventListener("click", function () { $("inv_no").value = nextNumber(); render(); });
   $("btn-save").addEventListener("click", saveSeller);
   $("btn-new").addEventListener("click", function () {
@@ -1102,7 +1535,8 @@
     render();
     var c = window.__lastCheck;
     if (c.errors.length && !confirm(c.errors.length + " required item(s) are still missing or wrong:\n\n- " + c.errors.join("\n- ") + "\n\nPrint anyway?")) return;
-    recordNumber();
+    if (view === "invoice") recordNumber();
+    saveToHistory();
     var prev = document.title;
     document.title = ($("inv_no").value.trim() || "invoice").replace(/\//g, "-");
     window.print();

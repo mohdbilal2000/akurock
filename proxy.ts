@@ -88,6 +88,16 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Installable invoice app: static files in public/invoice-app. The app's
+  // own URL has no trailing slash (Next would strip one) so it is rewritten
+  // to its index.html; everything under it is served as-is.
+  if (pathname === '/invoice-app') {
+    return NextResponse.rewrite(new URL('/invoice-app/index.html', request.url));
+  }
+  if (pathname.startsWith('/invoice-app/')) {
+    return NextResponse.next();
+  }
+
   if (pathname === '/visualizer' || pathname.startsWith('/visualizer/')) {
     return NextResponse.next();
   }

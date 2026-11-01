@@ -1,0 +1,1574 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<link rel="manifest" href="/invoice-app/manifest.webmanifest">
+<meta name="theme-color" content="#0d0d0d">
+<link rel="icon" href="/invoice-app/icon-192.png">
+<title>Invoices — Stone Art Installation</title>
+<style>
+  /* Source: invoices/invoice.template.html + lib/invoice/engine.js.
+     Built into akurock-tax-invoice.html by scripts/build-invoice.mjs —
+     edit the template, not the built file. */
+  :root {
+    --ink: #0d0d0d; --muted: #5d5a57; --rule: #c9c6c3; --paper: #fff; --wash: #f4f2f0;
+    --accent: #f24616; --err: #b42318; --err-bg: #fdf3f2; --warn: #854d0e; --warn-bg: #fdf8ec;
+    --ok: #0a7c3f; --ok-bg: #f1f8f3;
+    --font-display: "Playfair Display", "Iowan Old Style", Georgia, serif;
+    --font-body: "Helvetica Neue", Arial, "Segoe UI", system-ui, sans-serif;
+    color-scheme: light;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--wash); color: var(--ink); }
+  body { font-family: var(--font-body); font-size: 11px; line-height: 1.35; }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  /* ---------- screen chrome ---------- */
+  .toolbar {
+    position: sticky; top: 0; z-index: 10; display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+    padding: 10px 16px; background: var(--ink); color: #fff;
+  }
+  .toolbar strong { font-family: var(--font-display); font-size: 15px; letter-spacing: .04em; margin-right: auto; }
+  .btn {
+    cursor: pointer; font-weight: 700; padding: 8px 14px; border-radius: 999px;
+    border: 1px solid rgba(255,255,255,.4); background: transparent; color: #fff;
+  }
+  .btn:hover { border-color: #fff; }
+  .btn-primary { background: var(--accent); border-color: var(--accent); }
+
+  .setup {
+    max-width: 210mm; margin: 14px auto 0; padding: 14px 16px; background: #fff;
+    border: 1px solid var(--rule); border-radius: 10px; display: grid; gap: 12px; font-size: 12px;
+  }
+  .setup-row { display: grid; grid-template-columns: 150px 1fr; gap: 10px; align-items: center; }
+  .setup-row > span { font-weight: 700; color: var(--muted); }
+  .seg { display: inline-flex; flex-wrap: wrap; gap: 6px; }
+  .seg button {
+    cursor: pointer; padding: 7px 12px; border-radius: 8px; border: 1px solid var(--rule);
+    background: #fff; font-weight: 600;
+  }
+  .seg button[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: #fff; }
+  .setup input, .setup select { border: 1px solid var(--rule); border-radius: 6px; padding: 6px 8px; background: #fff; }
+  .setup .inline { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .setup .hint { color: var(--muted); font-size: 11px; }
+
+  .notice { max-width: 210mm; margin: 12px auto 0; padding: 10px 14px; border-radius: 0 6px 6px 0; font-size: 12px; }
+  .notice ul { margin: 4px 0 0; padding-left: 18px; }
+  .notice.err { border-left: 3px solid var(--err); background: var(--err-bg); color: var(--err); }
+  .notice.warn { border-left: 3px solid #a16207; background: var(--warn-bg); color: var(--warn); }
+  .notice.ok { border-left: 3px solid var(--ok); background: var(--ok-bg); color: var(--ok); }
+
+  /* ---------- sheet ---------- */
+  .sheet {
+    width: 210mm; min-height: 297mm; margin: 12px auto 40px; padding: 10mm; background: var(--paper);
+    border: 1px solid var(--ink); box-shadow: 0 2px 18px rgba(0,0,0,.12);
+  }
+  .sheet input, .sheet select, .sheet textarea {
+    width: 100%; border: 0; border-bottom: 1px dotted var(--rule); background: transparent; padding: 1px 0; border-radius: 0;
+  }
+  .sheet textarea { resize: none; overflow: hidden; min-height: 1.4em; display: block; }
+  .sheet input::placeholder, .sheet textarea::placeholder { color: #a8a4a0; }
+  .missing { background: var(--err-bg) !important; border-bottom: 1px solid var(--err) !important; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .readonly { padding: 1px 0; }
+  .dateprint { display: none; }
+
+  .masthead { display: flex; gap: 16px; align-items: flex-start; border-bottom: 2px solid var(--ink); padding-bottom: 8px; margin-bottom: 10px; }
+  .logo { width: 146px; height: auto; display: block; }
+  .tagline { font-size: 8.5px; letter-spacing: .22em; text-transform: uppercase; color: var(--muted); margin-top: 5px; }
+  .seller { flex: 1; min-width: 0; }
+  .seller dl { display: grid; grid-template-columns: 80px 1fr; gap: 2px 8px; margin: 6px 0 0; font-size: 10px; }
+  .seller dt { color: var(--muted); }
+  .seller dd { margin: 0; }
+  .doc-title { text-align: right; max-width: 78mm; }
+  .doc-title h1 { font-family: var(--font-display); font-size: 19px; letter-spacing: .1em; margin: 0; text-transform: uppercase; }
+  .doc-sub { font-size: 9px; letter-spacing: .04em; text-transform: uppercase; margin-top: 4px; font-weight: 700; }
+  .copy-line { font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-top: 4px; }
+  .copy-line select { text-align: right; }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--ink); border-bottom: 0; }
+  .grid2 > .cell + .cell { border-left: 1px solid var(--ink); }
+  .cell { padding: 6px 8px; min-width: 0; }
+  .cell-head { font-size: 8.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+  .kv { display: grid; grid-template-columns: 96px 1fr; gap: 2px 8px; align-items: baseline; }
+  .kv > .k { color: var(--muted); font-size: 10px; }
+
+  .table-scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  .items { border: 1px solid var(--ink); }
+  .items th, .items td { border: 1px solid var(--rule); padding: 4px 5px; vertical-align: top; }
+  .items thead th {
+    background: var(--wash); font-size: 8.5px; letter-spacing: .05em; text-transform: uppercase;
+    text-align: center; border-color: var(--ink); font-weight: 700;
+  }
+  .items td input, .items td select, .items td textarea { border-bottom: 0; }
+  .items .c-desc { width: 30%; }
+  .sub { display: block; font-size: 8.5px; color: var(--muted); }
+  .del { border: 0; background: transparent; color: var(--err); cursor: pointer; font-size: 14px; line-height: 1; }
+  .add-row { margin-top: 6px; border: 1px dashed var(--rule); background: #fff; cursor: pointer; padding: 6px 10px; border-radius: 6px; font-weight: 600; }
+
+  .totals { display: grid; grid-template-columns: 1fr 80mm; border: 1px solid var(--ink); border-top: 0; }
+  .totals > div { padding: 7px 8px; min-width: 0; }
+  .totals > div + div { border-left: 1px solid var(--ink); }
+  .tline { display: flex; justify-content: space-between; gap: 10px; padding: 2px 0; }
+  .tline.grand { border-top: 1px solid var(--ink); margin-top: 4px; padding-top: 5px; font-size: 13px; font-weight: 700; }
+  .tline.inr { color: var(--muted); }
+  .words b { text-transform: uppercase; font-size: 10px; }
+  .gap { height: 9px; }
+  .note { font-size: 9px; color: var(--muted); margin-top: 4px; }
+
+  .hsn th, .hsn td { border: 1px solid var(--rule); padding: 3px 5px; font-size: 9.5px; }
+  .hsn thead th { background: var(--wash); font-size: 8.5px; letter-spacing: .05em; text-transform: uppercase; }
+
+  .foot { display: grid; grid-template-columns: 1fr 70mm; border: 1px solid var(--ink); }
+  .foot > div { padding: 7px 8px; min-width: 0; }
+  .foot > div + div { border-left: 1px solid var(--ink); }
+  .sign { display: flex; flex-direction: column; justify-content: space-between; min-height: 32mm; text-align: right; }
+  .sign-line { border-top: 1px solid var(--ink); padding-top: 3px; font-size: 9.5px; }
+  .terms { font-size: 9px; color: var(--muted); line-height: 1.45; margin: 4px 0 0; padding-left: 16px; }
+  .decl { font-size: 9.5px; font-weight: 700; margin-top: 6px; }
+  .eoe { font-size: 8.5px; color: var(--muted); text-align: right; margin-top: 6px; letter-spacing: .06em; }
+
+  [hidden] { display: none !important; }
+  .view-seg button { color: #fff; background: transparent; border-color: rgba(255,255,255,.4); }
+  .view-seg button[aria-pressed="true"] { background: #fff; color: var(--ink); border-color: #fff; }
+  .charges { border-top: 0; margin-top: 8px; }
+  .stamp-slot { height: 22mm; display: flex; justify-content: flex-end; align-items: flex-end; }
+  .stamp-slot img { max-height: 22mm; max-width: 60mm; }
+  .cust-seal { margin-top: 8mm; padding-top: 3px; border-top: 1px dashed var(--rule); font-size: 9px; color: var(--muted); text-align: left; width: 60mm; }
+  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 20; display: flex; align-items: flex-start; justify-content: center; padding: 40px 16px; overflow: auto; }
+  .panel { background: #fff; border-radius: 10px; width: min(900px, 100%); padding: 16px; font-size: 12px; }
+  .panel h2 { font-family: var(--font-display); margin: 0 0 10px; font-size: 18px; }
+  .panel table { font-size: 12px; }
+  .panel th, .panel td { border-bottom: 1px solid var(--wash); padding: 6px 4px; text-align: left; }
+  .panel .tools { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; align-items: center; }
+  .panel input[type=search] { flex: 1; min-width: 160px; border: 1px solid var(--rule); border-radius: 6px; padding: 6px 8px; }
+  .panel .act { cursor: pointer; border: 1px solid var(--rule); background: #fff; border-radius: 6px; padding: 3px 8px; margin-right: 4px; }
+
+  @media screen and (max-width: 820px) {
+    .setup, .notice { margin-left: 12px; margin-right: 12px; }
+    .setup-row { grid-template-columns: 1fr; gap: 4px; }
+    .sheet { width: auto; min-height: 0; margin: 12px; padding: 14px; }
+    .masthead { flex-direction: column; }
+    .doc-title { text-align: left; max-width: none; }
+    .grid2, .totals, .foot { grid-template-columns: 1fr; }
+    .grid2 > .cell + .cell, .totals > div + div, .foot > div + div { border-left: 0; border-top: 1px solid var(--ink); }
+    .table-scroll table.items { min-width: 760px; }
+    .sign { text-align: left; }
+  }
+
+  @media print {
+    @page { size: A4; margin: 10mm; }
+    html, body { background: #fff; }
+    .no-print, .toolbar, .setup, .notice, .del, .add-row, .c-x, .overlay { display: none !important; }
+    .charges-empty { display: none !important; }
+    .sheet { width: auto; min-height: 0; margin: 0; padding: 0; border: 0; box-shadow: none; }
+    .sheet input, .sheet select, .sheet textarea { border-bottom: 0 !important; background: transparent !important; }
+    .sheet select { appearance: none; -webkit-appearance: none; }
+    .missing { background: transparent !important; }
+    input::placeholder, textarea::placeholder { color: transparent !important; }
+    .empty-print { display: none !important; }
+    .grid2.one-col-print { grid-template-columns: 1fr; }
+    .sheet input[type="date"] { display: none !important; }
+    .dateprint { display: inline !important; }
+    .dateprint.empty-print { display: none !important; }
+    .items thead th, .hsn thead th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <strong>Invoices</strong>
+  <div class="seg view-seg" id="view-seg" role="group" aria-label="Document view">
+    <button type="button" data-view="invoice" aria-pressed="true">Invoice</button>
+    <button type="button" data-view="packing" aria-pressed="false">Packing list</button>
+  </div>
+  <button type="button" class="btn" id="btn-history">History</button>
+  <button type="button" class="btn" id="btn-new">New invoice</button>
+  <button type="button" class="btn" id="btn-save">Save my details</button>
+  <button type="button" class="btn btn-primary" id="btn-print">Print / Save PDF</button>
+</div>
+
+<section class="setup" aria-label="Invoice setup">
+  <div class="setup-row">
+    <span>Customer is</span>
+    <div class="seg" data-field="market">
+      <button type="button" data-value="domestic">In India</button>
+      <button type="button" data-value="export">Overseas (export)</button>
+    </div>
+  </div>
+  <div class="setup-row">
+    <span>Document</span>
+    <div class="seg" data-field="docType">
+      <button type="button" data-value="tax">Tax invoice</button>
+      <button type="button" data-value="bos" data-domestic-only>Bill of supply (no GST)</button>
+      <button type="button" data-value="proforma">Proforma / quotation</button>
+    </div>
+  </div>
+  <div class="setup-row" id="row-rate-mode">
+    <span>Rates you type</span>
+    <div class="seg" data-field="rateMode">
+      <button type="button" data-value="excl">GST extra (added on top)</button>
+      <button type="button" data-value="incl">GST included in rate</button>
+    </div>
+  </div>
+  <div class="setup-row" id="row-export-mode">
+    <span>Export type</span>
+    <div class="seg" data-field="exportMode">
+      <button type="button" data-value="lut">Under LUT (no IGST)</button>
+      <button type="button" data-value="igst">With IGST paid</button>
+    </div>
+  </div>
+  <div class="setup-row" id="row-currency">
+    <span>Currency</span>
+    <div class="inline">
+      <select id="currency" aria-label="Currency"></select>
+      <label>1 <span id="cur-code">USD</span> = ₹ <input id="fxRate" inputmode="decimal" size="8" aria-label="Exchange rate"></label>
+      <span class="hint">Use the CBIC notified rate for the shipping bill date.</span>
+    </div>
+  </div>
+  <div class="setup-row" id="row-lut">
+    <span>LUT ARN</span>
+    <div class="inline"><input id="lutArn" size="22" placeholder="e.g. AD0804260012345"><span class="hint">Your Letter of Undertaking for this financial year.</span></div>
+  </div>
+  <div class="setup-row">
+    <span>Stamp &amp; sign</span>
+    <div class="inline">
+      <label class="add-row" style="margin:0">Upload stamp image<input type="file" id="stamp-file" accept="image/*" hidden></label>
+      <button type="button" class="add-row" id="stamp-remove" style="margin:0">Remove</button>
+      <label><input type="checkbox" id="stamp-show" checked> Show on documents</label>
+      <img id="stamp-preview" alt="" style="max-height:40px;display:none">
+      <span class="hint">Saved only on this computer. The white background is removed automatically.</span>
+    </div>
+  </div>
+  <div class="setup-row" id="row-bos">
+    <span>Reason no GST</span>
+    <div class="seg" data-field="bosReason">
+      <button type="button" data-value="composition">We are a composition dealer</button>
+      <button type="button" data-value="exempt">Goods are exempt</button>
+    </div>
+  </div>
+</section>
+
+<div class="notice" id="checklist" role="status"></div>
+
+<div class="sheet">
+  <div class="masthead">
+    <div class="seller">
+      <svg class="logo" role="img" aria-label="stonearts" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 337 85" xml:space="preserve">
+<style type="text/css"> .st0{fill:#0D0D0D;}
+</style>
+<g> <g> <path class="st0" d="M51.4,41.6H39.7c-0.5-2.4-1.7-3.8-3.8-3.8c-1.6,0-2.8,1.1-2.8,2.6c0,2,1.6,3.3,8.3,5c6.4,1.6,11,4.4,11,11.2 c0,7.5-7.1,11-15.6,11c-9.6,0-16.1-4-17-11.9h11.7c0.7,2.7,2.8,4.5,5.3,4.5c2.1,0,3.8-0.9,3.8-2.7c0-2.2-2.2-3.5-8.5-5 c-6.7-1.6-10.8-4.7-10.8-10.7c0-7,6.1-11.4,15.4-11.4C45.4,30.3,50.4,35.2,51.4,41.6z"/> <path class="st0" d="M68.7,51.9c0,1.2,0,2.5,0.1,3.4c0.3,3.6,1.4,4.4,7,4.1v7.4c-2.3,0.4-4.5,0.6-7,0.6c-8.8,0-11.4-2.7-11.8-8.1 c-0.1-2-0.1-3.7-0.1-5.7V38.9h-5.6v-7.4h5.6v-9.1h11.9v9.1h7.8v7.4h-7.8V51.9z"/> <path class="st0" d="M111.9,48.9c0,11.3-7.4,18.5-18.9,18.5C81.4,67.4,74,60.2,74,48.9c0-11.4,7.4-18.5,18.9-18.5 C104.5,30.3,111.9,37.5,111.9,48.9z M99.7,48.9c0-7.1-2.6-10.5-6.8-10.5s-6.8,3.4-6.8,10.5c0,7,2.6,10.5,6.8,10.5 S99.7,55.9,99.7,48.9z"/> <path class="st0" d="M148.3,46.6v19.9h-11.9v-18c0-1.1,0-3-0.1-4.8c-0.3-3.4-2.1-5.3-5.7-5.3c-3.6,0-6.2,3.5-6.2,11.5v16.6h-11.9 V31.3h11.9v5.5l3.2-4.4c2.2-1.3,4.7-2,7.9-2c7.3,0,11.5,3.4,12.5,9.6C148.2,41.7,148.3,43.7,148.3,46.6z"/> <path class="st0" d="M185.9,51.9h-24.6c0.6,5.9,3.2,7.5,6.5,7.5c3.4,0,5.4-1.7,5.9-4.4h11.7c-2,8-8.6,12.5-17.7,12.5 c-10.1,0-18.1-6-18.1-18.4c0-10.3,7.1-18.7,18.8-18.7s17.7,9,17.7,18.1C186.1,49.5,186,50.7,185.9,51.9z M161.7,44.6h11.9 c-0.7-4.2-2.7-6.2-5.9-6.2C164.7,38.4,162.5,40.2,161.7,44.6z"/> <path class="st0" d="M206.6,61.4l-1.5,3.7c-2.5,1.6-5.5,2.4-8.7,2.4c-5.8,0-11.3-3.6-11.3-10.4c0-7.5,7.1-12.1,19.1-12.1h2.2v-0.5 c0-0.7,0-1.5-0.1-2.6c-0.2-1.8-1.7-3.4-4.2-3.4c-2.8,0-4.4,1.8-4.6,4.8l-11.2,0.1c0.1-8.3,7.4-12.9,16.3-12.9 c11.2,0,15,5,15.5,11.4c0.1,1.8,0.2,3.8,0.2,6v9.9c0,2.6,0.1,5,0.7,8.9h-11.6L206.6,61.4z M206.5,53.9v-2.3 c-5.3-0.4-9.2,1-9.2,4.5c0,2.1,1.6,3.3,4,3.3S206.5,57.6,206.5,53.9z"/> <path class="st0" d="M245,30.5v9.7c-8.9-0.6-12.1,2.7-12.1,13.3v12.9H221V31.3h11.9v7.1l2.5-5c1.9-2.1,4.7-3.1,6.9-3.1 C243.4,30.3,244.2,30.4,245,30.5z"/> <path class="st0" d="M255.5,51.9c0,1.2,0,2.5,0.1,3.4c0.3,3.6,1.4,4.4,7,4.1v7.4c-2.3,0.4-4.5,0.6-7,0.6c-8.8,0-11.4-2.7-11.8-8.1 c-0.1-2-0.1-3.7-0.1-5.7V38.9H238v-7.4h5.6v-9.1h11.9v9.1h7.8v7.4h-7.8V51.9z"/> <path class="st0" d="M294.5,41.6h-11.7c-0.5-2.4-1.7-3.8-3.8-3.8c-1.7,0-2.8,1.1-2.8,2.6c0,2,1.6,3.3,8.3,5 c6.4,1.6,11,4.4,11,11.2c0,7.5-7.1,11-15.6,11c-9.6,0-16.1-4-17-11.9h11.7c0.7,2.7,2.8,4.5,5.3,4.5c2.1,0,3.8-0.9,3.8-2.7 c0-2.2-2.2-3.5-8.5-5c-6.7-1.6-10.8-4.7-10.8-10.7c0-7,6.1-11.4,15.4-11.4C288.5,30.3,293.5,35.2,294.5,41.6z"/> <path class="st0" d="M322,23.9c0,8.1-5.7,13.9-13.9,13.9c-8.2,0-13.9-5.7-13.9-13.9s5.7-13.9,13.9-13.9 C316.3,10.1,322,15.8,322,23.9z M318,23.9c0-5.9-4.1-10.2-9.9-10.2c-5.8,0-9.9,4.2-9.9,10.2s4.1,10.2,9.9,10.2 C314,34.1,318,29.9,318,23.9z M313.6,27c0.2,1.8,0.5,2.8,0.9,3.6H310c-0.2-0.8-0.3-1.7-0.5-2.7c-0.2-1.3-0.7-1.9-1.9-1.9h-0.9v4.6 h-4V16.5h5.1c0.7,0,1.2,0,1.8,0.1c3.2,0.3,4.6,1.9,4.6,4c0,1.8-1.1,3-2.6,3.4C313,24.4,313.4,25.6,313.6,27z M310,21.2 c0-0.9-0.5-1.6-1.3-1.7c-0.5-0.1-0.7-0.1-1.3-0.1h-0.7V23h0.6c0.5,0,0.9,0,1.3-0.1C309.5,22.8,310,22,310,21.2z"/> </g>
+</g>
+</svg>
+      <div class="tagline">AKUROCK® stone acoustic wall panels · StoneSkin</div>
+      <dl>
+        <dt>Legal name</dt><dd><input id="s_legal" data-seller></dd>
+        <dt>Address</dt><dd><textarea id="s_addr" data-seller rows="1"></textarea></dd>
+        <dt>State</dt><dd class="readonly" id="s_state_out">—</dd>
+        <dt>GSTIN</dt><dd><input id="s_gstin" data-seller></dd>
+        <dt>PAN</dt><dd class="readonly" id="s_pan_out">—</dd>
+        <dt class="opt-row" data-for="s_contact">Contact</dt><dd class="opt-row" data-for="s_contact"><input id="s_contact" data-seller placeholder="Phone · email"></dd>
+        <dt class="export-only opt-row" data-for="s_iec">IEC</dt><dd class="export-only opt-row" data-for="s_iec"><input id="s_iec" data-seller placeholder="Import Export Code"></dd>
+        <dt class="export-only opt-row" data-for="lutArn">LUT</dt><dd class="export-only opt-row readonly" data-for="lutArn" id="s_lut_out"></dd>
+      </dl>
+    </div>
+    <div class="doc-title">
+      <h1 id="doc-title">Tax Invoice</h1>
+      <div class="doc-sub" id="doc-sub"></div>
+      <div class="copy-line" id="copy-wrap">
+        <select id="copyType" aria-label="Copy">
+          <option>Original for Recipient</option>
+          <option>Duplicate for Transporter</option>
+          <option>Triplicate for Supplier</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="cell">
+      <div class="cell-head" id="details-head">Invoice details</div>
+      <div class="kv">
+        <span class="k" id="no-label">Invoice no.</span>
+        <div style="display:flex;gap:6px"><input id="inv_no" placeholder="SAI/26-27/001"><button type="button" class="add-row no-print" id="btn-next" style="margin:0;padding:1px 8px">Next no.</button></div>
+        <span class="k">Date</span><input id="inv_date" type="date">
+        <span class="k opt-row" data-for="due_date" id="due-label">Due date</span><input class="opt-row" data-for="due_date" id="due_date" type="date">
+        <span class="k inv-only">Place of supply</span>
+        <div class="inv-only"><select id="pos" class="domestic-only"></select><span class="export-only readonly">96 — Outside India</span></div>
+        <span class="k tax-only">Supply</span><span class="readonly tax-only" id="supply-out">—</span>
+        <span class="k tax-only">Reverse charge</span><span class="readonly tax-only">No</span>
+      </div>
+    </div>
+    <div class="cell" id="ref-cell">
+      <div class="cell-head" id="ref-head">Order &amp; transport</div>
+      <div class="kv">
+        <span class="k opt-row" data-for="po_no">Buyer's order no.</span><input class="opt-row" data-for="po_no" id="po_no">
+        <span class="k opt-row domestic-only" data-for="eway">E-way bill no.</span><input class="opt-row domestic-only" data-for="eway" id="eway" placeholder="Needed above ₹50,000">
+        <span class="k opt-row domestic-only" data-for="vehicle">Vehicle no.</span><input class="opt-row domestic-only" data-for="vehicle" id="vehicle">
+        <span class="k opt-row export-only" data-for="port_load">Port of loading</span><input class="opt-row export-only" data-for="port_load" id="port_load">
+        <span class="k opt-row domestic-only" data-for="dispatch">Dispatched through</span><input class="opt-row domestic-only" data-for="dispatch" id="dispatch" placeholder="Transporter">
+        <span class="k opt-row export-only" data-for="port_discharge">Port of discharge</span><input class="opt-row export-only" data-for="port_discharge" id="port_discharge">
+        <span class="k opt-row export-only" data-for="via">Shipped by</span>
+        <select class="opt-row export-only" data-for="via" id="via"><option value=""></option><option>By sea</option><option>By air</option><option>By road</option><option>By courier</option></select>
+        <span class="k opt-row" data-for="destination">Destination</span><input class="opt-row" data-for="destination" id="destination">
+        <span class="k opt-row" data-for="pay_terms">Payment terms</span><input class="opt-row" data-for="pay_terms" id="pay_terms" list="pay-terms" placeholder="e.g. 100% advance">
+        <span class="k opt-row export-only" data-for="incoterms">Incoterms</span>
+        <select class="opt-row export-only" data-for="incoterms" id="incoterms"><option value=""></option><option>EXW</option><option>FCA</option><option>FOB</option><option>CFR</option><option>CIF</option><option>CPT</option><option>CIP</option><option>DAP</option><option>DPU</option><option>DDP</option></select>
+        <span class="k opt-row export-only" data-for="sb_no">Shipping bill no.</span><input class="opt-row export-only" data-for="sb_no" id="sb_no">
+        <span class="k opt-row proforma-only" data-for="valid_until">Valid until</span><input class="opt-row proforma-only" data-for="valid_until" id="valid_until" type="date">
+      </div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="cell">
+      <div class="cell-head">Bill to</div>
+      <div class="kv">
+        <span class="k">Name</span><input id="c_name">
+        <span class="k">Address</span><textarea id="c_addr" rows="1"></textarea>
+        <span class="k domestic-only">GSTIN</span><input class="domestic-only" id="c_gstin" placeholder="Blank if unregistered">
+        <span class="k domestic-only">State</span><span class="readonly domestic-only" id="c_state_out">—</span>
+        <span class="k export-only">Country</span><input class="export-only" id="c_country">
+        <span class="k opt-row export-only" data-for="c_taxid">Tax / VAT ID</span><input class="opt-row export-only" data-for="c_taxid" id="c_taxid">
+      </div>
+    </div>
+    <div class="cell" id="ship-cell">
+      <div class="cell-head">Ship to <span class="no-print" style="text-transform:none;letter-spacing:0">(only if different)</span></div>
+      <div class="kv">
+        <span class="k">Name</span><input id="d_name">
+        <span class="k">Address</span><textarea id="d_addr" rows="1"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-scroll">
+  <table class="items">
+    <thead><tr id="items-head"></tr></thead>
+    <tbody id="items"></tbody>
+    <tfoot id="pk-foot" hidden><tr>
+      <td></td><td><b>Total</b></td><td class="c-hsn"></td><td class="num"><b id="pk-qty"></b></td><td id="pk-unit"></td>
+      <td class="num"><b id="pk-boxes"></b></td><td class="num"><b id="pk-gw"></b></td><td class="num"><b id="pk-nw"></b></td><td class="c-x"></td>
+    </tr></tfoot>
+  </table>
+  </div>
+  <button type="button" class="add-row" id="btn-add">+ Add item</button>
+
+  <div id="charges-wrap" class="inv-only">
+    <div class="table-scroll" id="charges-table-wrap">
+    <table class="items charges">
+      <thead><tr id="charges-head"></tr></thead>
+      <tbody id="charges"></tbody>
+    </table>
+    </div>
+    <button type="button" class="add-row" id="btn-add-charge">+ Add freight / other charge</button>
+  </div>
+
+  <div id="pk-summary" class="pk-only" hidden>
+    <div class="gap"></div>
+    <div class="kv" style="grid-template-columns:120px 1fr">
+      <span class="k">Total packages</span><b id="pk-sum-boxes"></b>
+      <span class="k">Net weight</span><b id="pk-sum-nw"></b>
+      <span class="k">Gross weight</span><b id="pk-sum-gw"></b>
+    </div>
+  </div>
+
+  <div class="totals inv-only">
+    <div>
+      <div class="cell-head">Amount chargeable (in words)</div>
+      <div class="words"><b id="words">—</b></div>
+      <div id="taxwords-wrap"><div class="gap"></div><div class="cell-head" id="taxwords-head">Tax amount (in words)</div><div class="words"><b id="tax-words"></b></div></div>
+    </div>
+    <div id="totals-box"></div>
+  </div>
+
+  <div id="hsn-wrap" class="inv-only">
+    <div class="gap"></div>
+    <div class="cell-head">HSN / SAC summary</div>
+    <div class="table-scroll"><table class="hsn"><thead><tr id="hsn-head"></tr></thead><tbody id="hsn-body"></tbody></table></div>
+  </div>
+
+  <div class="gap"></div>
+  <div class="foot">
+    <div>
+      <div class="inv-only">
+      <div class="cell-head">Bank details</div>
+      <div class="kv">
+        <span class="k">Account name</span><input id="bk_name" data-seller>
+        <span class="k">Account no.</span><input id="bk_acc" data-seller>
+        <span class="k domestic-only">IFSC</span><input class="domestic-only" id="bk_ifsc" data-seller>
+        <span class="k opt-row" data-for="bk_swift" id="swift-label">SWIFT</span><input class="opt-row" data-for="bk_swift" id="bk_swift" data-seller>
+        <span class="k">Bank &amp; branch</span><textarea id="bk_bank" data-seller rows="1"></textarea>
+        <span class="k opt-row domestic-only" data-for="bk_upi">UPI</span><input class="opt-row domestic-only" data-for="bk_upi" id="bk_upi" data-seller>
+      </div>
+      </div>
+      <div class="decl" id="declaration"></div>
+      <ol class="terms" id="terms"></ol>
+    </div>
+    <div class="sign">
+      <div>
+        <div class="note" id="sign-note"></div>
+        <div class="cust-seal inv-only" id="cust-seal">Customer's seal and signature</div>
+      </div>
+      <div>
+        <div style="font-size:9.5px;color:var(--muted)">For <b id="sign-firm">—</b></div>
+        <div class="stamp-slot"><img id="stamp-img" alt="" hidden></div>
+        <div class="sign-line">Authorised signatory</div>
+      </div>
+    </div>
+  </div>
+  <div class="eoe">E. &amp; O.E. · Computer-generated document.</div>
+</div>
+
+<script>
+/**
+ * Invoice engine: every number and every GST rule the invoice sheet prints.
+ *
+ * Plain ES2017, no imports, so the same file runs in Vitest and is inlined
+ * verbatim into the standalone sheet (scripts/build-invoice.mjs). The sheet
+ * never does its own arithmetic: it collects fields, calls computeInvoice and
+ * checkInvoice, and renders what comes back.
+ *
+ * Money is handled in paise-rounded steps (round2) at the exact points a
+ * printed figure is produced, so every printed column adds up to the printed
+ * total and the only rounding the reader sees is the explicit round-off line.
+ */
+(function (root, factory) {
+  var engine = factory();
+  if (typeof module === "object" && module.exports) module.exports = engine;
+  else root.InvoiceEngine = engine;
+})(typeof self !== "undefined" ? self : this, function () {
+  "use strict";
+
+  // GST state codes as used in GSTINs and on the GST portal. 25 (Daman & Diu)
+  // and 28 (old Andhra Pradesh) are retired: their GSTINs now begin 26 and 37.
+  var STATES = {
+    "01": "Jammu and Kashmir", "02": "Himachal Pradesh", "03": "Punjab", "04": "Chandigarh",
+    "05": "Uttarakhand", "06": "Haryana", "07": "Delhi", "08": "Rajasthan", "09": "Uttar Pradesh",
+    "10": "Bihar", "11": "Sikkim", "12": "Arunachal Pradesh", "13": "Nagaland", "14": "Manipur",
+    "15": "Mizoram", "16": "Tripura", "17": "Meghalaya", "18": "Assam", "19": "West Bengal",
+    "20": "Jharkhand", "21": "Odisha", "22": "Chhattisgarh", "23": "Madhya Pradesh", "24": "Gujarat",
+    "26": "Dadra and Nagar Haveli and Daman and Diu", "27": "Maharashtra", "29": "Karnataka",
+    "30": "Goa", "31": "Lakshadweep", "32": "Kerala", "33": "Tamil Nadu", "34": "Puducherry",
+    "35": "Andaman and Nicobar Islands", "36": "Telangana", "37": "Andhra Pradesh", "38": "Ladakh",
+    "97": "Other Territory"
+  };
+
+  // Union territories without a legislature levy UTGST in place of SGST.
+  // Delhi (07), Puducherry (34) and J&K (01) have legislatures: SGST.
+  var UT_WITHOUT_LEGISLATURE = { "04": 1, "26": 1, "31": 1, "35": 1, "38": 1, "97": 1 };
+
+  // Rates in force after the September 2025 rationalisation. Any other rate
+  // can still be typed; checkInvoice warns rather than refuses, because a
+  // product-specific notified rate must stay possible.
+  var GST_RATES = [0, 0.25, 3, 5, 18, 40];
+
+  var CURRENCIES = {
+    INR: { symbol: "₹", major: ["Rupee", "Rupees"], minor: ["paisa", "paise"], indian: true },
+    USD: { symbol: "US$", major: ["US Dollar", "US Dollars"], minor: ["cent", "cents"] },
+    EUR: { symbol: "€", major: ["Euro", "Euros"], minor: ["cent", "cents"] },
+    GBP: { symbol: "£", major: ["Pound Sterling", "Pounds Sterling"], minor: ["penny", "pence"] },
+    AED: { symbol: "AED", major: ["UAE Dirham", "UAE Dirhams"], minor: ["fils", "fils"] },
+    SAR: { symbol: "SAR", major: ["Saudi Riyal", "Saudi Riyals"], minor: ["halala", "halalas"] },
+    QAR: { symbol: "QAR", major: ["Qatari Riyal", "Qatari Riyals"], minor: ["dirham", "dirhams"] },
+    AUD: { symbol: "A$", major: ["Australian Dollar", "Australian Dollars"], minor: ["cent", "cents"] },
+    CAD: { symbol: "C$", major: ["Canadian Dollar", "Canadian Dollars"], minor: ["cent", "cents"] },
+    NZD: { symbol: "NZ$", major: ["New Zealand Dollar", "New Zealand Dollars"], minor: ["cent", "cents"] },
+    SGD: { symbol: "S$", major: ["Singapore Dollar", "Singapore Dollars"], minor: ["cent", "cents"] },
+    CHF: { symbol: "CHF", major: ["Swiss Franc", "Swiss Francs"], minor: ["centime", "centimes"] }
+  };
+
+  function round2(n) {
+    // Nudge by EPSILON so 2.675 rounds to 2.68 as a person would, not 2.67.
+    return Math.round((n + (n >= 0 ? 1 : -1) * Number.EPSILON) * 100) / 100;
+  }
+
+  function num(v) {
+    if (typeof v === "number") return isFinite(v) ? v : 0;
+    var n = parseFloat(String(v == null ? "" : v).replace(/,/g, ""));
+    return isFinite(n) ? n : 0;
+  }
+
+  /* ---------------- identifiers ---------------- */
+
+  var GSTIN_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+  function gstinCheckChar(first14) {
+    var total = 0;
+    for (var i = 0; i < 14; i++) {
+      var v = GSTIN_CHARS.indexOf(first14.charAt(i)) * (i % 2 === 0 ? 1 : 2);
+      total += Math.floor(v / 36) + (v % 36);
+    }
+    return GSTIN_CHARS.charAt((36 - (total % 36)) % 36);
+  }
+
+  /** {ok, reason} — format, known state code, and the check character. */
+  function validateGstin(raw) {
+    var g = String(raw || "").trim().toUpperCase();
+    if (!g) return { ok: false, reason: "empty" };
+    if (!/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/.test(g)) return { ok: false, reason: "format" };
+    if (!STATES[g.slice(0, 2)]) return { ok: false, reason: "state" };
+    if (gstinCheckChar(g.slice(0, 14)) !== g.charAt(14)) return { ok: false, reason: "checksum" };
+    return { ok: true, gstin: g, stateCode: g.slice(0, 2), pan: g.slice(2, 12) };
+  }
+
+  /** Indian financial year label for a yyyy-mm-dd date: 2026-10-09 -> "26-27". */
+  function financialYear(dateStr) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(dateStr || ""));
+    if (!m) return "";
+    var y = +m[1], start = +m[2] >= 4 ? y : y - 1;
+    return String(start % 100).padStart(2, "0") + "-" + String((start + 1) % 100).padStart(2, "0");
+  }
+
+  /** Rule 46(b): up to 16 characters, letters, digits, "-" and "/" only. */
+  function validateInvoiceNumber(no) {
+    var s = String(no || "").trim();
+    if (!s) return "empty";
+    if (s.length > 16) return "too_long";
+    if (!/^[A-Za-z0-9\/-]+$/.test(s)) return "characters";
+    return "";
+  }
+
+  /* ---------------- tax structure ---------------- */
+
+  /**
+   * Which tax heads apply. Exports are inter-state supplies by law (IGST Act
+   * s.7(5)), whether or not IGST is actually charged.
+   */
+  function taxHeads(inv) {
+    if (inv.docType === "bos") return { nature: "none", heads: [] };
+    if (inv.market === "export") {
+      return inv.exportMode === "lut"
+        ? { nature: "export-lut", heads: [] }
+        : { nature: "export-igst", heads: ["IGST"] };
+    }
+    var seller = String(inv.sellerStateCode || ""), pos = String(inv.posStateCode || "");
+    if (!seller || !pos) return { nature: "unknown", heads: [] };
+    if (seller !== pos) return { nature: "inter", heads: ["IGST"] };
+    return { nature: "intra", heads: UT_WITHOUT_LEGISLATURE[pos] ? ["CGST", "UTGST"] : ["CGST", "SGST"] };
+  }
+
+  /* ---------------- computation ---------------- */
+
+  /**
+   * inv = {
+   *   docType: "tax" | "bos" | "proforma", market: "domestic" | "export",
+   *   exportMode: "lut" | "igst", sellerStateCode, posStateCode,
+   *   rateIncludesTax: bool (domestic only), currency, fxRate (INR per unit),
+   *   items: [{ desc, hsn, qty, unit, rate, discount, gstRate }]
+   * }
+   */
+  /**
+   * Item lines plus "other charges" (freight, packing, insurance...). A charge
+   * is one line of quantity 1, always typed before GST — that is how
+   * freight is billed (SAC 996521 etc.) even when goods are priced inclusive.
+   */
+  function allLines(inv) {
+    var items = (inv.items || []).map(function (it) { return Object.assign({}, it, { isCharge: false }); });
+    var charges = (inv.charges || []).filter(function (c) {
+      return String(c.label || "").trim() || num(c.amount) || String(c.sac || "").trim();
+    }).map(function (c) {
+      return { desc: c.label, hsn: c.sac, qty: 1, unit: "", rate: c.amount, discount: 0, gstRate: c.gstRate, isCharge: true };
+    });
+    return items.concat(charges);
+  }
+
+  function computeInvoice(inv) {
+    var structure = taxHeads(inv);
+    var heads = structure.heads;
+    var charges = heads.length > 0;
+    var isExport = inv.market === "export";
+    var currency = isExport ? (inv.currency || "USD") : "INR";
+    var fx = isExport ? num(inv.fxRate) : 1;
+    var inclusive = !isExport && charges && !!inv.rateIncludesTax;
+    var split = heads.length === 2;
+
+    var lines = [];
+    var hsnMap = {};
+    var t = { gross: 0, discount: 0, taxable: 0, tax: { CGST: 0, SGST: 0, UTGST: 0, IGST: 0 }, taxTotal: 0, taxableInr: 0 };
+
+    allLines(inv).forEach(function (it, i) {
+      var qty = num(it.qty), rate = num(it.rate), disc = Math.max(0, num(it.discount));
+      var gstRate = charges ? Math.max(0, num(it.gstRate)) : 0;
+      var gross = round2(qty * rate);
+      var net = round2(Math.max(0, gross - disc));
+
+      // Tax is always computed in rupees. For an export the line is priced in
+      // foreign currency and converted at the notified rate first.
+      var taxable, taxableInr, a = { CGST: 0, SGST: 0, UTGST: 0, IGST: 0 };
+      if (inclusive && gstRate > 0 && !it.isCharge) {
+        taxable = round2(net / (1 + gstRate / 100));
+      } else {
+        taxable = net;
+      }
+      taxableInr = isExport ? round2(taxable * fx) : taxable;
+
+      if (charges && gstRate > 0) {
+        if (split) {
+          // Each half is computed on the same base and rounded on its own, so
+          // CGST and SGST always print as the same figure.
+          var half = round2(taxableInr * gstRate / 200);
+          a[heads[0]] = half;
+          a[heads[1]] = half;
+        } else {
+          a.IGST = round2(taxableInr * gstRate / 100);
+        }
+      }
+      var lineTax = round2(a.CGST + a.SGST + a.UTGST + a.IGST);
+      var lineTotal = isExport ? taxable : round2(taxable + lineTax);
+
+      lines.push({
+        index: i + 1, isCharge: !!it.isCharge, desc: it.desc || "", hsn: String(it.hsn || "").trim(), qty: qty, unit: it.unit || "",
+        rate: rate, gross: gross, discount: round2(gross - net), taxable: taxable, taxableInr: taxableInr,
+        gstRate: gstRate, tax: a, taxTotal: lineTax, total: lineTotal
+      });
+
+      t.gross = round2(t.gross + gross);
+      t.discount = round2(t.discount + (gross - net));
+      t.taxable = round2(t.taxable + taxable);
+      t.taxableInr = round2(t.taxableInr + taxableInr);
+      ["CGST", "SGST", "UTGST", "IGST"].forEach(function (h) { t.tax[h] = round2(t.tax[h] + a[h]); });
+      t.taxTotal = round2(t.taxTotal + lineTax);
+
+      var key = (it.hsn || "").trim() + "|" + gstRate;
+      if (!hsnMap[key]) hsnMap[key] = { hsn: (it.hsn || "").trim(), gstRate: gstRate, taxable: 0, tax: { CGST: 0, SGST: 0, UTGST: 0, IGST: 0 }, taxTotal: 0 };
+      var h = hsnMap[key];
+      h.taxable = round2(h.taxable + taxableInr);
+      ["CGST", "SGST", "UTGST", "IGST"].forEach(function (k) { h.tax[k] = round2(h.tax[k] + a[k]); });
+      h.taxTotal = round2(h.taxTotal + lineTax);
+    });
+
+    var result = {
+      structure: structure, heads: heads, chargesTax: charges, currency: currency, fxRate: fx,
+      inclusive: inclusive, lines: lines, totals: t,
+      hsnSummary: Object.keys(hsnMap).map(function (k) { return hsnMap[k]; })
+    };
+
+    if (isExport) {
+      // The foreign buyer pays the invoice value in their currency. IGST on an
+      // export (when paid) is the exporter's, refunded under Rule 96; it is
+      // shown in rupees for the GST return, not added to the buyer's bill.
+      result.payable = t.taxable;
+      result.roundOff = 0;
+      result.inr = { taxable: t.taxableInr, igst: t.tax.IGST, total: round2(t.taxableInr + t.tax.IGST) };
+      result.words = amountInWords(t.taxable, currency);
+      result.taxWords = t.tax.IGST ? amountInWords(t.tax.IGST, "INR") : "";
+    } else {
+      var exact = round2(t.taxable + t.taxTotal);
+      var rounded = Math.round(exact);
+      result.payable = rounded;
+      result.roundOff = round2(rounded - exact);
+      result.exactTotal = exact;
+      result.words = amountInWords(rounded, "INR");
+      result.taxWords = charges ? amountInWords(t.taxTotal, "INR") : "";
+    }
+    return result;
+  }
+
+  /* ---------------- packing list ---------------- */
+
+  /**
+   * Totals for the packing list. Quantity is summed only across lines that
+   * share one unit — adding 500 pieces to 2.5 kg would print a number that
+   * means nothing — so mixedUnits tells the sheet to say so instead.
+   */
+  function computePacking(items) {
+    var t = { qty: 0, boxes: 0, gross: 0, net: 0, units: {} };
+    var lines = (items || []).map(function (it, i) {
+      var qty = num(it.qty), boxes = num(it.boxes), gross = num(it.grossKg), net = num(it.netKg);
+      t.qty = round2(t.qty + qty);
+      t.boxes = round2(t.boxes + boxes);
+      t.gross = round2(t.gross + gross);
+      t.net = round2(t.net + net);
+      var u = String(it.unit || "").trim().toUpperCase() || "-";
+      t.units[u] = 1;
+      return { index: i + 1, desc: it.desc || "", hsn: String(it.hsn || "").trim(), qty: qty, unit: it.unit || "",
+        boxes: boxes, grossKg: gross, netKg: net };
+    });
+    var units = Object.keys(t.units);
+    return { lines: lines, totals: { qty: t.qty, boxes: t.boxes, grossKg: t.gross, netKg: t.net,
+      unit: units.length === 1 && units[0] !== "-" ? units[0] : "", mixedUnits: units.length > 1 } };
+  }
+
+  function checkPacking(items) {
+    var errors = [], warnings = [];
+    (items || []).forEach(function (it, i) {
+      var n = i + 1, g = num(it.grossKg), nt = num(it.netKg);
+      if (g && nt && nt > g) errors.push("Packing line " + n + ": net weight is more than gross weight.");
+      if (num(it.boxes) < 0 || g < 0 || nt < 0) errors.push("Packing line " + n + ": boxes and weights cannot be negative.");
+      if (num(it.boxes) && !Number.isInteger(num(it.boxes))) warnings.push("Packing line " + n + ": boxes is not a whole number.");
+    });
+    return { errors: errors, warnings: warnings };
+  }
+
+  /* ---------------- amount in words ---------------- */
+
+  var ONES = ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven",
+    "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"];
+  var TENS = ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"];
+
+  function two(n) { return n < 20 ? ONES[n] : TENS[Math.floor(n / 10)] + (n % 10 ? "-" + ONES[n % 10] : ""); }
+  function three(n) {
+    var h = Math.floor(n / 100), r = n % 100, out = h ? ONES[h] + " hundred" : "";
+    if (r) out += (out ? " and " : "") + two(r);
+    return out;
+  }
+
+  function indianWords(n) {
+    if (n === 0) return "zero";
+    var parts = [], crore = Math.floor(n / 1e7);
+    n %= 1e7;
+    if (crore) parts.push((crore > 999 ? indianWords(crore) : three(crore)) + " crore");
+    var lakh = Math.floor(n / 1e5); n %= 1e5;
+    if (lakh) parts.push(two(lakh) + " lakh");
+    var th = Math.floor(n / 1e3); n %= 1e3;
+    if (th) parts.push(two(th) + " thousand");
+    if (n) parts.push((parts.length && n < 100 ? "and " : "") + three(n));
+    return parts.join(" ");
+  }
+
+  function westernWords(n) {
+    if (n === 0) return "zero";
+    var scales = ["", " thousand", " million", " billion"], parts = [], i = 0;
+    while (n > 0 && i < scales.length) {
+      var chunk = n % 1000;
+      if (chunk) parts.unshift(((i === 0 && parts.length === 0 && n >= 1000 && chunk < 100) ? "and " : "") + three(chunk) + scales[i]);
+      n = Math.floor(n / 1000); i++;
+    }
+    return parts.join(" ");
+  }
+
+  function amountInWords(amount, currency) {
+    var cur = CURRENCIES[currency] || CURRENCIES.INR;
+    var cents = Math.round(Math.abs(num(amount)) * 100);
+    var major = Math.floor(cents / 100), minor = cents % 100;
+    var words = cur.indian ? indianWords(major) : westernWords(major);
+    var text = (cur.indian ? "Rupees " + words : words + " " + cur.major[major === 1 ? 0 : 1]);
+    if (minor) text += " and " + two(minor) + " " + cur.minor[minor === 1 ? 0 : 1];
+    text += " only";
+    return text.charAt(0).toUpperCase() + text.slice(1);
+  }
+
+  /* ---------------- compliance checks ---------------- */
+
+  /**
+   * errors: the document is wrong or not a valid instance of its type.
+   * warnings: legal but worth a second look before it goes out.
+   */
+  function checkInvoice(inv, res) {
+    var errors = [], warnings = [];
+    var isTaxDoc = inv.docType === "tax";
+    var isExport = inv.market === "export";
+    var s = inv.seller || {}, c = inv.customer || {};
+
+    if (!String(s.legalName || "").trim()) errors.push("Your firm's legal name is missing.");
+    if (!String(s.address || "").trim()) errors.push("Your firm's address is missing.");
+    if (inv.docType !== "proforma") {
+      var sg = validateGstin(s.gstin);
+      if (!sg.ok) errors.push(sg.reason === "empty" ? "Your GSTIN is missing." : "Your GSTIN is not valid (" + gstinReason(sg.reason) + ").");
+    }
+
+    var noIssue = validateInvoiceNumber(inv.number);
+    if (noIssue === "empty") errors.push("Invoice number is missing.");
+    if (noIssue === "too_long") errors.push("Invoice number is longer than 16 characters (GST limit).");
+    if (noIssue === "characters") errors.push("Invoice number may only use letters, digits, \"-\" and \"/\".");
+    if (!inv.date) errors.push("Invoice date is missing.");
+
+    if (!String(c.name || "").trim()) errors.push("Customer name is missing.");
+    if (!String(c.address || "").trim()) errors.push("Customer address is missing.");
+
+    if (isExport) {
+      if (!String(c.country || "").trim()) errors.push("Customer country is missing.");
+      if (!(num(inv.fxRate) > 0)) errors.push("Exchange rate (" + (inv.currency || "") + " to INR) is missing.");
+      if (!String(s.iec || "").trim()) warnings.push("Your IEC (Import Export Code) is not filled in; customs needs it on an export of goods.");
+      if (inv.exportMode === "lut" && !String(inv.lutArn || "").trim()) warnings.push("LUT ARN is empty. Exporting without IGST needs a Letter of Undertaking filed for this financial year.");
+      if (!String(s.swift || "").trim()) warnings.push("SWIFT code is empty; an overseas buyer needs it to pay you.");
+    } else {
+      if (!inv.posStateCode) errors.push("Place of supply (customer's state) is missing.");
+      var cgRaw = String(c.gstin || "").trim();
+      if (cgRaw) {
+        var cg = validateGstin(cgRaw);
+        if (!cg.ok) errors.push("Customer GSTIN is not valid (" + gstinReason(cg.reason) + ").");
+        else if (inv.posStateCode && cg.stateCode !== inv.posStateCode && !inv.shipToDifferent)
+          warnings.push("Customer GSTIN is registered in " + STATES[cg.stateCode] + " but place of supply is " + (STATES[inv.posStateCode] || inv.posStateCode) + ".");
+      }
+      if (isTaxDoc && !cgRaw && res && res.payable > 50000)
+        warnings.push("Unregistered customer over ₹50,000: the delivery address and state must be on the invoice.");
+      if (res && res.totals && res.totals.taxable + res.totals.taxTotal > 50000 && !String(inv.ewayBill || "").trim() && inv.docType !== "proforma")
+        warnings.push("Goods worth more than ₹50,000 usually need an e-way bill before they move (some states set a higher intra-state limit).");
+    }
+
+    if (!inv.items || !inv.items.length) errors.push("Add at least one item.");
+    (inv.items || []).forEach(function (it, i) {
+      var n = i + 1;
+      if (!String(it.desc || "").trim()) errors.push("Item " + n + ": description is missing.");
+      if (!(num(it.qty) > 0)) errors.push("Item " + n + ": quantity must be more than zero.");
+      if (num(it.rate) < 0) errors.push("Item " + n + ": rate cannot be negative.");
+      if (num(it.discount) > round2(num(it.qty) * num(it.rate))) errors.push("Item " + n + ": discount is larger than the line amount.");
+      var hsn = String(it.hsn || "").trim();
+      if (inv.docType !== "proforma") {
+        if (!hsn) errors.push("Item " + n + ": HSN/SAC code is missing.");
+        else if (!/^\d{4,8}$/.test(hsn)) errors.push("Item " + n + ": HSN/SAC must be 4 to 8 digits.");
+        else if (isExport && hsn.length < 8) warnings.push("Item " + n + ": exports normally quote the 8-digit ITC-HS code.");
+      }
+      if (res && res.chargesTax && GST_RATES.indexOf(num(it.gstRate)) === -1)
+        warnings.push("Item " + n + ": " + num(it.gstRate) + "% is not a standard GST rate (0, 0.25, 3, 5, 18, 40). Check it.");
+    });
+
+    (inv.charges || []).forEach(function (c, i) {
+      var used = String(c.label || "").trim() || num(c.amount) || String(c.sac || "").trim();
+      if (!used) return;
+      var n = i + 1;
+      if (!String(c.label || "").trim()) errors.push("Charge " + n + ": name is missing (e.g. Freight).");
+      if (!(num(c.amount) > 0)) errors.push("Charge " + n + ": amount must be more than zero.");
+      var sac = String(c.sac || "").trim();
+      if (inv.docType !== "proforma" && !/^\d{4,8}$/.test(sac)) errors.push("Charge " + n + ": SAC/HSN must be 4 to 8 digits (freight by road is 996511/996521).");
+      if (res && res.chargesTax && GST_RATES.indexOf(num(c.gstRate)) === -1)
+        warnings.push("Charge " + n + ": " + num(c.gstRate) + "% is not a standard GST rate.");
+    });
+
+    if (res && res.chargesTax && res.structure.nature === "unknown") errors.push("Cannot tell same-state from inter-state: fill in your GSTIN and the place of supply.");
+    if (inv.docType === "bos")
+      warnings.push("A bill of supply is only correct for a composition dealer or for exempt goods. A regular GST dealer selling taxable goods must issue a tax invoice.");
+    if (inv.docType === "proforma")
+      warnings.push("A proforma invoice is a quotation. It is not a tax invoice and cannot be used to claim input tax credit.");
+
+    return { errors: errors, warnings: warnings };
+  }
+
+  function gstinReason(r) {
+    return { format: "wrong format", state: "unknown state code", checksum: "last character does not match, likely a typo" }[r] || r;
+  }
+
+  return {
+    STATES: STATES, UT_WITHOUT_LEGISLATURE: UT_WITHOUT_LEGISLATURE, GST_RATES: GST_RATES, CURRENCIES: CURRENCIES,
+    round2: round2, validateGstin: validateGstin, gstinCheckChar: gstinCheckChar, financialYear: financialYear,
+    validateInvoiceNumber: validateInvoiceNumber, taxHeads: taxHeads, computeInvoice: computeInvoice,
+    amountInWords: amountInWords, checkInvoice: checkInvoice,
+    computePacking: computePacking, checkPacking: checkPacking
+  };
+});
+
+</script>
+<script>
+(function () {
+  "use strict";
+  var E = window.InvoiceEngine;
+  var $ = function (id) { return document.getElementById(id); };
+  var SELLER_KEY = "akurock-invoice-seller", DRAFT_KEY = "akurock-invoice-draft", SERIES_KEY = "akurock-invoice-series";
+
+  var SELLER_DEFAULTS = {
+    s_legal: "", s_addr: "", s_gstin: "", s_contact: "", s_iec: "", lutArn: "",
+    bk_name: "", bk_acc: "", bk_ifsc: "", bk_swift: "", bk_bank: "", bk_upi: "",
+    prefix: "SAI"
+  };
+
+  var view = "invoice";
+  var opts = { market: "domestic", docType: "tax", rateMode: "excl", exportMode: "lut", bosReason: "composition" };
+
+  function store(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); return true; } catch (e) { return false; } }
+  function load(key) { try { return JSON.parse(localStorage.getItem(key) || "null"); } catch (e) { return null; } }
+
+  function fmt(n, currency) {
+    var v = (Math.round(n * 100) / 100).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    if (currency && currency !== "INR") v = (Math.round(n * 100) / 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return v;
+  }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  function grow(t) { t.style.height = "auto"; t.style.height = t.scrollHeight + "px"; }
+  function dmy(iso) { return iso ? iso.slice(8, 10) + "/" + iso.slice(5, 7) + "/" + iso.slice(0, 4) : ""; }
+
+  /* ---------- static option lists ---------- */
+  var posSel = $("pos");
+  posSel.innerHTML = '<option value="">— select state —</option>' + Object.keys(E.STATES).map(function (c) {
+    return '<option value="' + c + '">' + c + " — " + E.STATES[c] + "</option>";
+  }).join("");
+  $("currency").innerHTML = Object.keys(E.CURRENCIES).filter(function (c) { return c !== "INR"; })
+    .map(function (c) { return '<option value="' + c + '">' + c + "</option>"; }).join("");
+
+  /* ---------- segmented controls ---------- */
+  Array.prototype.forEach.call(document.querySelectorAll(".seg"), function (seg) {
+    seg.addEventListener("click", function (e) {
+      var b = e.target.closest("button"); if (!b || b.disabled) return;
+      opts[seg.dataset.field] = b.dataset.value;
+      if (seg.dataset.field === "market" && b.dataset.value === "export" && opts.docType === "bos") opts.docType = "tax";
+      render();
+    });
+  });
+
+  /* ---------- item rows ---------- */
+  var body = $("items");
+  function addRow(it) {
+    it = it || {};
+    var tr = document.createElement("tr");
+    tr.innerHTML =
+      '<td class="num c-idx"></td>' +
+      '<td class="c-desc"><textarea class="f-desc" rows="1" placeholder="Item description"></textarea></td>' +
+      '<td class="c-hsn"><input class="f-hsn" inputmode="numeric" placeholder="HSN"></td>' +
+      '<td><input class="f-qty num" inputmode="decimal"></td>' +
+      '<td><input class="f-unit" list="units" placeholder="SQF"></td>' +
+      '<td><input class="f-rate num" inputmode="decimal"></td>' +
+      '<td><input class="f-disc num" inputmode="decimal" placeholder="0"></td>' +
+      '<td class="num c-taxable"></td>' +
+      '<td class="c-gst"><select class="f-gst num"></select></td>' +
+      '<td class="num c-t1"></td><td class="num c-t2"></td>' +
+      '<td class="num c-total"></td>' +
+      '<td class="c-pk"><input class="f-boxes num" inputmode="numeric"></td>' +
+      '<td class="c-pk"><input class="f-gw num" inputmode="decimal"></td>' +
+      '<td class="c-pk"><input class="f-nw num" inputmode="decimal"></td>' +
+      '<td class="c-x"><button type="button" class="del" aria-label="Remove item">×</button></td>';
+    tr.querySelector(".f-gst").innerHTML = E.GST_RATES.map(function (r) { return '<option value="' + r + '">' + r + "%</option>"; }).join("");
+    tr.querySelector(".f-desc").value = it.desc || "";
+    tr.querySelector(".f-hsn").value = it.hsn || "";
+    tr.querySelector(".f-qty").value = it.qty != null ? it.qty : "";
+    tr.querySelector(".f-unit").value = it.unit || "";
+    tr.querySelector(".f-rate").value = it.rate != null ? it.rate : "";
+    tr.querySelector(".f-disc").value = it.discount || "";
+    tr.querySelector(".f-gst").value = String(it.gstRate != null ? it.gstRate : 18);
+    tr.querySelector(".f-boxes").value = it.boxes || "";
+    tr.querySelector(".f-gw").value = it.grossKg || "";
+    tr.querySelector(".f-nw").value = it.netKg || "";
+    tr.querySelector(".del").addEventListener("click", function () {
+      tr.remove(); if (!body.children.length) addRow(); render();
+    });
+    body.appendChild(tr);
+    grow(tr.querySelector(".f-desc"));
+  }
+  var chargesBody = $("charges");
+  function addCharge(c) {
+    c = c || {};
+    var tr = document.createElement("tr");
+    tr.innerHTML =
+      '<td class="c-desc"><input class="g-label" list="charge-names" placeholder="Freight charges"></td>' +
+      '<td class="c-hsn"><input class="g-sac" inputmode="numeric" placeholder="996521"></td>' +
+      '<td><input class="g-amt num" inputmode="decimal" placeholder="0.00"></td>' +
+      '<td class="c-gst"><select class="g-gst num"></select></td>' +
+      '<td class="num g-t1"></td><td class="num g-t2"></td><td class="num g-total"></td>' +
+      '<td class="c-x"><button type="button" class="del" aria-label="Remove charge">×</button></td>';
+    tr.querySelector(".g-gst").innerHTML = E.GST_RATES.map(function (r) { return '<option value="' + r + '">' + r + "%</option>"; }).join("");
+    tr.querySelector(".g-label").value = c.label || "";
+    tr.querySelector(".g-sac").value = c.sac || "";
+    tr.querySelector(".g-amt").value = c.amount || "";
+    tr.querySelector(".g-gst").value = String(c.gstRate != null ? c.gstRate : 18);
+    tr.querySelector(".del").addEventListener("click", function () { tr.remove(); render(); });
+    chargesBody.appendChild(tr);
+  }
+  function readCharges() {
+    return Array.prototype.map.call(chargesBody.children, function (tr) {
+      return { label: tr.querySelector(".g-label").value, sac: tr.querySelector(".g-sac").value,
+        amount: tr.querySelector(".g-amt").value, gstRate: tr.querySelector(".g-gst").value };
+    });
+  }
+  var chargeNames = document.createElement("datalist"); chargeNames.id = "charge-names";
+  chargeNames.innerHTML = ["Freight charges", "Packing charges", "Loading charges", "Insurance", "Installation charges"]
+    .map(function (u) { return '<option value="' + u + '">'; }).join("");
+  document.body.appendChild(chargeNames);
+
+  var payTerms = document.createElement("datalist"); payTerms.id = "pay-terms";
+  payTerms.innerHTML = ["100% advance payment", "50% advance, 50% before dispatch", "Immediate", "15 days", "30 days", "Against delivery"]
+    .map(function (u) { return '<option value="' + u + '">'; }).join("");
+  document.body.appendChild(payTerms);
+  var units = document.createElement("datalist"); units.id = "units";
+  units.innerHTML = ["SQF", "SQM", "NOS", "PCS", "SET", "BOX", "MTR", "KGS"].map(function (u) { return '<option value="' + u + '">'; }).join("");
+  document.body.appendChild(units);
+
+  function readItems() {
+    return Array.prototype.map.call(body.children, function (tr) {
+      return {
+        desc: tr.querySelector(".f-desc").value, hsn: tr.querySelector(".f-hsn").value,
+        qty: tr.querySelector(".f-qty").value, unit: tr.querySelector(".f-unit").value,
+        rate: tr.querySelector(".f-rate").value, discount: tr.querySelector(".f-disc").value,
+        gstRate: tr.querySelector(".f-gst").value,
+        boxes: tr.querySelector(".f-boxes").value, grossKg: tr.querySelector(".f-gw").value, netKg: tr.querySelector(".f-nw").value
+      };
+    });
+  }
+
+  /* ---------- gather everything into the engine's shape ---------- */
+  function readInvoice() {
+    var sg = E.validateGstin($("s_gstin").value);
+    var cg = E.validateGstin($("c_gstin").value);
+    return {
+      docType: opts.docType, market: opts.market, exportMode: opts.exportMode,
+      rateIncludesTax: opts.rateMode === "incl",
+      sellerStateCode: sg.ok ? sg.stateCode : "",
+      posStateCode: opts.market === "domestic" ? posSel.value : "96",
+      currency: $("currency").value, fxRate: $("fxRate").value, lutArn: $("lutArn").value,
+      number: $("inv_no").value.trim(), date: $("inv_date").value, ewayBill: $("eway").value,
+      shipToDifferent: !!$("d_addr").value.trim(),
+      seller: { legalName: $("s_legal").value, address: $("s_addr").value, gstin: $("s_gstin").value, iec: $("s_iec").value, swift: $("bk_swift").value },
+      customer: { name: $("c_name").value, address: $("c_addr").value, gstin: $("c_gstin").value, country: $("c_country").value, gstinValid: cg.ok },
+      items: readItems(), charges: readCharges()
+    };
+  }
+
+  function setVisible(selector, show) {
+    Array.prototype.forEach.call(document.querySelectorAll(selector), function (n) { n.hidden = !show; });
+  }
+
+  /* ---------- the one render pass ---------- */
+  var lastAutoPos = "";
+  function render() {
+    var isExport = opts.market === "export";
+    var doc = opts.docType;
+
+    Array.prototype.forEach.call(document.querySelectorAll(".seg"), function (seg) {
+      Array.prototype.forEach.call(seg.querySelectorAll("button"), function (b) {
+        b.setAttribute("aria-pressed", String(opts[seg.dataset.field] === b.dataset.value));
+        if (b.hasAttribute("data-domestic-only")) b.disabled = isExport;
+      });
+    });
+    setVisible("#row-rate-mode", !isExport && doc !== "bos");
+    setVisible("#row-export-mode", isExport && doc !== "proforma");
+    setVisible("#row-currency", isExport);
+    setVisible("#row-lut", isExport && opts.exportMode === "lut" && doc !== "proforma");
+    setVisible("#row-bos", doc === "bos");
+    setVisible(".export-only", isExport);
+    setVisible(".domestic-only", !isExport);
+    setVisible(".proforma-only", doc === "proforma");
+    $("cur-code").textContent = $("currency").value;
+
+    // Seller identity comes from the GSTIN, so state and PAN can never
+    // disagree with it.
+    var sg = E.validateGstin($("s_gstin").value);
+    $("s_state_out").textContent = sg.ok ? sg.stateCode + " — " + E.STATES[sg.stateCode] : "—";
+    $("s_pan_out").textContent = sg.ok ? sg.pan : "—";
+
+    // A registered customer's GSTIN decides their state; place of supply
+    // follows it unless someone chose otherwise (goods shipped elsewhere).
+    var cg = E.validateGstin($("c_gstin").value);
+    $("c_state_out").textContent = cg.ok ? cg.stateCode + " — " + E.STATES[cg.stateCode] : (posSel.value ? posSel.value + " — " + E.STATES[posSel.value] : "—");
+    if (cg.ok && (!posSel.value || posSel.value === lastAutoPos)) { posSel.value = cg.stateCode; lastAutoPos = cg.stateCode; }
+
+    var packing = view === "packing";
+    document.body.classList.toggle("packing", packing);
+    Array.prototype.forEach.call(document.querySelectorAll("#view-seg button"), function (b) {
+      b.setAttribute("aria-pressed", String(b.dataset.view === view));
+    });
+    setVisible(".inv-only", !packing);
+    setVisible(".pk-only", packing);
+
+    var inv = readInvoice();
+    var res = E.computeInvoice(inv);
+    var check = E.checkInvoice(inv, res);
+    var pk = E.computePacking(inv.items);
+    if (packing) {
+      var pc = E.checkPacking(inv.items);
+      check = { errors: pc.errors, warnings: pc.warnings.concat(check.errors.filter(function (m) {
+        return /name is missing|address is missing|Invoice number|date is missing|country/.test(m);
+      })) };
+    }
+    var heads = res.heads, cur = res.currency;
+    var showLineTax = heads.length > 0 && !isExport;
+
+    // ----- titles -----
+    var title = packing ? "Packing List" : { tax: isExport ? "Export Invoice" : "Tax Invoice", bos: "Bill of Supply", proforma: "Proforma Invoice" }[doc];
+    $("doc-title").textContent = title;
+    var sub = "";
+    if (isExport && doc === "tax") sub = opts.exportMode === "lut"
+      ? "Supply meant for export under bond or letter of undertaking without payment of integrated tax"
+      : "Supply meant for export on payment of integrated tax";
+    $("doc-sub").textContent = packing ? "" : sub;
+    setVisible("#copy-wrap", doc !== "proforma" && !packing);
+    $("btn-print").textContent = packing ? "Print / Save packing list" : "Print / Save PDF";
+    $("no-label").textContent = doc === "proforma" ? "Proforma no." : doc === "bos" ? "Bill no." : "Invoice no.";
+    $("details-head").textContent = doc === "proforma" ? "Proforma details" : doc === "bos" ? "Bill details" : "Invoice details";
+    setVisible(".tax-only", doc !== "bos" && !packing);
+    $("supply-out").textContent = {
+      intra: "Intra-state (" + heads.join(" + ") + ")", inter: "Inter-state (IGST)",
+      "export-lut": "Export, zero-rated under LUT", "export-igst": "Export, IGST paid", unknown: "—", none: "—"
+    }[res.structure.nature];
+    $("ref-head").textContent = isExport ? "Order & shipment" : doc === "proforma" ? "Order & validity" : "Order & transport";
+
+    // ----- item table header -----
+    var rateLabel = "Rate" + (isExport ? " (" + cur + ")" : " (₹)") + (res.inclusive ? " incl. GST" : "");
+    var h = '<th>#</th><th class="c-desc">Description</th><th class="c-hsn">HSN/SAC</th><th>Qty</th><th>Unit</th>' +
+      "<th>" + rateLabel + '</th><th>Disc.</th><th>' + (res.chargesTax && !isExport ? "Taxable" : "Amount") + (isExport ? " (" + cur + ")" : " (₹)") + "</th>";
+    if (res.chargesTax) h += '<th class="c-gst">GST %</th>';
+    if (showLineTax) h += "<th>" + heads[0] + " (₹)</th>" + (heads[1] ? "<th>" + heads[1] + " (₹)</th>" : "");
+    if (showLineTax) h += "<th>Total (₹)</th>";
+    h += '<th class="c-x"></th>';
+    if (packing) {
+      h = '<th>#</th><th class="c-desc">Description</th><th class="c-hsn">HSN</th><th>Qty</th><th>Unit</th>' +
+        '<th>Boxes</th><th>Gross wt (kg)</th><th>Net wt (kg)</th><th class="c-x"></th>';
+    }
+    $("items-head").innerHTML = h;
+
+    Array.prototype.forEach.call(body.children, function (tr, i) {
+      var l = res.lines[i];
+      tr.querySelector(".c-idx").textContent = i + 1;
+      Array.prototype.forEach.call(tr.querySelectorAll(".c-pk"), function (c) { c.hidden = !packing; });
+      Array.prototype.forEach.call(tr.querySelectorAll(".f-rate, .f-disc"), function (f) { f.parentElement.hidden = packing; });
+      tr.querySelector(".c-taxable").hidden = packing;
+      if (packing) {
+        ["c-gst", "c-t1", "c-t2", "c-total"].forEach(function (k) { tr.querySelector("." + k).hidden = true; });
+        return;
+      }
+      tr.querySelector(".c-taxable").textContent = fmt(l.taxable, cur);
+      tr.querySelector(".c-gst").hidden = !res.chargesTax;
+      tr.querySelector(".c-t1").hidden = !showLineTax;
+      tr.querySelector(".c-t2").hidden = !(showLineTax && heads[1]);
+      tr.querySelector(".c-total").hidden = !showLineTax;
+      if (showLineTax) {
+        var half = heads.length === 2 ? l.gstRate / 2 : l.gstRate;
+        tr.querySelector(".c-t1").innerHTML = fmt(l.tax[heads[0]]) + '<span class="sub">@ ' + half + "%</span>";
+        if (heads[1]) tr.querySelector(".c-t2").innerHTML = fmt(l.tax[heads[1]]) + '<span class="sub">@ ' + half + "%</span>";
+        tr.querySelector(".c-total").textContent = fmt(l.total);
+      }
+    });
+
+    // ----- packing list totals -----
+    $("pk-foot").hidden = !packing;
+    var kg = function (n) { return n ? n.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "—"; };
+    $("pk-qty").textContent = pk.totals.mixedUnits ? "mixed units" : pk.totals.qty.toLocaleString("en-IN");
+    $("pk-unit").textContent = pk.totals.unit;
+    $("pk-boxes").textContent = pk.totals.boxes ? pk.totals.boxes.toLocaleString("en-IN") : "—";
+    $("pk-gw").textContent = kg(pk.totals.grossKg);
+    $("pk-nw").textContent = kg(pk.totals.netKg);
+    $("pk-sum-boxes").textContent = pk.totals.boxes ? pk.totals.boxes.toLocaleString("en-IN") + " boxes" : "—";
+    $("pk-sum-nw").textContent = pk.totals.netKg ? kg(pk.totals.netKg) + " kg" : "—";
+    $("pk-sum-gw").textContent = pk.totals.grossKg ? kg(pk.totals.grossKg) + " kg" : "—";
+
+    // ----- other charges (freight etc.) -----
+    var chargeLines = res.lines.filter(function (l) { return l.isCharge; });
+    var ch = '<th class="c-desc">Other charges (before GST)</th><th class="c-hsn">SAC</th><th>Amount' + (isExport ? " (" + cur + ")" : " (₹)") + "</th>";
+    if (res.chargesTax) ch += '<th class="c-gst">GST %</th>';
+    if (showLineTax) ch += "<th>" + heads[0] + " (₹)</th>" + (heads[1] ? "<th>" + heads[1] + " (₹)</th>" : "") + "<th>Total (₹)</th>";
+    ch += '<th class="c-x"></th>';
+    $("charges-head").innerHTML = ch;
+    var ci = 0;
+    Array.prototype.forEach.call(chargesBody.children, function (tr) {
+      var c = readCharges()[Array.prototype.indexOf.call(chargesBody.children, tr)];
+      var used = String(c.label).trim() || parseFloat(c.amount) || String(c.sac).trim();
+      var l = used ? chargeLines[ci++] : null;
+      tr.querySelector(".c-gst").hidden = !res.chargesTax;
+      tr.querySelector(".g-t1").hidden = !showLineTax;
+      tr.querySelector(".g-t2").hidden = !(showLineTax && heads[1]);
+      tr.querySelector(".g-total").hidden = !showLineTax;
+      if (l && showLineTax) {
+        var half = heads.length === 2 ? l.gstRate / 2 : l.gstRate;
+        tr.querySelector(".g-t1").innerHTML = fmt(l.tax[heads[0]]) + '<span class="sub">@ ' + half + "%</span>";
+        if (heads[1]) tr.querySelector(".g-t2").innerHTML = fmt(l.tax[heads[1]]) + '<span class="sub">@ ' + half + "%</span>";
+        tr.querySelector(".g-total").textContent = fmt(l.total);
+      } else {
+        tr.querySelector(".g-t1").textContent = ""; tr.querySelector(".g-t2").textContent = ""; tr.querySelector(".g-total").textContent = "";
+      }
+    });
+    $("charges-table-wrap").classList.toggle("charges-empty", chargeLines.length === 0);
+
+    // ----- totals -----
+    var t = res.totals, box = "";
+    function line(label, val, cls) { return '<div class="tline ' + (cls || "") + '"><span>' + label + '</span><span class="num">' + val + "</span></div>"; }
+    if (t.discount) box += line("Gross amount", fmt(t.gross, cur)) + line("Less discount", "−" + fmt(t.discount, cur));
+    if (isExport) {
+      chargeLines.forEach(function (l) { box += line(esc(l.desc), fmt(l.taxable, cur)); });
+      box += line("Invoice value (" + cur + ")", fmt(res.payable, cur), "grand");
+      box += line("Value in ₹ @ " + fmt(res.fxRate) + " per " + cur, fmt(res.inr.taxable), "inr");
+      if (res.chargesTax) box += line("IGST (₹), paid by exporter", fmt(res.inr.igst), "inr");
+    } else {
+      if (chargeLines.length) {
+        var goods = res.lines.filter(function (l) { return !l.isCharge; }).reduce(function (a, l) { return a + l.taxable; }, 0);
+        box += line("Goods", fmt(goods));
+        chargeLines.forEach(function (l) { box += line(esc(l.desc), fmt(l.taxable)); });
+      }
+      box += line(res.chargesTax ? "Taxable value" : "Amount", fmt(t.taxable));
+      heads.forEach(function (hd) { box += line(hd, fmt(t.tax[hd])); });
+      box += line("Round off", (res.roundOff < 0 ? "−" : res.roundOff > 0 ? "+" : "") + fmt(Math.abs(res.roundOff)));
+      box += line(doc === "proforma" ? "Estimated total" : "Grand total", "₹" + res.payable.toLocaleString("en-IN") + ".00", "grand");
+    }
+    $("totals-box").innerHTML = box;
+    $("words").textContent = res.words;
+    $("tax-words").textContent = res.taxWords;
+    setVisible("#taxwords-wrap", !!res.taxWords);
+    $("taxwords-head").textContent = isExport ? "IGST amount (in words)" : "Tax amount (in words)";
+
+    // ----- HSN summary: tax documents only -----
+    setVisible("#hsn-wrap", res.chargesTax && doc !== "proforma");
+    var hh = "<th>HSN/SAC</th><th class='num'>Taxable value (₹)</th><th class='num'>Rate</th>";
+    heads.forEach(function (hd) { hh += "<th class='num'>" + hd + " (₹)</th>"; });
+    hh += "<th class='num'>Total tax (₹)</th>";
+    $("hsn-head").innerHTML = hh;
+    $("hsn-body").innerHTML = res.hsnSummary.map(function (g) {
+      var r = "<td>" + esc(g.hsn || "—") + "</td><td class='num'>" + fmt(g.taxable) + "</td><td class='num'>" + g.gstRate + "%</td>";
+      heads.forEach(function (hd) { r += "<td class='num'>" + fmt(g.tax[hd]) + "</td>"; });
+      return "<tr>" + r + "<td class='num'>" + fmt(g.taxTotal) + "</td></tr>";
+    }).join("");
+
+    // ----- declaration & terms -----
+    var decl = "";
+    if (doc === "bos") decl = opts.bosReason === "composition"
+      ? "Composition taxable person, not eligible to collect tax on supplies."
+      : "Supply of goods exempt from GST.";
+    if (doc === "proforma") decl = "This is a proforma invoice (quotation), not a tax invoice." + (res.chargesTax ? " Tax shown is an estimate." : "");
+    if (isExport && doc === "tax" && opts.exportMode === "lut" && $("lutArn").value.trim()) decl = "LUT ARN: " + $("lutArn").value.trim();
+    if (packing) decl = "";
+    $("declaration").textContent = decl;
+    var terms = [
+      "We declare that this " + (doc === "proforma" ? "quotation" : "document") + " shows the actual price of the goods described and that all particulars are true and correct.",
+      "Claims for shortage or damage must be raised within 48 hours of delivery.",
+      "Interest at 18% per annum is chargeable on payments not received by the due date.",
+      "Subject to Jaipur jurisdiction."
+    ];
+    if (isExport) terms.splice(1, 1, "Bank charges outside India are borne by the buyer.");
+    if (packing) terms = ["We declare that this packing list shows the actual contents and weights of the consignment and that all particulars are true and correct."];
+    $("terms").innerHTML = terms.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("");
+    $("sign-note").textContent = !packing && isExport && res.chargesTax ? "IGST is paid by the exporter and claimed as a refund; it is not payable by the buyer." : "";
+    $("sign-firm").textContent = $("s_legal").value.trim() || "—";
+    setVisible("#swift-label, #bk_swift", isExport);
+    renderStamp();
+    $("s_lut_out").textContent = opts.exportMode === "lut" ? $("lutArn").value.trim() : "";
+
+    // ----- empty optional rows stay off paper -----
+    Array.prototype.forEach.call(document.querySelectorAll(".opt-row"), function (n) {
+      var f = $(n.dataset.for);
+      n.classList.toggle("empty-print", !f || !String(f.value).trim());
+    });
+    // The LUT line belongs only on a zero-rated (LUT) export.
+    Array.prototype.forEach.call(document.querySelectorAll('[data-for="lutArn"]'), function (n) {
+      if (opts.exportMode !== "lut") n.classList.add("empty-print");
+    });
+    Array.prototype.forEach.call(document.querySelectorAll(".dateprint"), function (sp) {
+      sp.textContent = dmy($(sp.getAttribute("data-date-for")).value);
+    });
+    var shipEmpty = !$("d_name").value.trim() && !$("d_addr").value.trim();
+    $("ship-cell").classList.toggle("empty-print", shipEmpty);
+    $("ship-cell").parentElement.classList.toggle("one-col-print", shipEmpty);
+    // The order/transport box disappears from paper when nothing in it is filled.
+    var refEmpty = !Array.prototype.some.call($("ref-cell").querySelectorAll("input, select"), function (f) {
+      return !f.hidden && !f.closest("[hidden]") && String(f.value).trim();
+    });
+    $("ref-cell").classList.toggle("empty-print", refEmpty);
+    $("ref-cell").parentElement.classList.toggle("one-col-print", refEmpty);
+
+    // ----- required-field highlighting + the checklist -----
+    var need = ["s_legal", "s_addr", "s_gstin", "inv_no", "inv_date", "c_name", "c_addr"];
+    if (!isExport) need.push("pos"); else need.push("c_country", "fxRate");
+    ["s_legal", "s_addr", "s_gstin", "inv_no", "inv_date", "c_name", "c_addr", "pos", "c_country", "fxRate"].forEach(function (id) {
+      var f = $(id); f.classList.toggle("missing", need.indexOf(id) !== -1 && !String(f.value).trim());
+    });
+    if (doc === "proforma") $("s_gstin").classList.remove("missing");
+    var box2 = $("checklist");
+    if (check.errors.length) {
+      box2.className = "notice err";
+      box2.innerHTML = "<b>Fix before sending:</b><ul>" + check.errors.map(function (m) { return "<li>" + esc(m) + "</li>"; }).join("") + "</ul>" +
+        (check.warnings.length ? "<b>Also check:</b><ul>" + check.warnings.map(function (m) { return "<li>" + esc(m) + "</li>"; }).join("") + "</ul>" : "");
+    } else if (check.warnings.length) {
+      box2.className = "notice warn";
+      box2.innerHTML = "<b>Ready. Please check:</b><ul>" + check.warnings.map(function (m) { return "<li>" + esc(m) + "</li>"; }).join("") + "</ul>";
+    } else {
+      box2.className = "notice ok";
+      box2.textContent = "Everything required is filled in and every figure checks out.";
+    }
+    window.__lastCheck = check;
+    window.__lastResult = res;
+    saveDraft();
+  }
+
+  /* ---------- stamp (kept on this computer only) ---------- */
+  var STAMP_KEY = "akurock-invoice-stamp", STAMP_SHOW_KEY = "akurock-invoice-stamp-show";
+  function rawGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function rawSet(k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); return true; } catch (e) { return false; } }
+  function renderStamp() {
+    var src = rawGet(STAMP_KEY), show = $("stamp-show").checked;
+    $("stamp-img").hidden = !(src && show);
+    if (src) $("stamp-img").src = src;
+    $("stamp-preview").style.display = src ? "inline" : "none";
+    if (src) $("stamp-preview").src = src;
+  }
+  // A phone photo of a rubber stamp is ink on off-white paper. Paper and the
+  // grey speckle become transparent so the stamp sits on the invoice like
+  // real ink instead of as a white rectangle.
+  function cleanStamp(img) {
+    var scale = Math.min(1, 700 / Math.max(img.width, img.height));
+    var w = Math.round(img.width * scale), h = Math.round(img.height * scale);
+    var c = document.createElement("canvas"); c.width = w; c.height = h;
+    var ctx = c.getContext("2d"); ctx.drawImage(img, 0, 0, w, h);
+    var d = ctx.getImageData(0, 0, w, h), px = d.data;
+    var minX = w, minY = h, maxX = 0, maxY = 0;
+    for (var i = 0; i < px.length; i += 4) {
+      var lum = 0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2];
+      var a = lum > 205 ? 0 : Math.min(255, Math.round((205 - lum) * 255 / 110));
+      px[i + 3] = a;
+      if (a > 40) { var x = (i / 4) % w, y = Math.floor(i / 4 / w); if (x < minX) minX = x; if (x > maxX) maxX = x; if (y < minY) minY = y; if (y > maxY) maxY = y; }
+    }
+    ctx.putImageData(d, 0, 0);
+    if (maxX <= minX || maxY <= minY) return c.toDataURL("image/png");
+    var out = document.createElement("canvas"); out.width = maxX - minX + 1; out.height = maxY - minY + 1;
+    out.getContext("2d").drawImage(c, minX, minY, out.width, out.height, 0, 0, out.width, out.height);
+    return out.toDataURL("image/png");
+  }
+  $("stamp-file").addEventListener("change", function () {
+    var f = this.files && this.files[0]; if (!f) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      var img = new Image();
+      img.onload = function () {
+        if (!rawSet(STAMP_KEY, cleanStamp(img))) alert("Could not save the stamp on this computer (storage full or blocked).");
+        renderStamp();
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(f);
+    this.value = "";
+  });
+  $("stamp-remove").addEventListener("click", function () { rawSet(STAMP_KEY, null); renderStamp(); });
+  $("stamp-show").checked = rawGet(STAMP_SHOW_KEY) !== "0";
+  $("stamp-show").addEventListener("change", function () { rawSet(STAMP_SHOW_KEY, this.checked ? "1" : "0"); });
+
+  /* ---------- history (IndexedDB, this computer only) ---------- */
+  var HISTORY_DB = "akurock-invoice-history";
+  function db() {
+    return new Promise(function (resolve, reject) {
+      if (!window.indexedDB) return reject(new Error("no IndexedDB"));
+      var req = indexedDB.open(HISTORY_DB, 1);
+      req.onupgradeneeded = function () { req.result.createObjectStore("docs", { keyPath: "id" }); };
+      req.onsuccess = function () { resolve(req.result); };
+      req.onerror = function () { reject(req.error); };
+    });
+  }
+  function tx(mode, fn) {
+    return db().then(function (d) {
+      return new Promise(function (resolve, reject) {
+        var t = d.transaction("docs", mode), st = t.objectStore("docs"), out = fn(st);
+        t.oncomplete = function () { resolve(out && out.result !== undefined ? out.result : out); };
+        t.onerror = function () { reject(t.error); };
+      });
+    });
+  }
+  function snapshot() {
+    var fields = {}, seller = {};
+    DOC_FIELDS.forEach(function (id) { fields[id] = $(id).value; });
+    SELLER_FIELDS.forEach(function (id) { seller[id] = $(id).value; });
+    return { opts: JSON.parse(JSON.stringify(opts)), view: view, items: readItems(), charges: readCharges(), fields: fields, seller: seller };
+  }
+  function saveToHistory() {
+    var res = window.__lastResult, no = $("inv_no").value.trim() || "(no number)";
+    var title = $("doc-title").textContent;
+    var rec = {
+      id: title + "|" + no, title: title, number: no, date: $("inv_date").value,
+      customer: $("c_name").value.trim(), savedAt: new Date().toISOString(),
+      total: view === "packing" ? "" : (res.currency === "INR" ? "₹" + res.payable.toLocaleString("en-IN") : res.currency + " " + fmt(res.payable, res.currency)),
+      snap: snapshot()
+    };
+    // Printing the same document again replaces its record rather than
+    // stacking duplicates; a different document type keeps its own.
+    return tx("readwrite", function (st) { st.put(rec); }).catch(function () {});
+  }
+  function loadSnapshot(sn) {
+    Object.keys(sn.opts || {}).forEach(function (k) { opts[k] = sn.opts[k]; });
+    view = sn.view || "invoice";
+    DOC_FIELDS.forEach(function (id) { $(id).value = sn.fields && sn.fields[id] != null ? sn.fields[id] : ""; });
+    SELLER_FIELDS.forEach(function (id) { if (sn.seller && sn.seller[id] != null) $(id).value = sn.seller[id]; });
+    body.innerHTML = ""; chargesBody.innerHTML = "";
+    (sn.items && sn.items.length ? sn.items : [{}]).forEach(addRow);
+    (sn.charges || []).forEach(addCharge);
+    Array.prototype.forEach.call(document.querySelectorAll("textarea"), grow);
+    render();
+  }
+  function download(name, text) {
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([text], { type: "application/json" }));
+    a.download = name; document.body.appendChild(a); a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  }
+  function openHistory() {
+    var ov = document.createElement("div");
+    ov.className = "overlay";
+    ov.innerHTML = '<div class="panel" role="dialog" aria-label="History">' +
+      '<h2>History</h2><div class="tools"><input type="search" id="h-q" placeholder="Search number or customer">' +
+      '<button type="button" class="act" id="h-export">Download backup</button>' +
+      '<label class="act">Restore backup<input type="file" id="h-import" accept="application/json,.json" hidden></label>' +
+      '<button type="button" class="act" id="h-close">Close</button></div>' +
+      '<p class="hint" style="margin:0 0 8px;color:var(--muted)">Every document you print is saved here, on this computer. Keep a backup file somewhere safe.</p>' +
+      '<div class="table-scroll"><table><thead><tr><th>Date</th><th>Document</th><th>No.</th><th>Customer</th><th>Total</th><th></th></tr></thead><tbody id="h-rows"><tr><td colspan="6">Loading…</td></tr></tbody></table></div></div>';
+    document.body.appendChild(ov);
+    var all = [];
+    function close() { ov.remove(); }
+    function draw() {
+      var q = ov.querySelector("#h-q").value.trim().toLowerCase();
+      var rows = all.filter(function (r) { return !q || (r.number + " " + r.customer + " " + r.title).toLowerCase().indexOf(q) !== -1; });
+      ov.querySelector("#h-rows").innerHTML = rows.length ? rows.map(function (r) {
+        return "<tr><td>" + esc(dmy(r.date)) + "</td><td>" + esc(r.title) + "</td><td>" + esc(r.number) + "</td><td>" + esc(r.customer) +
+          "</td><td>" + esc(r.total) + '</td><td style="white-space:nowrap"><button type="button" class="act" data-open="' + esc(r.id) +
+          '">Open</button><button type="button" class="act" data-del="' + esc(r.id) + '">Delete</button></td></tr>';
+      }).join("") : '<tr><td colspan="6">' + (all.length ? "Nothing matches." : "No documents yet. Print one and it appears here.") + "</td></tr>";
+    }
+    function refresh() {
+      return tx("readonly", function (st) { return st.getAll(); }).then(function (list) {
+        all = (list || []).sort(function (a, b) { return (b.date + b.savedAt).localeCompare(a.date + a.savedAt); });
+        draw();
+      }).catch(function () { ov.querySelector("#h-rows").innerHTML = '<tr><td colspan="6">History is not available in this browser.</td></tr>'; });
+    }
+    ov.addEventListener("click", function (e) {
+      if (e.target === ov) return close();
+      var o = e.target.getAttribute("data-open"), d = e.target.getAttribute("data-del");
+      if (o) {
+        var rec = all.filter(function (r) { return r.id === o; })[0];
+        if (rec && confirm("Open " + rec.title + " " + rec.number + "? The document on screen now is replaced.")) { loadSnapshot(rec.snap); close(); }
+      }
+      if (d && confirm("Delete this document from history? This cannot be undone.")) {
+        tx("readwrite", function (st) { st.delete(d); }).then(refresh);
+      }
+    });
+    ov.querySelector("#h-close").addEventListener("click", close);
+    ov.querySelector("#h-q").addEventListener("input", draw);
+    ov.querySelector("#h-export").addEventListener("click", function () {
+      download("invoice-history-" + new Date().toISOString().slice(0, 10) + ".json", JSON.stringify({ app: "akurock-invoices", version: 1, docs: all }, null, 1));
+    });
+    ov.querySelector("#h-import").addEventListener("change", function () {
+      var f = this.files && this.files[0]; if (!f) return;
+      var r = new FileReader();
+      r.onload = function () {
+        try {
+          var data = JSON.parse(r.result), docs = (data && data.docs) || [];
+          if (!Array.isArray(docs) || !docs.every(function (x) { return x && x.id && x.snap; })) throw new Error("not a backup");
+          tx("readwrite", function (st) { docs.forEach(function (x) { st.put(x); }); }).then(function () {
+            alert(docs.length + " document(s) restored."); refresh();
+          });
+        } catch (err) { alert("That file is not an invoice history backup."); }
+      };
+      r.readAsText(f);
+      this.value = "";
+    });
+    refresh();
+  }
+
+  /* ---------- numbering ---------- */
+  function seriesFor(dateIso) {
+    var fy = E.financialYear(dateIso) || E.financialYear(new Date().toISOString().slice(0, 10));
+    var p = (load(SELLER_KEY) || {}).prefix || SELLER_DEFAULTS.prefix;
+    var mid = opts.docType === "bos" ? "BS/" : opts.docType === "proforma" ? "PI/" : "";
+    return p + "/" + mid + fy + "/";
+  }
+  function nextNumber() {
+    var series = seriesFor($("inv_date").value), used = load(SERIES_KEY) || {};
+    var n = (used[series] || 0) + 1;
+    return series + String(n).padStart(3, "0");
+  }
+  function recordNumber() {
+    var no = $("inv_no").value.trim(), m = /^(.*\/)(\d+)$/.exec(no);
+    if (!m) return;
+    var used = load(SERIES_KEY) || {};
+    used[m[1]] = Math.max(used[m[1]] || 0, +m[2]);
+    store(SERIES_KEY, used);
+  }
+
+  /* ---------- persistence ---------- */
+  var SELLER_FIELDS = ["s_legal", "s_addr", "s_gstin", "s_contact", "s_iec", "bk_name", "bk_acc", "bk_ifsc", "bk_swift", "bk_bank", "bk_upi", "lutArn"];
+  var DOC_FIELDS = ["inv_no", "inv_date", "due_date", "pos", "po_no", "eway", "vehicle", "port_load", "destination", "incoterms", "sb_no", "valid_until",
+    "dispatch", "port_discharge", "via", "pay_terms",
+    "c_name", "c_addr", "c_gstin", "c_country", "c_taxid", "d_name", "d_addr", "currency", "fxRate", "copyType"];
+
+  function loadSeller() {
+    var saved = load(SELLER_KEY) || {};
+    SELLER_FIELDS.forEach(function (id) { $(id).value = saved[id] != null ? saved[id] : (SELLER_DEFAULTS[id] || ""); });
+  }
+  function saveSeller() {
+    var data = load(SELLER_KEY) || {};
+    SELLER_FIELDS.forEach(function (id) { data[id] = $(id).value; });
+    var ok = store(SELLER_KEY, data);
+    $("btn-save").textContent = ok ? "Saved ✓" : "Could not save here";
+    setTimeout(function () { $("btn-save").textContent = "Save my details"; }, 1600);
+  }
+  var draftTimer = 0;
+  function writeDraft() {
+    clearTimeout(draftTimer);
+    var d = { opts: opts, view: view, items: readItems(), charges: readCharges(), fields: {} };
+    DOC_FIELDS.forEach(function (id) { d.fields[id] = $(id).value; });
+    store(DRAFT_KEY, d);
+  }
+  function saveDraft() {
+    clearTimeout(draftTimer);
+    draftTimer = setTimeout(writeDraft, 300);
+  }
+  // Closing the window inside the 300 ms debounce would lose the last keystrokes.
+  window.addEventListener("pagehide", writeDraft);
+  document.addEventListener("visibilitychange", function () { if (document.visibilityState === "hidden") writeDraft(); });
+  function restoreDraft() {
+    var d = load(DRAFT_KEY);
+    if (!d) return false;
+    Object.keys(d.opts || {}).forEach(function (k) { opts[k] = d.opts[k]; });
+    DOC_FIELDS.forEach(function (id) { if (d.fields && d.fields[id] != null) $(id).value = d.fields[id]; });
+    (d.items && d.items.length ? d.items : [{}]).forEach(addRow);
+    (d.charges || []).forEach(addCharge);
+    if (d.view) view = d.view;
+    return true;
+  }
+  function freshInvoice() {
+    DOC_FIELDS.forEach(function (id) { if (id !== "currency" && id !== "fxRate" && id !== "copyType") $(id).value = ""; });
+    body.innerHTML = "";
+    chargesBody.innerHTML = "";
+    addRow({ unit: "SQF", gstRate: 18 });
+    $("inv_date").value = new Date().toISOString().slice(0, 10);
+    $("inv_no").value = nextNumber();
+    lastAutoPos = "";
+  }
+
+  /* ---------- events ---------- */
+  document.addEventListener("input", function (e) {
+    if (e.target.tagName === "TEXTAREA") grow(e.target);
+    render();
+  });
+  document.addEventListener("change", render);
+  $("btn-add").addEventListener("click", function () {
+    var last = readItems().pop() || {};
+    addRow({ unit: last.unit || "SQF", gstRate: last.gstRate != null ? last.gstRate : 18 });
+    render();
+  });
+  Array.prototype.forEach.call(document.querySelectorAll("#view-seg button"), function (b) {
+    b.addEventListener("click", function () { view = b.dataset.view; render(); });
+  });
+  $("btn-add-charge").addEventListener("click", function () { addCharge({ gstRate: 18 }); render(); });
+  $("btn-history").addEventListener("click", openHistory);
+  $("btn-next").addEventListener("click", function () { $("inv_no").value = nextNumber(); render(); });
+  $("btn-save").addEventListener("click", saveSeller);
+  $("btn-new").addEventListener("click", function () {
+    if (!confirm("Start a new invoice? The current one is cleared (your firm and bank details stay).")) return;
+    freshInvoice(); render();
+  });
+  $("btn-print").addEventListener("click", function () {
+    render();
+    var c = window.__lastCheck;
+    if (c.errors.length && !confirm(c.errors.length + " required item(s) are still missing or wrong:\n\n- " + c.errors.join("\n- ") + "\n\nPrint anyway?")) return;
+    if (view === "invoice") recordNumber();
+    saveToHistory();
+    var prev = document.title;
+    document.title = ($("inv_no").value.trim() || "invoice").replace(/\//g, "-");
+    window.print();
+    document.title = prev;
+  });
+
+  /* A date input prints in the browser's locale (10/31/2026 in a US-set
+     browser). Every date on the paper is printed from a dd/mm/yyyy twin. */
+  Array.prototype.forEach.call(document.querySelectorAll('.sheet input[type="date"]'), function (inp) {
+    var span = document.createElement("span");
+    span.className = "dateprint readonly";
+    span.setAttribute("data-date-for", inp.id);
+    if (inp.classList.contains("opt-row")) { span.classList.add("opt-row"); span.dataset.for = inp.id; }
+    inp.insertAdjacentElement("afterend", span);
+  });
+
+  // Paper is wider than the screen column, so a textarea sized on screen
+  // would keep a blank second line on paper. Re-measure as printing starts.
+  window.addEventListener("beforeprint", function () {
+    Array.prototype.forEach.call(document.querySelectorAll("textarea"), grow);
+  });
+  window.addEventListener("afterprint", function () {
+    Array.prototype.forEach.call(document.querySelectorAll("textarea"), grow);
+  });
+
+  /* ---------- boot ---------- */
+  loadSeller();
+  if (!restoreDraft()) freshInvoice();
+  if (!$("fxRate").value) $("fxRate").value = "";
+  Array.prototype.forEach.call(document.querySelectorAll("textarea"), grow);
+  render();
+})();
+</script>
+<script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("/invoice-app/sw.js", { scope: "/invoice-app" }).catch(function () {});</script>
+</body>
+</html>

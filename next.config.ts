@@ -123,6 +123,19 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      // The invoice app's service worker sits at /invoice-app/sw.js but must
+      // control /invoice-app itself (no trailing slash), one level up.
+      {
+        source: '/invoice-app/sw.js',
+        headers: [
+          { key: 'Service-Worker-Allowed', value: '/invoice-app' },
+          { key: 'Cache-Control', value: 'no-cache' },
+        ],
+      },
+      {
+        source: '/invoice-app/index.html',
+        headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
+      },
       // Long cache for immutable assets
       {
         source: '/images/:path*',
