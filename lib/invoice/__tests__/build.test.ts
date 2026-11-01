@@ -18,4 +18,8 @@ describe("built invoice sheet", () => {
     const app = readFileSync(path.resolve(__dirname, "../../../public/invoice-app/index.html"), "utf8");
     expect(app === buildAppHtml()).toBe(true);
   });
+
+  it("vendor libraries are inlined without raw HTML that could break the page", () => {
+    expect(buildAppHtml()).not.toContain("pdfobjectnewwindow");
+  });
 });

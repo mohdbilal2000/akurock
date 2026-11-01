@@ -2,6 +2,14 @@
 // engine and the brand logo inlined, so the result is one file that works
 // offline, opens from WhatsApp, and is what /admin/invoice serves.
 import { readFileSync, writeFileSync } from "node:fs";
+
+// Vendor bundles contain HTML-looking strings ("<script ...>") that can make
+// the HTML parser end the <script> early and dump the code as page text.
+// Base64 has no "<", so embedding it is always parser-safe.
+function inlineSafe(code) {
+  const b64 = Buffer.from(code, "utf8").toString("base64");
+  return `(0,eval)(new TextDecoder().decode(Uint8Array.from(atob("${b64}"),function(c){return c.charCodeAt(0)})));`;
+}
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
@@ -13,8 +21,8 @@ export function buildInvoiceHtml() {
   const h2c = readFileSync(path.join(root, "lib/invoice/vendor/html2canvas.min.js"), "utf8");
   const jspdf = readFileSync(path.join(root, "lib/invoice/vendor/jspdf.umd.min.js"), "utf8");
   return template
-    .replace("/*@HTML2CANVAS@*/", () => h2c)
-    .replace("/*@JSPDF@*/", () => jspdf)
+    .replace("/*@HTML2CANVAS@*/", () => inlineSafe(h2c))
+    .replace("/*@JSPDF@*/", () => inlineSafe(jspdf))
     .replace("/*@ENGINE@*/", () => engine)
     .replace("/*@LOGO@*/", () => logo);
 }
