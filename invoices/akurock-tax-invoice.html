@@ -966,7 +966,7 @@
   };
 
   var view = "invoice";
-  var opts = { market: "domestic", docType: "tax", rateMode: "excl", exportMode: "lut", bosReason: "composition", unitDefault: "SQF" };
+  var opts = { market: "domestic", docType: "tax", rateMode: "excl", exportMode: "lut", bosReason: "composition", unitDefault: "SQM" };
 
   function store(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); return true; } catch (e) { return false; } }
   function load(key) { try { return JSON.parse(localStorage.getItem(key) || "null"); } catch (e) { return null; } }
@@ -1010,7 +1010,7 @@
         '<input class="f-size" placeholder="Size e.g. 8x4 ft" list="sizes"><span class="meas-out"></span></div></td>' +
       '<td class="c-hsn"><input class="f-hsn" inputmode="numeric" placeholder="HSN"></td>' +
       '<td><input class="f-qty num" inputmode="decimal"></td>' +
-      '<td><input class="f-unit" list="units" placeholder="SQF"></td>' +
+      '<td><input class="f-unit" list="units" placeholder="SQM"></td>' +
       '<td><input class="f-rate num" inputmode="decimal"></td>' +
       '<td><input class="f-disc num" inputmode="decimal" placeholder="0"></td>' +
       '<td class="num c-taxable"></td>' +
@@ -1083,7 +1083,7 @@
     .map(function (u) { return '<option value="' + u + '">'; }).join("");
   document.body.appendChild(payTerms);
   var units = document.createElement("datalist"); units.id = "units";
-  units.innerHTML = ["SQF", "SQM", "NOS", "PCS", "SET", "BOX", "MTR", "KGS"].map(function (u) { return '<option value="' + u + '">'; }).join("");
+  units.innerHTML = ["SQM", "SQF", "NOS", "PCS", "SET", "BOX", "MTR", "KGS"].map(function (u) { return '<option value="' + u + '">'; }).join("");
   document.body.appendChild(units);
 
   function readItems() {
@@ -1865,7 +1865,7 @@
     DOC_FIELDS.forEach(function (id) { if (id !== "currency" && id !== "fxRate" && id !== "copyType") $(id).value = ""; });
     body.innerHTML = "";
     chargesBody.innerHTML = "";
-    addRow({ unit: opts.unitDefault || "SQF", gstRate: 18 });
+    addRow({ unit: opts.unitDefault || "SQM", gstRate: 18 });
     $("inv_date").value = new Date().toISOString().slice(0, 10);
     $("inv_no").value = nextNumber();
     lastAutoPos = "";
@@ -1879,7 +1879,7 @@
   document.addEventListener("change", render);
   $("btn-add").addEventListener("click", function () {
     var last = readItems().pop() || {};
-    addRow({ unit: opts.unitDefault || last.unit || "SQF", gstRate: last.gstRate != null ? last.gstRate : 18 });
+    addRow({ unit: opts.unitDefault || last.unit || "SQM", gstRate: last.gstRate != null ? last.gstRate : 18 });
     render();
   });
   Array.prototype.forEach.call(document.querySelectorAll("#view-seg button"), function (b) {
