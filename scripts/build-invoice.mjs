@@ -38,13 +38,35 @@ const BLANK_SELLER = `var SELLER_DEFAULTS = {
     prefix: "SAI"
   };`;
 
+// Visible "Install app" button: browsers only show a tiny address-bar icon.
+const INSTALL_SCRIPT = `<script>(function () {
+  var bar = document.getElementById("btn-pdf"); if (!bar) return;
+  var standalone = matchMedia("(display-mode: standalone)").matches || navigator.standalone;
+  if (standalone) return;
+  var btn = document.createElement("button");
+  btn.type = "button"; btn.className = "btn"; btn.id = "btn-install"; btn.textContent = "Install app";
+  bar.parentNode.insertBefore(btn, bar);
+  var deferred = null;
+  addEventListener("beforeinstallprompt", function (e) { e.preventDefault(); deferred = e; });
+  addEventListener("appinstalled", function () { btn.remove(); });
+  btn.addEventListener("click", function () {
+    if (deferred) { deferred.prompt(); deferred.userChoice.then(function () { deferred = null; }); return; }
+    var ua = navigator.userAgent;
+    var msg = /iPhone|iPad/.test(ua) ? "On iPhone/iPad: open this page in Safari, tap Share, then 'Add to Home Screen'."
+      : /Firefox/.test(ua) ? "Firefox can't install apps. Open this page in Chrome or Microsoft Edge, then click Install app."
+      : /Edg\\//.test(ua) ? "In Edge: click the ... menu (top right) > Apps > Install this site as an app."
+      : "In Chrome: click the install icon at the right end of the address bar, or the ⋮ menu > Cast, save and share > Install page as app.";
+    alert(msg);
+  });
+})();</script>`;
+
 export function buildAppHtml() {
   const html = buildInvoiceHtml();
   const blanked = html.replace(/var SELLER_DEFAULTS = \{[\s\S]*?\n  \};/, BLANK_SELLER);
   if (blanked === html) throw new Error("SELLER_DEFAULTS block not found; refusing to publish real details");
   return blanked
     .replace("<title>", '<link rel="manifest" href="/invoice-app/manifest.webmanifest">\n<meta name="theme-color" content="#0d0d0d">\n<link rel="icon" href="/invoice-app/icon-192.png">\n<title>')
-    .replace("</body>", '<script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("/invoice-app/sw.js", { scope: "/invoice-app" }).catch(function () {});</script>\n</body>');
+    .replace("</body>", '<script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("/invoice-app/sw.js", { scope: "/invoice-app" }).catch(function () {});</script>\n' + INSTALL_SCRIPT + '\n</body>');
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
