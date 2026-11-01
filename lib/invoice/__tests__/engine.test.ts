@@ -303,3 +303,39 @@ describe("packing list", () => {
     expect(E.checkPacking([{ grossKg: 12, netKg: 10, boxes: 2 }]).errors).toEqual([]);
   });
 });
+
+describe("measurement", () => {
+  it("reads sizes in every common unit and refuses a size with no unit", () => {
+    expect(E.parseSize("8x4 ft")).toEqual({ length: 8, width: 4, unit: "ft" });
+    expect(E.parseSize(" 2440 X 1220mm ")).toEqual({ length: 2440, width: 1220, unit: "mm" });
+    expect(E.parseSize("1.2 × 0.6 m")).toEqual({ length: 1.2, width: 0.6, unit: "m" });
+    expect(E.parseSize("8x4 feet").unit).toBe("ft");
+    expect(E.parseSize("8x4")).toBeNull();
+    expect(E.parseSize("8 by 4 ft")).toBeNull();
+  });
+  it("11 sheets of 8x4 ft = 352 sq ft = 32.70 sq m", () => {
+    expect(E.areaQty(11, "8x4 ft", "SQF")).toBe(352);
+    expect(E.areaQty(11, "8x4 ft", "SQM")).toBe(32.7);
+  });
+  it("metric sheets convert exactly", () => {
+    expect(E.areaQty(10, "2440x1220 mm", "SQM")).toBe(29.77);
+    expect(E.areaQty(1, "1x1 m", "SQF")).toBe(10.76);
+    expect(E.areaQty(144, "12x12 in", "SQF")).toBe(144);
+  });
+  it("only fills area units, and only with pieces and a size", () => {
+    expect(E.areaQty(11, "8x4 ft", "PCS")).toBeNull();
+    expect(E.areaQty(0, "8x4 ft", "SQF")).toBeNull();
+    expect(E.areaQty(11, "8x4", "SQF")).toBeNull();
+  });
+});
+
+describe("packing list per-box quantities", () => {
+  it("112 per box x 4 boxes = 448, as on the incense sheet", () => {
+    const p = E.computePacking([{ desc: "Myrrh", perBox: 112, boxes: 4, unit: "PCS" }]);
+    expect(p.lines[0].qty).toBe(448);
+  });
+  it("flags a per-box count that disagrees with the invoice quantity", () => {
+    expect(E.checkPacking([{ perBox: 112, boxes: 4, qty: 450 }]).errors[0]).toMatch(/not the invoice quantity 450/);
+    expect(E.checkPacking([{ perBox: 112, boxes: 4, qty: 448 }]).errors).toEqual([]);
+  });
+});

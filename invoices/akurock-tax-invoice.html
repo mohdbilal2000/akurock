@@ -130,6 +130,26 @@
   .eoe { font-size: 8.5px; color: var(--muted); text-align: right; margin-top: 6px; letter-spacing: .06em; }
 
   [hidden] { display: none !important; }
+  body.viewer .setup, body.viewer .notice, body.viewer .add-row, body.viewer .del, body.viewer .c-x,
+  body.viewer #view-seg, body.viewer #btn-history, body.viewer #btn-new, body.viewer #btn-save, body.viewer #btn-share { display: none !important; }
+  body.viewer .sheet input, body.viewer .sheet textarea, body.viewer .sheet select { border-bottom-color: transparent; }
+  body.viewer .empty-print, body.viewer .charges-empty, body.viewer .meas-empty, body.viewer .c-x,
+  body.viewer #btn-add-charge { display: none !important; }
+  body.viewer .dateprint { display: inline !important; }
+  body.viewer .dateprint.empty-print { display: none !important; }
+  body.viewer .grid2.one-col-print { grid-template-columns: 1fr; }
+  body.viewer .frozen { display: inline-block; padding: 1px 0; }
+  body.viewer .meas { flex-wrap: wrap; }
+  body.viewer .meas-out { white-space: normal; }
+  body.viewer .table-scroll { overflow: visible; }
+  body.viewer .num.frozen, body.viewer .frozen.num { display: block; text-align: right; }
+  body.viewer .missing { background: transparent !important; border-bottom-color: transparent !important; }
+  body.viewer .sheet input::placeholder, body.viewer .sheet textarea::placeholder { color: transparent; }
+  .meas { display: flex; align-items: center; gap: 4px; margin-top: 3px; font-size: 9.5px; color: var(--muted); }
+  .meas .f-pcs { width: 44px !important; }
+  .meas .f-size { width: 96px !important; }
+  .meas-out { white-space: nowrap; }
+  .f-qty[readonly] { color: var(--ink); font-weight: 700; }
   .view-seg button { color: #fff; background: transparent; border-color: rgba(255,255,255,.4); }
   .view-seg button[aria-pressed="true"] { background: #fff; color: var(--ink); border-color: #fff; }
   .charges { border-top: 0; margin-top: 8px; }
@@ -168,6 +188,8 @@
     .missing { background: transparent !important; }
     input::placeholder, textarea::placeholder { color: transparent !important; }
     .empty-print { display: none !important; }
+    .meas.meas-empty { display: none !important; }
+    .meas input::placeholder { color: transparent !important; }
     .grid2.one-col-print { grid-template-columns: 1fr; }
     .sheet input[type="date"] { display: none !important; }
     .dateprint { display: inline !important; }
@@ -185,6 +207,7 @@
     <button type="button" data-view="packing" aria-pressed="false">Packing list</button>
   </div>
   <button type="button" class="btn" id="btn-history">History</button>
+  <button type="button" class="btn" id="btn-share">Share link</button>
   <button type="button" class="btn" id="btn-new">New invoice</button>
   <button type="button" class="btn" id="btn-save">Save my details</button>
   <button type="button" class="btn btn-primary" id="btn-print">Print / Save PDF</button>
@@ -231,6 +254,14 @@
   <div class="setup-row" id="row-lut">
     <span>LUT ARN</span>
     <div class="inline"><input id="lutArn" size="22" placeholder="e.g. AD0804260012345"><span class="hint">Your Letter of Undertaking for this financial year.</span></div>
+  </div>
+  <div class="setup-row">
+    <span>New items measured in</span>
+    <div class="seg" data-field="unitDefault">
+      <button type="button" data-value="SQF">Sq ft</button>
+      <button type="button" data-value="SQM">Sq m</button>
+      <button type="button" data-value="PCS">Pieces</button>
+    </div>
   </div>
   <div class="setup-row">
     <span>Stamp &amp; sign</span>
@@ -313,6 +344,7 @@
         <span class="k opt-row export-only" data-for="via">Shipped by</span>
         <select class="opt-row export-only" data-for="via" id="via"><option value=""></option><option>By sea</option><option>By air</option><option>By road</option><option>By courier</option></select>
         <span class="k opt-row" data-for="destination">Destination</span><input class="opt-row" data-for="destination" id="destination">
+        <span class="k opt-row" data-for="remark">Remark</span><input class="opt-row" data-for="remark" id="remark">
         <span class="k opt-row" data-for="pay_terms">Payment terms</span><input class="opt-row" data-for="pay_terms" id="pay_terms" list="pay-terms" placeholder="e.g. 100% advance">
         <span class="k opt-row export-only" data-for="incoterms">Incoterms</span>
         <select class="opt-row export-only" data-for="incoterms" id="incoterms"><option value=""></option><option>EXW</option><option>FCA</option><option>FOB</option><option>CFR</option><option>CIF</option><option>CPT</option><option>CIP</option><option>DAP</option><option>DPU</option><option>DDP</option></select>
@@ -331,6 +363,7 @@
         <span class="k domestic-only">GSTIN</span><input class="domestic-only" id="c_gstin" placeholder="Blank if unregistered">
         <span class="k domestic-only">State</span><span class="readonly domestic-only" id="c_state_out">—</span>
         <span class="k export-only">Country</span><input class="export-only" id="c_country">
+        <span class="k opt-row" data-for="c_phone">Phone</span><input class="opt-row" data-for="c_phone" id="c_phone">
         <span class="k opt-row export-only" data-for="c_taxid">Tax / VAT ID</span><input class="opt-row export-only" data-for="c_taxid" id="c_taxid">
       </div>
     </div>
@@ -349,7 +382,7 @@
     <tbody id="items"></tbody>
     <tfoot id="pk-foot" hidden><tr>
       <td></td><td><b>Total</b></td><td class="c-hsn"></td><td class="num"><b id="pk-qty"></b></td><td id="pk-unit"></td>
-      <td class="num"><b id="pk-boxes"></b></td><td class="num"><b id="pk-gw"></b></td><td class="num"><b id="pk-nw"></b></td><td class="c-x"></td>
+      <td></td><td></td><td class="num"><b id="pk-boxes"></b></td><td class="num"><b id="pk-gw"></b></td><td class="num"><b id="pk-nw"></b></td><td class="c-x"></td>
     </tr></tfoot>
   </table>
   </div>
@@ -666,6 +699,34 @@
     return result;
   }
 
+  /* ---------------- measurement ---------------- */
+
+  var TO_METRE = { mm: 0.001, cm: 0.01, m: 1, in: 0.0254, ft: 0.3048 };
+  var SQM_PER_SQF = 0.09290304; // exact: 0.3048 m squared
+
+  /**
+   * "8x4 ft", "8 X 4ft", "2440x1220 mm", "1.2 × 0.6 m" -> {length, width, unit}.
+   * A size without a unit is not guessed: "8x4" could be feet or metres and
+   * the difference is a factor of ten in the bill.
+   */
+  function parseSize(text) {
+    var m = /^\s*(\d+(?:\.\d+)?)\s*[x×*]\s*(\d+(?:\.\d+)?)\s*(mm|cm|m|in|inch|inches|ft|feet|foot|'|")?\s*$/i.exec(String(text || ""));
+    if (!m || !m[3]) return null;
+    var u = m[3].toLowerCase();
+    u = { inch: "in", inches: "in", '"': "in", feet: "ft", foot: "ft", "'": "ft" }[u] || u;
+    var l = parseFloat(m[1]), w = parseFloat(m[2]);
+    if (!(l > 0 && w > 0)) return null;
+    return { length: l, width: w, unit: u };
+  }
+
+  /** pieces x size, in SQF or SQM, rounded to 2 decimals. null if not computable. */
+  function areaQty(pieces, sizeText, unit) {
+    var size = parseSize(sizeText), pcs = num(pieces), target = String(unit || "").toUpperCase();
+    if (!size || !(pcs > 0) || (target !== "SQF" && target !== "SQM")) return null;
+    var sqm = pcs * size.length * TO_METRE[size.unit] * size.width * TO_METRE[size.unit];
+    return round2(target === "SQM" ? sqm : sqm / SQM_PER_SQF);
+  }
+
   /* ---------------- packing list ---------------- */
 
   /**
@@ -676,7 +737,8 @@
   function computePacking(items) {
     var t = { qty: 0, boxes: 0, gross: 0, net: 0, units: {} };
     var lines = (items || []).map(function (it, i) {
-      var qty = num(it.qty), boxes = num(it.boxes), gross = num(it.grossKg), net = num(it.netKg);
+      var boxes = num(it.boxes), gross = num(it.grossKg), net = num(it.netKg);
+      var qty = num(it.perBox) && boxes ? round2(num(it.perBox) * boxes) : num(it.qty);
       t.qty = round2(t.qty + qty);
       t.boxes = round2(t.boxes + boxes);
       t.gross = round2(t.gross + gross);
@@ -684,6 +746,7 @@
       var u = String(it.unit || "").trim().toUpperCase() || "-";
       t.units[u] = 1;
       return { index: i + 1, desc: it.desc || "", hsn: String(it.hsn || "").trim(), qty: qty, unit: it.unit || "",
+        boxNo: it.boxNo || "", perBox: num(it.perBox), size: it.size || "",
         boxes: boxes, grossKg: gross, netKg: net };
     });
     var units = Object.keys(t.units);
@@ -698,6 +761,8 @@
       if (g && nt && nt > g) errors.push("Packing line " + n + ": net weight is more than gross weight.");
       if (num(it.boxes) < 0 || g < 0 || nt < 0) errors.push("Packing line " + n + ": boxes and weights cannot be negative.");
       if (num(it.boxes) && !Number.isInteger(num(it.boxes))) warnings.push("Packing line " + n + ": boxes is not a whole number.");
+      if (num(it.perBox) && num(it.boxes) && num(it.qty) && round2(num(it.perBox) * num(it.boxes)) !== num(it.qty))
+        errors.push("Packing line " + n + ": " + num(it.perBox) + " per box x " + num(it.boxes) + " boxes is not the invoice quantity " + num(it.qty) + ".");
     });
     return { errors: errors, warnings: warnings };
   }
@@ -846,7 +911,7 @@
     round2: round2, validateGstin: validateGstin, gstinCheckChar: gstinCheckChar, financialYear: financialYear,
     validateInvoiceNumber: validateInvoiceNumber, taxHeads: taxHeads, computeInvoice: computeInvoice,
     amountInWords: amountInWords, checkInvoice: checkInvoice,
-    computePacking: computePacking, checkPacking: checkPacking
+    computePacking: computePacking, checkPacking: checkPacking, parseSize: parseSize, areaQty: areaQty
   };
 });
 
@@ -869,7 +934,7 @@
   };
 
   var view = "invoice";
-  var opts = { market: "domestic", docType: "tax", rateMode: "excl", exportMode: "lut", bosReason: "composition" };
+  var opts = { market: "domestic", docType: "tax", rateMode: "excl", exportMode: "lut", bosReason: "composition", unitDefault: "SQF" };
 
   function store(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); return true; } catch (e) { return false; } }
   function load(key) { try { return JSON.parse(localStorage.getItem(key) || "null"); } catch (e) { return null; } }
@@ -908,7 +973,9 @@
     var tr = document.createElement("tr");
     tr.innerHTML =
       '<td class="num c-idx"></td>' +
-      '<td class="c-desc"><textarea class="f-desc" rows="1" placeholder="Item description"></textarea></td>' +
+      '<td class="c-desc"><textarea class="f-desc" rows="1" placeholder="Item description"></textarea>' +
+        '<div class="meas"><input class="f-pcs num" inputmode="decimal" placeholder="Pcs"><span>×</span>' +
+        '<input class="f-size" placeholder="Size e.g. 8x4 ft" list="sizes"><span class="meas-out"></span></div></td>' +
       '<td class="c-hsn"><input class="f-hsn" inputmode="numeric" placeholder="HSN"></td>' +
       '<td><input class="f-qty num" inputmode="decimal"></td>' +
       '<td><input class="f-unit" list="units" placeholder="SQF"></td>' +
@@ -918,6 +985,8 @@
       '<td class="c-gst"><select class="f-gst num"></select></td>' +
       '<td class="num c-t1"></td><td class="num c-t2"></td>' +
       '<td class="num c-total"></td>' +
+      '<td class="c-pk"><input class="f-boxno" placeholder="53/1"></td>' +
+      '<td class="c-pk"><input class="f-perbox num" inputmode="decimal"></td>' +
       '<td class="c-pk"><input class="f-boxes num" inputmode="numeric"></td>' +
       '<td class="c-pk"><input class="f-gw num" inputmode="decimal"></td>' +
       '<td class="c-pk"><input class="f-nw num" inputmode="decimal"></td>' +
@@ -931,6 +1000,10 @@
     tr.querySelector(".f-disc").value = it.discount || "";
     tr.querySelector(".f-gst").value = String(it.gstRate != null ? it.gstRate : 18);
     tr.querySelector(".f-boxes").value = it.boxes || "";
+    tr.querySelector(".f-boxno").value = it.boxNo || "";
+    tr.querySelector(".f-perbox").value = it.perBox || "";
+    tr.querySelector(".f-pcs").value = it.pieces || "";
+    tr.querySelector(".f-size").value = it.size || "";
     tr.querySelector(".f-gw").value = it.grossKg || "";
     tr.querySelector(".f-nw").value = it.netKg || "";
     tr.querySelector(".del").addEventListener("click", function () {
@@ -969,6 +1042,10 @@
     .map(function (u) { return '<option value="' + u + '">'; }).join("");
   document.body.appendChild(chargeNames);
 
+  var sizes = document.createElement("datalist"); sizes.id = "sizes";
+  sizes.innerHTML = ["8x4 ft", "4x2 ft", "2440x1220 mm", "2400x600 mm", "1200x600 mm", "600x600 mm"]
+    .map(function (u) { return '<option value="' + u + '">'; }).join("");
+  document.body.appendChild(sizes);
   var payTerms = document.createElement("datalist"); payTerms.id = "pay-terms";
   payTerms.innerHTML = ["100% advance payment", "50% advance, 50% before dispatch", "Immediate", "15 days", "30 days", "Against delivery"]
     .map(function (u) { return '<option value="' + u + '">'; }).join("");
@@ -984,7 +1061,8 @@
         qty: tr.querySelector(".f-qty").value, unit: tr.querySelector(".f-unit").value,
         rate: tr.querySelector(".f-rate").value, discount: tr.querySelector(".f-disc").value,
         gstRate: tr.querySelector(".f-gst").value,
-        boxes: tr.querySelector(".f-boxes").value, grossKg: tr.querySelector(".f-gw").value, netKg: tr.querySelector(".f-nw").value
+        boxes: tr.querySelector(".f-boxes").value, boxNo: tr.querySelector(".f-boxno").value,
+        perBox: tr.querySelector(".f-perbox").value, pieces: tr.querySelector(".f-pcs").value, size: tr.querySelector(".f-size").value, grossKg: tr.querySelector(".f-gw").value, netKg: tr.querySelector(".f-nw").value
       };
     });
   }
@@ -1053,6 +1131,25 @@
     setVisible(".inv-only", !packing);
     setVisible(".pk-only", packing);
 
+    // Quantity is worked out, never retyped: pieces x size gives the area in
+    // the line's unit (SQF/SQM); in the packing list, per box x boxes gives
+    // the count. The qty box shows the result and stays editable otherwise.
+    Array.prototype.forEach.call(body.children, function (tr) {
+      var q = tr.querySelector(".f-qty"), unit = tr.querySelector(".f-unit").value;
+      var pcs = tr.querySelector(".f-pcs").value, size = tr.querySelector(".f-size").value;
+      var area = E.areaQty(pcs, size, unit);
+      var out = tr.querySelector(".meas-out");
+      var sz = E.parseSize(size);
+      if (area !== null) { q.value = area; q.readOnly = true; q.title = "Worked out from pieces × size"; out.textContent = "= " + area + " " + unit.toUpperCase(); }
+      else {
+        q.readOnly = false; q.title = "";
+        out.textContent = size.trim() && !sz ? "add a unit: ft, m, mm, cm or in" : (pcs && sz && !/^SQ[FM]$/i.test(unit) ? "set unit to SQF or SQM" : "");
+      }
+      var per = tr.querySelector(".f-perbox").value, bx = tr.querySelector(".f-boxes").value;
+      if (packing && parseFloat(per) > 0 && parseFloat(bx) > 0 && area === null) q.value = E.round2(parseFloat(per) * parseFloat(bx));
+      tr.querySelector(".meas").classList.toggle("meas-empty", !pcs.trim() && !size.trim());
+    });
+
     var inv = readInvoice();
     var res = E.computeInvoice(inv);
     var check = E.checkInvoice(inv, res);
@@ -1095,7 +1192,7 @@
     h += '<th class="c-x"></th>';
     if (packing) {
       h = '<th>#</th><th class="c-desc">Description</th><th class="c-hsn">HSN</th><th>Qty</th><th>Unit</th>' +
-        '<th>Boxes</th><th>Gross wt (kg)</th><th>Net wt (kg)</th><th class="c-x"></th>';
+        '<th>Box no.</th><th>Per box</th><th>Boxes</th><th>Gross wt (kg)</th><th>Net wt (kg)</th><th class="c-x"></th>';
     }
     $("items-head").innerHTML = h;
 
@@ -1438,6 +1535,106 @@
     refresh();
   }
 
+  /* ---------- shareable link ----------
+     The whole document travels inside the link, after the "#". Browsers
+     never send that part to a server, so the customer's bill is stored
+     nowhere but in the message it was sent in. */
+  var SHARE_BASE = "https://www.akurock.com/invoice-app";
+  function b64url(bytes) {
+    var bin = ""; for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+    return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  }
+  function unb64url(str) {
+    var bin = atob(str.replace(/-/g, "+").replace(/_/g, "/")), out = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return out;
+  }
+  function deflate(text) {
+    var stream = new Blob([text]).stream().pipeThrough(new CompressionStream("deflate-raw"));
+    return new Response(stream).arrayBuffer().then(function (b) { return new Uint8Array(b); });
+  }
+  function inflate(bytes) {
+    var stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("deflate-raw"));
+    return new Response(stream).text();
+  }
+  function shareLink() {
+    render();
+    if (window.__lastCheck.errors.length && !confirm("This document still has " + window.__lastCheck.errors.length + " problem(s). Share it anyway?")) return;
+    var base = /^https?:/.test(location.protocol) ? location.origin + "/invoice-app" : SHARE_BASE;
+    deflate(JSON.stringify(snapshot())).then(function (bytes) {
+      var url = base + "#v1." + b64url(bytes);
+      saveToHistory();
+      var title = $("doc-title").textContent + " " + ($("inv_no").value.trim() || "");
+      var msg = title + (window.__lastResult && view !== "packing" ? " for " + $("totals-box").querySelector(".grand .num").textContent : "") +
+        "\nFrom " + ($("s_legal").value.trim() || "us") + "\n" + url;
+      var ov = document.createElement("div");
+      ov.className = "overlay";
+      ov.innerHTML = '<div class="panel"><h2>Share link</h2>' +
+        '<p>Anyone with this link sees this ' + esc(title.trim()) + ' and can print or save it as PDF. Nothing is stored on a server.</p>' +
+        '<textarea readonly style="width:100%;height:110px;font:inherit;border:1px solid var(--rule);border-radius:6px;padding:6px">' + esc(msg) + '</textarea>' +
+        '<div class="tools" style="margin-top:10px"><button type="button" class="act" id="sh-copy">Copy message</button>' +
+        '<a class="act" target="_blank" rel="noopener" href="https://wa.me/?text=' + encodeURIComponent(msg) + '">Send on WhatsApp</a>' +
+        '<a class="act" target="_blank" rel="noopener" href="' + esc(url) + '">Open as customer sees it</a>' +
+        '<button type="button" class="act" id="sh-close">Close</button></div>' +
+        '<p class="hint" style="color:var(--muted)">The stamp is not included in links; it stays on this computer.</p></div>';
+      document.body.appendChild(ov);
+      ov.addEventListener("click", function (e) { if (e.target === ov) ov.remove(); });
+      ov.querySelector("#sh-close").addEventListener("click", function () { ov.remove(); });
+      ov.querySelector("#sh-copy").addEventListener("click", function () {
+        var ta = ov.querySelector("textarea");
+        (navigator.clipboard ? navigator.clipboard.writeText(msg) : Promise.reject()).catch(function () { ta.select(); document.execCommand("copy"); })
+          .then(function () { ov.querySelector("#sh-copy").textContent = "Copied ✓"; });
+      });
+    }).catch(function () { alert("This browser cannot make share links. Use a current Chrome, Edge or Safari."); });
+  }
+
+  /* ---------- customer view (opened from a share link) ---------- */
+  // The customer reads the document, they do not edit it: every field is
+  // swapped for plain text, so nothing is clipped by a narrow input and the
+  // screen matches the printed page exactly.
+  function freezeForCustomer() {
+    Array.prototype.forEach.call(document.querySelectorAll(".sheet input, .sheet textarea, .sheet select"), function (f) {
+      var text = f.tagName === "SELECT" ? (f.selectedIndex >= 0 ? f.options[f.selectedIndex].text : "") :
+        f.type === "date" ? "" : f.value;
+      if (f.type === "file" || f.type === "checkbox") return;
+      // Dates already have their dd/mm/yyyy twin; the input itself just goes.
+      if (f.type === "date") { f.remove(); return; }
+      var span = document.createElement("span");
+      span.className = (f.className || "") + " frozen";
+      span.textContent = text;
+      if (f.dataset.for) span.dataset.for = f.dataset.for;
+      if (f.id) span.id = f.id;
+      if (f.hidden) span.hidden = true;
+      if (f.tagName === "TEXTAREA") span.style.whiteSpace = "pre-wrap";
+      f.replaceWith(span);
+      // An empty value leaves a bare label ("UPI", "Contact"): drop both.
+      var label = span.previousElementSibling;
+      if (!text.trim() && !span.closest("td")) {
+        var cell = span.parentElement && span.parentElement.tagName === "DD" ? span.parentElement : span;
+        cell.hidden = true;
+        var lab = cell.previousElementSibling;
+        if (lab && (lab.tagName === "DT" || lab.classList.contains("k"))) lab.hidden = true;
+      }
+      void label;
+    });
+  }
+  var viewerMode = /^#v1\./.test(location.hash);
+  function openSharedDocument() {
+    var data = location.hash.slice(4);
+    return inflate(unb64url(data)).then(function (text) {
+      loadSnapshot(JSON.parse(text));
+      document.body.classList.add("viewer");
+      Array.prototype.forEach.call(document.querySelectorAll(".sheet input, .sheet textarea, .sheet select"), function (f) {
+        f.readOnly = true; if (f.tagName === "SELECT") f.disabled = true;
+      });
+      $("stamp-img").hidden = true;
+      document.title = $("doc-title").textContent + " " + $("inv_no").value;
+      freezeForCustomer();
+    }).catch(function () {
+      document.body.innerHTML = '<p style="padding:40px;font:16px Arial">This invoice link is incomplete or damaged. Ask the sender to share it again.</p>';
+    });
+  }
+
   /* ---------- numbering ---------- */
   function seriesFor(dateIso) {
     var fy = E.financialYear(dateIso) || E.financialYear(new Date().toISOString().slice(0, 10));
@@ -1461,7 +1658,7 @@
   /* ---------- persistence ---------- */
   var SELLER_FIELDS = ["s_legal", "s_addr", "s_gstin", "s_contact", "s_iec", "bk_name", "bk_acc", "bk_ifsc", "bk_swift", "bk_bank", "bk_upi", "lutArn"];
   var DOC_FIELDS = ["inv_no", "inv_date", "due_date", "pos", "po_no", "eway", "vehicle", "port_load", "destination", "incoterms", "sb_no", "valid_until",
-    "dispatch", "port_discharge", "via", "pay_terms",
+    "dispatch", "port_discharge", "via", "pay_terms", "remark", "c_phone",
     "c_name", "c_addr", "c_gstin", "c_country", "c_taxid", "d_name", "d_addr", "currency", "fxRate", "copyType"];
 
   function loadSeller() {
@@ -1477,12 +1674,14 @@
   }
   var draftTimer = 0;
   function writeDraft() {
+    if (viewerMode) return;
     clearTimeout(draftTimer);
     var d = { opts: opts, view: view, items: readItems(), charges: readCharges(), fields: {} };
     DOC_FIELDS.forEach(function (id) { d.fields[id] = $(id).value; });
     store(DRAFT_KEY, d);
   }
   function saveDraft() {
+    if (viewerMode) return;
     clearTimeout(draftTimer);
     draftTimer = setTimeout(writeDraft, 300);
   }
@@ -1503,7 +1702,7 @@
     DOC_FIELDS.forEach(function (id) { if (id !== "currency" && id !== "fxRate" && id !== "copyType") $(id).value = ""; });
     body.innerHTML = "";
     chargesBody.innerHTML = "";
-    addRow({ unit: "SQF", gstRate: 18 });
+    addRow({ unit: opts.unitDefault || "SQF", gstRate: 18 });
     $("inv_date").value = new Date().toISOString().slice(0, 10);
     $("inv_no").value = nextNumber();
     lastAutoPos = "";
@@ -1517,7 +1716,7 @@
   document.addEventListener("change", render);
   $("btn-add").addEventListener("click", function () {
     var last = readItems().pop() || {};
-    addRow({ unit: last.unit || "SQF", gstRate: last.gstRate != null ? last.gstRate : 18 });
+    addRow({ unit: opts.unitDefault || last.unit || "SQF", gstRate: last.gstRate != null ? last.gstRate : 18 });
     render();
   });
   Array.prototype.forEach.call(document.querySelectorAll("#view-seg button"), function (b) {
@@ -1525,6 +1724,7 @@
   });
   $("btn-add-charge").addEventListener("click", function () { addCharge({ gstRate: 18 }); render(); });
   $("btn-history").addEventListener("click", openHistory);
+  $("btn-share").addEventListener("click", shareLink);
   $("btn-next").addEventListener("click", function () { $("inv_no").value = nextNumber(); render(); });
   $("btn-save").addEventListener("click", saveSeller);
   $("btn-new").addEventListener("click", function () {
@@ -1532,11 +1732,11 @@
     freshInvoice(); render();
   });
   $("btn-print").addEventListener("click", function () {
+    if (viewerMode) { window.print(); return; }
     render();
     var c = window.__lastCheck;
     if (c.errors.length && !confirm(c.errors.length + " required item(s) are still missing or wrong:\n\n- " + c.errors.join("\n- ") + "\n\nPrint anyway?")) return;
-    if (view === "invoice") recordNumber();
-    saveToHistory();
+    if (!viewerMode) { if (view === "invoice") recordNumber(); saveToHistory(); }
     var prev = document.title;
     document.title = ($("inv_no").value.trim() || "invoice").replace(/\//g, "-");
     window.print();
@@ -1564,7 +1764,8 @@
 
   /* ---------- boot ---------- */
   loadSeller();
-  if (!restoreDraft()) freshInvoice();
+  if (viewerMode) { body.innerHTML = ""; addRow(); openSharedDocument(); }
+  else if (!restoreDraft()) freshInvoice();
   if (!$("fxRate").value) $("fxRate").value = "";
   Array.prototype.forEach.call(document.querySelectorAll("textarea"), grow);
   render();

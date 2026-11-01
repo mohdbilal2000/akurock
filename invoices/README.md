@@ -25,6 +25,19 @@ opened straight from WhatsApp.
 Numbers you print are remembered on that device. **Save my details** keeps
 your firm and bank details; the current invoice is kept as a draft.
 
+## Measurement and sharing
+
+- **Pieces × size**: under each description, type pieces and a size such as
+  `8x4 ft`, `2440x1220 mm` or `1.2x0.6 m`. With the unit set to SQF or SQM
+  the quantity is worked out (11 × 8x4 ft = 352 sq ft = 32.70 sq m). A size
+  with no unit is never guessed.
+- **Packing list per box**: box no., quantity per box and boxes; per box ×
+  boxes fills the quantity (112 × 4 = 448).
+- **Share link**: makes a WhatsApp-ready link that opens the document
+  read-only for the customer, who can print or save it as PDF. The whole
+  document is inside the link after `#`, which browsers never send to a
+  server, so nothing is stored anywhere. The stamp is not included.
+
 ## Rules it follows
 
 - Rule 46 tax invoice particulars; invoice number at most 16 characters,
