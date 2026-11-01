@@ -288,7 +288,7 @@
   <div class="setup-row">
     <span>Stamp &amp; sign</span>
     <div class="inline">
-      <label class="add-row" style="margin:0">Upload stamp image<input type="file" id="stamp-file" accept="image/*" hidden></label>
+      <label class="add-row" style="margin:0"><span id="stamp-label">Upload stamp image</span><input type="file" id="stamp-file" accept="image/*" hidden></label>
       <button type="button" class="add-row" id="stamp-remove" style="margin:0">Remove</button>
       <label><input type="checkbox" id="stamp-show" checked> Show on documents</label>
       <select id="stamp-style" aria-label="Stamp style"><option value="original">As it is (original)</option><option value="clean">Clean background</option></select>
@@ -1402,6 +1402,7 @@
     $("stamp-img").hidden = !(src && show);
     if (src) $("stamp-img").src = src;
     $("stamp-preview").style.display = src ? "inline" : "none";
+    $("stamp-label").textContent = src ? "Change stamp" : "Upload stamp image";
     if (src) $("stamp-preview").src = src;
   }
   // A phone photo of a rubber stamp is ink on off-white paper. Paper and the
@@ -1426,25 +1427,33 @@
     out.getContext("2d").drawImage(c, minX, minY, out.width, out.height, 0, 0, out.width, out.height);
     return out.toDataURL("image/png");
   }
+  function saveStampFrom(dataUrl, done) {
+    var img = new Image();
+    img.onload = function () {
+      // Keep the photo exactly as it is (only scaled down), plus a cleaned copy.
+      var sc = Math.min(1, 900 / Math.max(img.width, img.height));
+      var c = document.createElement("canvas"); c.width = Math.round(img.width * sc); c.height = Math.round(img.height * sc);
+      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+      var ok = rawSet(STAMP_ORIG_KEY, c.toDataURL("image/jpeg", 0.95)) && rawSet(STAMP_KEY, cleanStamp(img));
+      if (!ok) alert("Could not save the stamp on this computer (storage full or blocked).");
+      renderStamp(); if (done) done(ok);
+    };
+    img.src = dataUrl;
+  }
   $("stamp-file").addEventListener("change", function () {
     var f = this.files && this.files[0]; if (!f) return;
     var reader = new FileReader();
-    reader.onload = function () {
-      var img = new Image();
-      img.onload = function () {
-        // Keep the photo exactly as it is (only scaled down), plus a cleaned copy.
-        var sc = Math.min(1, 900 / Math.max(img.width, img.height));
-        var c = document.createElement("canvas"); c.width = Math.round(img.width * sc); c.height = Math.round(img.height * sc);
-        c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
-        var ok = rawSet(STAMP_ORIG_KEY, c.toDataURL("image/jpeg", 0.95)) && rawSet(STAMP_KEY, cleanStamp(img));
-        if (!ok) alert("Could not save the stamp on this computer (storage full or blocked).");
-        renderStamp();
-      };
-      img.src = reader.result;
-    };
+    reader.onload = function () { saveStampFrom(reader.result); };
     reader.readAsDataURL(f);
     this.value = "";
   });
+  // One-time setup link: ...#stamp=<base64url jpeg>. The part after # never
+  // leaves the browser, so the stamp is not sent to or stored on the website.
+  if (/^#stamp=/.test(location.hash)) {
+    var b = location.hash.slice(7).replace(/-/g, "+").replace(/_/g, "/");
+    history.replaceState(null, "", location.pathname + location.search);
+    saveStampFrom("data:image/jpeg;base64," + b, function (ok) { if (ok) alert("Stamp saved on this computer. It will be on every document from now on."); });
+  }
   $("stamp-remove").addEventListener("click", function () { rawSet(STAMP_KEY, null); rawSet(STAMP_ORIG_KEY, null); renderStamp(); });
   $("stamp-style").value = rawGet(STAMP_STYLE_KEY) || "original";
   $("stamp-style").addEventListener("change", function () { rawSet(STAMP_STYLE_KEY, this.value); renderStamp(); });
