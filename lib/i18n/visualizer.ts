@@ -61,12 +61,32 @@ export interface VisualizerStrings {
   wallSize: string;
   looksRight: string;
   retryDetection: string;
+  compare: string;
+  compareBefore: string;
+  compareAfter: string;
+  otherWall: string;
+  otherWallHint: string;
+  whatsappQuote: string;
+  whatsappMessage: string;
+  shareImage: string;
+  cancel: string;
+  layoutLabel: string;
 }
 
 const de: VisualizerStrings = {
   retryDetection: "Erneut erkennen",
-  analysing: "Wand wird vermessen …",
-  analysingHint: "Die KI findet die Wand, misst sie in Metern und erkennt, was davor steht.",
+  compare: "Vorher / Nachher",
+  compareBefore: "Vorher",
+  compareAfter: "Nachher",
+  otherWall: "Andere Wand",
+  otherWallHint: "Tippen Sie auf die Wand, die Sie verkleiden möchten.",
+  whatsappQuote: "Angebot per WhatsApp",
+  whatsappMessage: "Hallo! Ich habe meine Wand im Akurock Visualizer geplant:\n• Oberfläche: {finish}\n• Paneele: {panels} ({area} m²), {orientation}\n• Wand: {wall} m\n• Richtpreis: {price}\nBitte senden Sie mir ein Angebot.",
+  shareImage: "Bild teilen",
+  cancel: "Abbrechen",
+  layoutLabel: "Anordnung",
+  analysing: "Wand wird erkannt …",
+  analysingHint: "Die KI findet die Wand und erkennt, was davor steht — direkt auf Ihrem Gerät.",
   measuredNote: "Aus Ihrem Foto gemessen",
   estimatedNote: "Größe geschätzt — Wandhöhe bitte prüfen",
   checkWallNote: "Wand nicht sicher erkannt — bitte Ecken prüfen.",
@@ -98,7 +118,7 @@ const de: VisualizerStrings = {
   takePhoto: "Foto aufnehmen",
   uploadPhoto: "Foto hochladen",
   presetLabel: "Oder Beispielraum wählen",
-  privacyNote: "Ihr Foto wird nur zur Wanderkennung verarbeitet und nicht gespeichert.",
+  privacyNote: "Ihr Foto bleibt auf Ihrem Gerät — es wird nirgendwo hochgeladen.",
   detecting: "Wand wird erkannt …",
   autoDetect: "Wand automatisch erkennen",
   cornersHint: "Ecken an die Wandkanten ziehen — die Lupe hilft beim Feinjustieren.",
@@ -122,8 +142,18 @@ const de: VisualizerStrings = {
 
 const en: VisualizerStrings = {
   retryDetection: "Detect again",
-  analysing: "Measuring your wall …",
-  analysingHint: "The AI finds the wall, measures it in metres and spots what stands in front of it.",
+  compare: "Before / after",
+  compareBefore: "Before",
+  compareAfter: "After",
+  otherWall: "Other wall",
+  otherWallHint: "Tap the wall you want to panel.",
+  whatsappQuote: "Get a quote on WhatsApp",
+  whatsappMessage: "Hello! I planned my wall in the Akurock visualizer:\n• Finish: {finish}\n• Panels: {panels} ({area} m²), {orientation}\n• Wall: {wall} m\n• Guide price: {price}\nPlease send me a quote.",
+  shareImage: "Share image",
+  cancel: "Cancel",
+  layoutLabel: "Layout",
+  analysing: "Finding your wall…",
+  analysingHint: "The AI finds the wall and spots what stands in front of it — right on your device.",
   measuredNote: "Measured from your photo",
   estimatedNote: "Size estimated — check the wall height",
   checkWallNote: "The wall wasn’t found confidently — check the corners.",
@@ -155,7 +185,7 @@ const en: VisualizerStrings = {
   takePhoto: "Take a photo",
   uploadPhoto: "Upload a photo",
   presetLabel: "Or try a preset room",
-  privacyNote: "Your photo is used only to detect the wall and is never stored.",
+  privacyNote: "Your photo stays on your device — it is never uploaded.",
   detecting: "Detecting wall …",
   autoDetect: "Auto-detect wall",
   cornersHint: "Drag the corners onto the wall edges — the loupe helps you be precise.",
@@ -179,8 +209,18 @@ const en: VisualizerStrings = {
 
 const es: VisualizerStrings = {
   retryDetection: "Detectar de nuevo",
-  analysing: "Midiendo su pared …",
-  analysingHint: "La IA encuentra la pared, la mide en metros y detecta lo que hay delante.",
+  compare: "Antes / después",
+  compareBefore: "Antes",
+  compareAfter: "Después",
+  otherWall: "Otra pared",
+  otherWallHint: "Toque la pared que quiere revestir.",
+  whatsappQuote: "Presupuesto por WhatsApp",
+  whatsappMessage: "¡Hola! He planificado mi pared en el visualizador Akurock:\n• Acabado: {finish}\n• Paneles: {panels} ({area} m²), {orientation}\n• Pared: {wall} m\n• Precio orientativo: {price}\nPor favor, envíenme un presupuesto.",
+  shareImage: "Compartir imagen",
+  cancel: "Cancelar",
+  layoutLabel: "Disposición",
+  analysing: "Detectando su pared…",
+  analysingHint: "La IA encuentra la pared y detecta lo que hay delante, en su propio dispositivo.",
   measuredNote: "Medido desde su foto",
   estimatedNote: "Tamaño estimado — compruebe la altura",
   checkWallNote: "La pared no se detectó con seguridad — revise las esquinas.",
@@ -212,7 +252,7 @@ const es: VisualizerStrings = {
   takePhoto: "Tomar una foto",
   uploadPhoto: "Subir una foto",
   presetLabel: "O pruebe una sala de ejemplo",
-  privacyNote: "Su foto solo se usa para detectar la pared y nunca se almacena.",
+  privacyNote: "Su foto permanece en su dispositivo: nunca se sube.",
   detecting: "Detectando pared …",
   autoDetect: "Detectar pared automáticamente",
   cornersHint: "Arrastre las esquinas a los bordes de la pared — la lupa le ayuda a ser preciso.",

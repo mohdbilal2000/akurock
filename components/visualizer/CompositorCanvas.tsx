@@ -20,6 +20,9 @@ interface CompositorCanvasProps {
   wallMaskUrl?: string | null;
   /** AI occluder mask — keeps furniture and fittings in front of the panels. */
   occluderMaskUrl?: string | null;
+  /** Drawing-buffer size: the size the canvas is shown at × device pixels. */
+  outputWidth?: number;
+  outputHeight?: number;
 }
 
 function loadImage(url: string): Promise<HTMLImageElement> {
@@ -49,6 +52,8 @@ export const CompositorCanvas = forwardRef<HTMLCanvasElement, CompositorCanvasPr
       feltHex = "#b9b8bc",
       wallMaskUrl = null,
       occluderMaskUrl = null,
+      outputWidth,
+      outputHeight,
     },
     forwardedRef,
   ) {
@@ -91,6 +96,8 @@ export const CompositorCanvas = forwardRef<HTMLCanvasElement, CompositorCanvasPr
             loadedMasksRef.current = maskKey;
           }
 
+          compositor.setOutputSize(outputWidth ?? naturalWidth, outputHeight ?? naturalHeight);
+
           const isVertical = panelSizeMm.height > panelSizeMm.width;
           compositor.render({
             stoneSlug: finishSlug,
@@ -127,6 +134,8 @@ export const CompositorCanvas = forwardRef<HTMLCanvasElement, CompositorCanvasPr
       feltHex,
       wallMaskUrl,
       occluderMaskUrl,
+      outputWidth,
+      outputHeight,
     ]);
 
     return (
@@ -140,7 +149,7 @@ export const CompositorCanvas = forwardRef<HTMLCanvasElement, CompositorCanvasPr
         // needs BOTH axes constrained: w/h-auto keeps the aspect while
         // max-h-full stops a tall photo from overflowing its pane and
         // covering the sheet below it.
-        className="block h-full w-full object-contain"
+        className="block h-full w-full"
       />
     );
   },

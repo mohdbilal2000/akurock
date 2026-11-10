@@ -123,6 +123,16 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      // The visualizer's on-device AI: a ~29 MB model and a ~15 MB runtime.
+      // Both are versioned by file name, so let browsers keep them.
+      {
+        source: '/models/:path*',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=2592000, immutable' }],
+      },
+      {
+        source: '/vendor/ort/:path*',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=2592000, immutable' }],
+      },
       // The invoice app's service worker sits at /invoice-app/sw.js but must
       // control /invoice-app itself (no trailing slash), one level up.
       {

@@ -47,6 +47,7 @@ uniform float uPanelLenMm;    // 2400 (panel length along the slat direction)
 uniform float uSlatsVertical; // 1.0 = slats run vertically on the wall
 uniform vec3  uFeltColor;     // groove (acoustic felt) colour per finish
 uniform vec2  uStoneScaleMm;  // physical mm the stone texture spans
+uniform float uExposure;    // 0.55-1 scene brightness (see sceneExposure)
 uniform float uAAmm;          // ~1 screen px expressed in wall mm (for smoothing)
 
 float aa(float edge, float x) {
@@ -163,7 +164,15 @@ void main() {
 
   // Luminance transfer: keep the photo's real shadows and light falloff.
   float lum = texture2D(uLumTex, vUv).r * 2.0; // see encodeMultiplierByte
-  panelColor *= lum;
+  panelColor *= lum * uExposure;
+
+  // Contact shadow from whatever stands in front of the wall. The mask's
+  // green channel is a wide blur of the wall mask, so it dips near furniture
+  // edges: panels darken slightly where a headboard or sofa back meets them.
+  if (uHasWallMask > 0.5) {
+    float openness = texture2D(uWallMaskTex, vUv).g;
+    panelColor *= mix(0.66, 1.0, smoothstep(0.30, 0.92, openness));
+  }
 
   // Feather the outer edge over ~1.5px so the cut doesn't alias.
   float edgeAlpha = smoothstep(0.0, uAAmm * 1.5, dInside) * coverage;

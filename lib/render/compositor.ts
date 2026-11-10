@@ -69,6 +69,7 @@ const UNIFORM_NAMES = [
   "uOccluderTex",
   "uHasWallMask",
   "uHasOccluder",
+  "uExposure",
 ] as const;
 
 /**
@@ -90,6 +91,9 @@ export class WallCompositor {
   private dummyTexture: WebGLTexture | null = null;
   private photoWidth = 0;
   private photoHeight = 0;
+  private outputWidth = 0;
+  private outputHeight = 0;
+  private exposure = 1;
 
   constructor(private readonly canvas: HTMLCanvasElement) {
     const gl = canvas.getContext("webgl", { preserveDrawingBuffer: true });
@@ -148,8 +152,7 @@ export class WallCompositor {
 
     this.photoWidth = width;
     this.photoHeight = height;
-    this.canvas.width = width;
-    this.canvas.height = height;
+    if (!this.outputWidth) this.setOutputSize(width, height);
     this.photoTexture = this.uploadTexture(photo);
 
     const scratch = document.createElement("canvas");
@@ -159,6 +162,8 @@ export class WallCompositor {
     if (!ctx) throw new Error("2D context unavailable for luminance sampling");
     ctx.drawImage(photo, 0, 0, width, height);
     const imageData = ctx.getImageData(0, 0, width, height);
+
+    this.exposure = sceneExposure(imageData.data);
 
     const mask = computeNormalizedLuminanceMask({ width, height, data: imageData.data });
     const bytes = new Uint8Array(width * height);
@@ -176,6 +181,21 @@ export class WallCompositor {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     this.lumTexture = tex;
+  }
+
+  /**
+   * Size of the drawing buffer. The slats are generated per output pixel,
+   * so drawing at the size the canvas is actually shown (times the device
+   * pixel ratio) keeps them crisp; letting the browser scale a
+   * photo-resolution canvas down turns fine slats into moiré.
+   */
+  setOutputSize(width: number, height: number): void {
+    const w = Math.max(1, Math.round(width)), h = Math.max(1, Math.round(height));
+    if (w === this.outputWidth && h === this.outputHeight) return;
+    this.outputWidth = w;
+    this.outputHeight = h;
+    this.canvas.width = w;
+    this.canvas.height = h;
   }
 
   /**
@@ -244,7 +264,7 @@ export class WallCompositor {
     if (!this.photoTexture || !this.lumTexture) throw new Error("render() before setPhoto()");
     if (!stoneTex) throw new Error(`Stone texture "${opts.stoneSlug}" not loaded`);
 
-    gl.viewport(0, 0, this.photoWidth, this.photoHeight);
+    gl.viewport(0, 0, this.outputWidth, this.outputHeight);
     gl.useProgram(this.program);
 
     gl.activeTexture(gl.TEXTURE0);
@@ -282,7 +302,12 @@ export class WallCompositor {
     const [r, g, b] = hexToRgb(opts.feltHex);
     gl.uniform3f(this.uniforms.get("uFeltColor")!, r, g, b);
     gl.uniform2f(this.uniforms.get("uStoneScaleMm")!, opts.stoneScaleMm.width, opts.stoneScaleMm.height);
-    gl.uniform1f(this.uniforms.get("uAAmm")!, estimateAAmm(opts, this.photoWidth, this.photoHeight));
+    const outputScale = this.photoWidth / Math.max(1, this.outputWidth);
+    gl.uniform1f(
+      this.uniforms.get("uAAmm")!,
+      Math.min(40, estimateAAmm(opts, this.photoWidth, this.photoHeight) * Math.max(1, outputScale)),
+    );
+    gl.uniform1f(this.uniforms.get("uExposure")!, this.exposure);
 
     gl.drawArrays(gl.TRIANGLES, 0, 6);
   }
@@ -319,4 +344,27 @@ export function estimateAAmm(
   const p1 = applyHomography(opts.imageToWallMm, { x: cx + 1, y: cy + 1 });
   const mmPerPx = Math.hypot(p1.x - p0.x, p1.y - p0.y) / Math.SQRT2;
   return Math.min(20, Math.max(0.4, mmPerPx * 0.75));
+}
+
+/**
+ * How bright the scene's lit surfaces are, as a 0.55-1 multiplier for the
+ * panels. The luminance mask carries the photo's light *variation* but is
+ * normalised, so without this a pale stone finish renders at full studio
+ * white inside a dim evening room — the giveaway of a pasted-in texture.
+ */
+export function sceneExposure(rgba: Uint8ClampedArray): number {
+  const histogram = new Uint32Array(256);
+  let samples = 0;
+  const stride = Math.max(4, Math.floor(rgba.length / 4 / 40000) * 4);
+  for (let i = 0; i < rgba.length; i += stride) {
+    const luma = Math.round(0.299 * rgba[i] + 0.587 * rgba[i + 1] + 0.114 * rgba[i + 2]);
+    histogram[luma]++;
+    samples++;
+  }
+  let seen = 0, p90 = 255;
+  for (let v = 0; v < 256; v++) {
+    seen += histogram[v];
+    if (seen >= samples * 0.9) { p90 = v; break; }
+  }
+  return Math.min(1, Math.max(0.55, 0.3 + 0.8 * (p90 / 255)));
 }

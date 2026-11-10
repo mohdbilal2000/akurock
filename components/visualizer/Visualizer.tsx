@@ -11,6 +11,7 @@ import {
   MIN_AUTO_CONFIDENCE,
   type WallDetection,
 } from "@/lib/visualizer/detectWall";
+import { detectWallLocally, warmUpLocalDetection } from "@/lib/visualizer/localDetect";
 import type { Point, Rect } from "@/lib/geometry/types";
 import {
   DEFAULT_WALL_HEIGHT_MM,
@@ -66,8 +67,15 @@ export function Visualizer() {
   const [detection, setDetection] = useState<WallDetection | null>(null);
   const [detectionNote, setDetectionNote] = useState<string | null>(null);
   const [isAdjustingCoverage, setIsAdjustingCoverage] = useState(false);
+  const [isComparing, setIsComparing] = useState(false);
+  const [isPickingWall, setIsPickingWall] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const detectionRunRef = useRef(0);
+
+  useEffect(() => {
+    // Fetch the model while the visitor is still choosing a photo.
+    void warmUpLocalDetection().catch(() => {});
+  }, []);
 
   useEffect(() => {
     // Object URLs from the file picker outlive the component otherwise.
@@ -128,8 +136,15 @@ export function Visualizer() {
     const run = ++detectionRunRef.current;
 
     try {
-      const blob = await (await fetch(loaded.url)).blob();
-      const result = await detectWall(blob, { tap });
+      // On-device first: free, private, and there for every visitor. The
+      // hosted service is only tried if the browser cannot run the model.
+      let result: WallDetection;
+      try {
+        result = await detectWallLocally(loaded.element, { tap });
+      } catch {
+        const blob = await (await fetch(loaded.url)).blob();
+        result = await detectWall(blob, { tap });
+      }
       if (run !== detectionRunRef.current) return;
 
       setDetection(result);
@@ -203,7 +218,7 @@ export function Visualizer() {
   const panelsAcross = coverage ? Math.round(coverage.rectMm.width / panelStep(PANEL, orientation).x) : 0;
 
   return (
-    <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-ground md:items-center">
+    <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-ground">
       {step === "upload" && (
         <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 overflow-y-auto px-4 py-10">
           <header className="text-center">
@@ -230,7 +245,7 @@ export function Visualizer() {
       )}
 
       {step === "corners" && image && (
-        <div className="flex w-full flex-col gap-4 overflow-y-auto px-4 py-6 md:max-w-3xl md:gap-6 md:py-10">
+        <div className="mx-auto flex w-full flex-col gap-4 overflow-y-auto px-4 py-6 md:max-w-3xl md:gap-6 md:py-10">
           <h2 className="font-display text-xl font-semibold text-ink">{t.cornerStepTitle}</h2>
           {detectionNote && (
             <p className="rounded-lg border border-accent/25 bg-accent/10 px-3 py-2 text-sm text-ink">
@@ -277,26 +292,59 @@ export function Visualizer() {
       )}
 
       {step === "main" && image && wallPlane && coverage && (
-        <div className="flex h-full w-full min-h-0 flex-col overflow-hidden md:max-w-3xl md:flex-row">
-          {/* Canvas area: full width on mobile, left half on desktop */}
-          <div className="relative flex w-full min-h-0 flex-1 items-center justify-center overflow-hidden bg-neutral-900/5 md:h-full">
+        <div className="flex h-full w-full min-h-0 flex-col overflow-hidden md:flex-row">
+          {/* Stage: the room, as large as the screen allows. */}
+          <div className="relative flex w-full min-h-0 flex-1 items-center justify-center overflow-hidden bg-[#141312] md:h-full">
             {!isAdjustingCoverage && (
-              <CompositorCanvas
-                ref={canvasRef}
-                imageUrl={image.url}
-                naturalWidth={image.naturalWidth}
-                naturalHeight={image.naturalHeight}
-                imageToWallMm={wallPlane.imageToWall}
-                coverageMm={coverage.rectMm}
-                panelSizeMm={panelSizeMm}
-                textureUrl={finish.textureUrl}
-                wallWidthMm={wallPlane.wallWidthMm}
-                wallHeightMm={wallHeightMm}
-                finishSlug={finish.slug}
-                feltHex={finish.felt}
-                wallMaskUrl={detection?.wallMaskUrl ?? null}
-                occluderMaskUrl={detection?.occluderMaskUrl ?? null}
-              />
+              <PhotoStage naturalWidth={image.naturalWidth} naturalHeight={image.naturalHeight}>
+                {(output) => (
+                  <>
+                    <CompositorCanvas
+                      ref={canvasRef}
+                      imageUrl={image.url}
+                      naturalWidth={image.naturalWidth}
+                      naturalHeight={image.naturalHeight}
+                      imageToWallMm={wallPlane.imageToWall}
+                      coverageMm={coverage.rectMm}
+                      panelSizeMm={panelSizeMm}
+                      textureUrl={finish.textureUrl}
+                      wallWidthMm={wallPlane.wallWidthMm}
+                      wallHeightMm={wallHeightMm}
+                      finishSlug={finish.slug}
+                      feltHex={finish.felt}
+                      wallMaskUrl={detection?.wallMaskUrl ?? null}
+                      occluderMaskUrl={detection?.occluderMaskUrl ?? null}
+                      outputWidth={output.width}
+                      outputHeight={output.height}
+                    />
+                    {isComparing && (
+                      <CompareOverlay
+                        imageUrl={image.url}
+                        beforeLabel={t.compareBefore}
+                        afterLabel={t.compareAfter}
+                      />
+                    )}
+                    {isPickingWall && (
+                      <button
+                        type="button"
+                        aria-label={t.otherWallHint}
+                        className="absolute inset-0 cursor-crosshair bg-black/25"
+                        onClick={(e) => {
+                          const box = e.currentTarget.getBoundingClientRect();
+                          const tap = {
+                            x: ((e.clientX - box.left) / box.width) * image.naturalWidth,
+                            y: ((e.clientY - box.top) / box.height) * image.naturalHeight,
+                          };
+                          setIsPickingWall(false);
+                          setRawCoverageMm(null);
+                          setStep("detecting");
+                          void runDetection(image, tap);
+                        }}
+                      />
+                    )}
+                  </>
+                )}
+              </PhotoStage>
             )}
 
             {isAdjustingCoverage && (
@@ -309,31 +357,29 @@ export function Visualizer() {
               />
             )}
 
-            {/* Control buttons on canvas overlay */}
-            <div className="absolute left-4 top-4 flex flex-col gap-2">
-              <button
-                type="button"
-                onClick={() => setStep("corners")}
-                className="rounded-lg bg-black/50 px-3 py-2 text-xs font-medium text-white backdrop-blur hover:bg-black/60"
-              >
-                {t.adjustCorners}
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsAdjustingCoverage(!isAdjustingCoverage)}
-                className={`rounded-lg px-3 py-2 text-xs font-medium backdrop-blur transition ${
-                  isAdjustingCoverage
-                    ? "bg-accent text-white hover:bg-accent/90"
-                    : "bg-black/50 text-white hover:bg-black/60"
-                }`}
-              >
+            {isPickingWall && (
+              <p className="pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-black/70 px-4 py-2 text-sm font-medium text-white backdrop-blur">
+                {t.otherWallHint}
+              </p>
+            )}
+
+            {/* Stage tools */}
+            <div className="absolute left-3 top-3 flex max-w-[calc(100%-1.5rem)] flex-wrap gap-2">
+              <StageChip active={isComparing} onClick={() => { setIsComparing(!isComparing); setIsPickingWall(false); setIsAdjustingCoverage(false); }}>
+                {t.compare}
+              </StageChip>
+              <StageChip active={isPickingWall} onClick={() => { setIsPickingWall(!isPickingWall); setIsComparing(false); setIsAdjustingCoverage(false); }}>
+                {isPickingWall ? t.cancel : t.otherWall}
+              </StageChip>
+              <StageChip active={isAdjustingCoverage} onClick={() => { setIsAdjustingCoverage(!isAdjustingCoverage); setIsComparing(false); setIsPickingWall(false); }}>
                 {isAdjustingCoverage ? t.doneAdjusting : t.adjustCoverage}
-              </button>
+              </StageChip>
+              <StageChip onClick={() => setStep("corners")}>{t.adjustCorners}</StageChip>
             </div>
           </div>
 
-          {/* Bottom sheet on mobile, right panel on desktop */}
-          <div className="flex max-h-[55dvh] shrink-0 flex-col gap-4 overflow-y-auto overscroll-contain border-t border-line bg-white px-4 py-5 [&>*]:shrink-0 md:max-h-full md:w-80 md:shrink md:border-l md:border-t-0">
+          {/* Bottom sheet on mobile, side panel on desktop */}
+          <div className="flex max-h-[52dvh] shrink-0 flex-col gap-4 overflow-y-auto overscroll-contain rounded-t-2xl border-t border-line bg-white px-4 py-5 shadow-[0_-8px_30px_rgba(0,0,0,0.12)] [&>*]:shrink-0 md:max-h-full md:w-[380px] md:rounded-none md:border-l md:border-t-0 md:px-6 md:py-7 md:shadow-none">
             <div className="flex items-baseline justify-between gap-2">
               <h3 className="text-xs font-semibold uppercase tracking-widest text-ink/50">{t.finishLabel}</h3>
               <WallReadout
@@ -345,9 +391,22 @@ export function Visualizer() {
             </div>
             <FinishPicker selected={finish} onSelect={setFinish} />
 
-            {detectionNote && <p className="text-xs text-ink/55">{detectionNote}</p>}
+            <Calculator panelCount={coverage.panelCount} areaM2={coverage.areaM2} priceEur={priceEur} />
 
-            <hr className="my-2" />
+            <Toolbar
+              canvasRef={canvasRef}
+              finish={finish}
+              orientation={orientation}
+              panelCount={coverage.panelCount}
+              areaM2={coverage.areaM2}
+              priceEur={priceEur}
+              wallWidthMm={wallPlane.wallWidthMm}
+              wallHeightMm={wallHeightMm}
+              onReset={handleNewPhoto}
+            />
+
+            <h3 className="mt-2 text-xs font-semibold uppercase tracking-widest text-ink/50">{t.layoutLabel}</h3>
+            {detectionNote && <p className="-mt-2 text-xs text-ink/55">{detectionNote}</p>}
 
             <PanelRunControl
               label={t.panelRun}
@@ -365,33 +424,133 @@ export function Visualizer() {
               onOrientationChange={setOrientation}
             />
 
-            <hr className="my-2" />
-
-            <Calculator panelCount={coverage.panelCount} areaM2={coverage.areaM2} priceEur={priceEur} />
-
-            <div className="mt-auto flex flex-col gap-2">
-              <Toolbar
-                canvasRef={canvasRef}
-                finish={finish}
-                orientation={orientation}
-                panelCount={coverage.panelCount}
-                areaM2={coverage.areaM2}
-                priceEur={priceEur}
-                onReset={handleNewPhoto}
-              />
-              {rawCoverageMm && (
-                <button
-                  type="button"
-                  onClick={handleResetLayout}
-                  className="text-xs font-medium text-ink/60 underline hover:text-ink"
-                >
-                  {t.resetLayout}
-                </button>
-              )}
-            </div>
+            {rawCoverageMm && (
+              <button
+                type="button"
+                onClick={handleResetLayout}
+                className="text-xs font-medium text-ink/60 underline hover:text-ink"
+              >
+                {t.resetLayout}
+              </button>
+            )}
+            <p className="text-center text-[11px] text-ink/40">{t.privacyNote}</p>
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function StageChip({
+  active,
+  onClick,
+  children,
+}: {
+  active?: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={`rounded-full px-3.5 py-2 text-xs font-semibold backdrop-blur transition ${
+        active ? "bg-accent text-white" : "bg-black/55 text-white hover:bg-black/70"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+/**
+ * Sizes a frame to exactly the photo's on-screen box (letterboxed inside
+ * whatever space the stage has) and tells its children how many device
+ * pixels that is — so the canvas draws at the size it is shown, and
+ * overlays positioned in % line up with the photo, not the letterbox.
+ */
+function PhotoStage({
+  naturalWidth,
+  naturalHeight,
+  children,
+}: {
+  naturalWidth: number;
+  naturalHeight: number;
+  children: (output: { width: number; height: number }) => React.ReactNode;
+}) {
+  const outerRef = useRef<HTMLDivElement>(null);
+  const [box, setBox] = useState<{ width: number; height: number } | null>(null);
+
+  useEffect(() => {
+    const outer = outerRef.current;
+    if (!outer) return;
+    const measure = () => setBox({ width: outer.clientWidth, height: outer.clientHeight });
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(outer);
+    return () => observer.disconnect();
+  }, []);
+
+  let frame: { width: number; height: number } | null = null;
+  if (box && box.width > 0 && box.height > 0) {
+    const scale = Math.min(box.width / naturalWidth, box.height / naturalHeight);
+    frame = { width: Math.floor(naturalWidth * scale), height: Math.floor(naturalHeight * scale) };
+  }
+  const dpr = typeof window === "undefined" ? 1 : Math.min(2, window.devicePixelRatio || 1);
+
+  return (
+    <div ref={outerRef} className="flex h-full w-full items-center justify-center">
+      {frame && (
+        <div className="relative overflow-hidden" style={{ width: frame.width, height: frame.height }}>
+          {children({ width: Math.round(frame.width * dpr), height: Math.round(frame.height * dpr) })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Drag-to-reveal: the untouched photo on the left of the handle. */
+function CompareOverlay({
+  imageUrl,
+  beforeLabel,
+  afterLabel,
+}: {
+  imageUrl: string;
+  beforeLabel: string;
+  afterLabel: string;
+}) {
+  const [position, setPosition] = useState(50);
+  const ref = useRef<HTMLDivElement>(null);
+
+  function move(e: React.PointerEvent) {
+    const box = ref.current?.getBoundingClientRect();
+    if (!box) return;
+    setPosition(Math.min(100, Math.max(0, ((e.clientX - box.left) / box.width) * 100)));
+  }
+
+  return (
+    <div
+      ref={ref}
+      className="absolute inset-0 cursor-ew-resize touch-none select-none"
+      onPointerDown={(e) => { e.currentTarget.setPointerCapture(e.pointerId); move(e); }}
+      onPointerMove={(e) => { if (e.buttons > 0 || e.pointerType === "touch") move(e); }}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={imageUrl}
+        alt=""
+        draggable={false}
+        className="absolute inset-0 h-full w-full"
+        style={{ clipPath: `inset(0 ${100 - position}% 0 0)` }}
+      />
+      <div className="absolute inset-y-0 w-0.5 bg-white shadow-[0_0_0_1px_rgba(0,0,0,0.25)]" style={{ left: `${position}%` }}>
+        <div className="absolute left-1/2 top-1/2 flex h-10 w-10 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white text-sm font-bold text-ink shadow-lg">
+          ‹ ›
+        </div>
+      </div>
+      <span className="absolute bottom-3 left-3 rounded-full bg-black/60 px-3 py-1 text-xs font-semibold text-white">{beforeLabel}</span>
+      <span className="absolute bottom-3 right-3 rounded-full bg-black/60 px-3 py-1 text-xs font-semibold text-white">{afterLabel}</span>
     </div>
   );
 }
