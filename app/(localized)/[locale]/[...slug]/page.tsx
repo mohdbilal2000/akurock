@@ -268,11 +268,16 @@ export async function generateMetadata({
       url: canonicalUrl,
       siteName,
       locale: locale === 'de' ? 'de_AT' : locale === 'en' ? 'en_US' : 'es_ES',
+      // A page-level openGraph replaces the layout's wholesale, so the share
+      // image has to be repeated here or link previews (WhatsApp, LinkedIn,
+      // AI answer cards) come up with no picture.
+      images: [{ url: '/images/stonearts-og-image.webp', width: 1080, height: 1241, alt: title }],
     },
     twitter: {
-      card: 'summary',
+      card: 'summary_large_image',
       title,
       description,
+      images: ['/images/stonearts-og-image.webp'],
     },
     robots: {
       index: true,

@@ -27,7 +27,7 @@
 - [Installation guide (DIY, step by step)](https://www.akurock.com/de/installation-and-guide)
 - [Sample box — test the stones on your wall](https://www.akurock.com/de/akurock-muster)
 - [Accessories (adhesive, screws, nano sealer)](https://www.akurock.com/de/zubehoer)
-- [Visualizer — preview panels on your wall](https://www.akurock.com/de/visualizer)
+- [Wall Visualizer — free tool: upload a room photo, see the panels on your own wall with panel count and price; runs in the browser, the photo is never uploaded](https://www.akurock.com/visualizer)
 - [FAQ](https://www.akurock.com/de/faq)
 - [Sustainability & responsibility](https://www.akurock.com/de/verantwortung)
 - [About stonearts®](https://www.akurock.com/de/uber-uns)

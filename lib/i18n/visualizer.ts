@@ -71,6 +71,7 @@ export interface VisualizerStrings {
   shareImage: string;
   cancel: string;
   layoutLabel: string;
+  wallWidth: string;
 }
 
 const de: VisualizerStrings = {
@@ -85,10 +86,11 @@ const de: VisualizerStrings = {
   shareImage: "Bild teilen",
   cancel: "Abbrechen",
   layoutLabel: "Anordnung",
+  wallWidth: "Wandbreite",
   analysing: "Wand wird erkannt …",
   analysingHint: "Die KI findet die Wand und erkennt, was davor steht — direkt auf Ihrem Gerät.",
-  measuredNote: "Aus Ihrem Foto gemessen",
-  estimatedNote: "Größe geschätzt — Wandhöhe bitte prüfen",
+  measuredNote: "Aus Ihrem Foto gemessen (ca.) — exakte Maße unten eintragen",
+  estimatedNote: "Wandgröße geschätzt — für die exakte Stückzahl Höhe und Breite eintragen",
   checkWallNote: "Wand nicht sicher erkannt — bitte Ecken prüfen.",
   detectionUnavailable: "Automatische Erkennung nicht verfügbar — Ecken bitte selbst setzen.",
   panelRun: "Paneelfläche",
@@ -152,10 +154,11 @@ const en: VisualizerStrings = {
   shareImage: "Share image",
   cancel: "Cancel",
   layoutLabel: "Layout",
+  wallWidth: "Wall width",
   analysing: "Finding your wall…",
   analysingHint: "The AI finds the wall and spots what stands in front of it — right on your device.",
-  measuredNote: "Measured from your photo",
-  estimatedNote: "Size estimated — check the wall height",
+  measuredNote: "Measured from your photo (approx.) — enter exact sizes below",
+  estimatedNote: "Wall size is estimated — enter its height and width for an exact panel count",
   checkWallNote: "The wall wasn’t found confidently — check the corners.",
   detectionUnavailable: "Automatic detection is unavailable — set the corners yourself.",
   panelRun: "Panel area",
@@ -219,10 +222,11 @@ const es: VisualizerStrings = {
   shareImage: "Compartir imagen",
   cancel: "Cancelar",
   layoutLabel: "Disposición",
+  wallWidth: "Ancho de pared",
   analysing: "Detectando su pared…",
   analysingHint: "La IA encuentra la pared y detecta lo que hay delante, en su propio dispositivo.",
-  measuredNote: "Medido desde su foto",
-  estimatedNote: "Tamaño estimado — compruebe la altura",
+  measuredNote: "Medido desde su foto (aprox.) — introduzca las medidas exactas abajo",
+  estimatedNote: "Tamaño estimado — introduzca alto y ancho para un recuento exacto",
   checkWallNote: "La pared no se detectó con seguridad — revise las esquinas.",
   detectionUnavailable: "La detección automática no está disponible — marque las esquinas.",
   panelRun: "Superficie de paneles",

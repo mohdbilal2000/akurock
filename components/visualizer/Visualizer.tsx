@@ -11,7 +11,7 @@ import {
   MIN_AUTO_CONFIDENCE,
   type WallDetection,
 } from "@/lib/visualizer/detectWall";
-import { detectWallLocally, warmUpLocalDetection } from "@/lib/visualizer/localDetect";
+import { detectWallLocally, measureWallLocally, warmUpLocalDetection } from "@/lib/visualizer/localDetect";
 import type { Point, Rect } from "@/lib/geometry/types";
 import {
   DEFAULT_WALL_HEIGHT_MM,
@@ -60,6 +60,12 @@ export function Visualizer() {
   const [image, setImage] = useState<LoadedImage | null>(null);
   const [corners, setCorners] = useState<Point[]>([]);
   const [wallHeightMm, setWallHeightMm] = useState(DEFAULT_WALL_HEIGHT_MM);
+  /**
+   * The wall's true width ÷ height when it is known (measured, or typed).
+   * null = derive it from the corners' on-screen shape. Kept as a ratio so
+   * moving the height slider scales the wall, not distorts it.
+   */
+  const [wallAspect, setWallAspect] = useState<number | null>(null);
   const [orientation, setOrientation] = useState<PanelOrientation>("vertical");
   const [finish, setFinish] = useState<Finish>(FINISHES[0]);
   /** null = "the auto layout still stands"; set only once the user edits. */
@@ -86,8 +92,12 @@ export function Visualizer() {
 
   const wallPlane = useMemo(() => {
     if (corners.length !== 4) return null;
-    return buildWallPlane(corners as unknown as WallCorners, wallHeightMm);
-  }, [corners, wallHeightMm]);
+    return buildWallPlane(
+      corners as unknown as WallCorners,
+      wallHeightMm,
+      wallAspect ? wallAspect * wallHeightMm : undefined,
+    );
+  }, [corners, wallHeightMm, wallAspect]);
 
   const panelSizeMm = useMemo(
     () =>
@@ -120,6 +130,7 @@ export function Visualizer() {
     setDetection(null);
     setDetectionNote(null);
     setWallHeightMm(DEFAULT_WALL_HEIGHT_MM);
+    setWallAspect(null);
     setStep("detecting");
     void runDetection(loaded);
   }
@@ -139,9 +150,11 @@ export function Visualizer() {
       // On-device first: free, private, and there for every visitor. The
       // hosted service is only tried if the browser cannot run the model.
       let result: WallDetection;
+      let onDevice = true;
       try {
         result = await detectWallLocally(loaded.element, { tap });
       } catch {
+        onDevice = false;
         const blob = await (await fetch(loaded.url)).blob();
         result = await detectWall(blob, { tap });
       }
@@ -165,6 +178,17 @@ export function Visualizer() {
           : t.checkWallNote,
       );
       setStep(trustworthy ? "main" : "corners");
+
+      // Second pass, in the background: the wall's true proportions from
+      // depth. It corrects the width of a wall photographed at an angle;
+      // the height stays the visitor's to set (see lib/visualizer/wallScale).
+      if (onDevice && trustworthy) {
+        setWallAspect(null);
+        void measureWallLocally(loaded.element, result).then((scale) => {
+          if (run !== detectionRunRef.current || !scale) return;
+          setWallAspect(scale.widthMm / scale.heightMm);
+        });
+      }
     } catch {
       if (run !== detectionRunRef.current) return;
       // No service, no network, or a photo it couldn't read: fall back to
@@ -257,7 +281,12 @@ export function Visualizer() {
             naturalWidth={image.naturalWidth}
             naturalHeight={image.naturalHeight}
             corners={corners}
-            onCornersChange={setCorners}
+            onCornersChange={(next) => {
+              // The measured shape belonged to the old corners.
+              detectionRunRef.current++;
+              setWallAspect(null);
+              setCorners(next);
+            }}
           />
           <div className="flex gap-3">
             <button
@@ -420,6 +449,8 @@ export function Visualizer() {
             <Controls
               wallHeightMm={wallHeightMm}
               onWallHeightChange={setWallHeightMm}
+              wallWidthMm={wallPlane.wallWidthMm}
+              onWallWidthChange={(widthMm) => setWallAspect(widthMm / wallHeightMm)}
               orientation={orientation}
               onOrientationChange={setOrientation}
             />

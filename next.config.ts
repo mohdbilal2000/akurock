@@ -123,6 +123,18 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      // Cross-origin isolation for the visualizer only: it unlocks
+      // SharedArrayBuffer, which lets the on-device AI use several CPU
+      // threads (3-4x faster). "credentialless" keeps Google Fonts loading;
+      // browsers without it simply stay single-threaded. Scoped to this one
+      // route so the rest of the site's third-party embeds are untouched.
+      {
+        source: '/visualizer',
+        headers: [
+          { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
+          { key: 'Cross-Origin-Embedder-Policy', value: 'credentialless' },
+        ],
+      },
       // The visualizer's on-device AI: a ~29 MB model and a ~15 MB runtime.
       // Both are versioned by file name, so let browsers keep them.
       {
@@ -131,7 +143,13 @@ const nextConfig: NextConfig = {
       },
       {
         source: '/vendor/ort/:path*',
-        headers: [{ key: 'Cache-Control', value: 'public, max-age=2592000, immutable' }],
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=2592000, immutable' },
+          // The runtime's worker threads are loaded from here; a worker
+          // inside a cross-origin-isolated page must declare COEP itself.
+          { key: 'Cross-Origin-Embedder-Policy', value: 'credentialless' },
+          { key: 'Cross-Origin-Resource-Policy', value: 'same-origin' },
+        ],
       },
       // The invoice app's service worker sits at /invoice-app/sw.js but must
       // control /invoice-app itself (no trailing slash), one level up.

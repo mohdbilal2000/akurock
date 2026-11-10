@@ -1,7 +1,8 @@
 /**
  * Wall detection that runs entirely in the visitor's browser.
  *
- * A small semantic-segmentation network (SegFormer, ADE20K classes) is
+ * A semantic-segmentation network (UperNet + ConvNeXt-Tiny, ADE20K classes,
+ * MIT-licensed — see public/models/wall/NOTICE.md) is
  * downloaded once from this site and run with ONNX Runtime's WebAssembly
  * backend. That means: no server to pay for or keep awake, the photo never
  * leaves the device, and it works for every visitor — which the hosted
@@ -23,10 +24,11 @@ import {
   resampleBilinear,
   wallQuad,
 } from "./wallFromSegmentation";
+import { defaultFocalPx, isUsableShape, measureWall, type WallScale } from "./wallScale";
 
 const ORT_SCRIPT = "/vendor/ort/ort.wasm.min.js";
 const ORT_WASM_DIR = "/vendor/ort/";
-const MODEL_URL = "/models/wall/seg-b2.onnx";
+const MODEL_URL = "/models/wall/seg-upernet-convnext-t-q8.onnx";
 const MODEL_INPUT = 512;
 const NUM_CLASSES = 150;
 /** Long side of the mask handed to the renderer. */
@@ -35,8 +37,32 @@ const MASK_SIDE = 768;
 const MEAN = [0.485, 0.456, 0.406];
 const STD = [0.229, 0.224, 0.225];
 
+const DEPTH_MODEL_URL = "/models/wall/depth-metric-indoor-s-q8.onnx";
+const DEPTH_INPUT = 518;
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 let sessionPromise: Promise<any> | null = null;
+let depthSessionPromise: Promise<any> | null = null;
+
+/** The wall-probability grid behind each detection, for the depth pass. */
+const wallGrids = new WeakMap<WallDetection, { prob: Float32Array; width: number; height: number }>();
+
+/** ImageNet-normalised NCHW tensor data of the image stretched to size². */
+function toTensorData(image: HTMLImageElement, size: number): Float32Array {
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  if (!ctx) throw new WallDetectionUnavailable("2D canvas unavailable");
+  ctx.drawImage(image, 0, 0, size, size);
+  const rgba = ctx.getImageData(0, 0, size, size).data;
+  const plane = size * size;
+  const data = new Float32Array(3 * plane);
+  for (let i = 0; i < plane; i++) {
+    for (let c = 0; c < 3; c++) data[c * plane + i] = (rgba[i * 4 + c] / 255 - MEAN[c]) / STD[c];
+  }
+  return data;
+}
 
 function loadScript(src: string): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -58,9 +84,10 @@ export function warmUpLocalDetection(): Promise<unknown> {
     const ort = (window as any).ort;
     if (!ort) throw new Error("onnxruntime-web did not initialise");
     ort.env.wasm.wasmPaths = ORT_WASM_DIR;
-    // One thread: multi-threading needs cross-origin isolation headers that
-    // would break the rest of the site's third-party embeds.
-    ort.env.wasm.numThreads = 1;
+    // Several threads where the page is cross-origin isolated (see the
+    // /visualizer headers in next.config.ts); one thread everywhere else.
+    const cores = navigator.hardwareConcurrency || 2;
+    ort.env.wasm.numThreads = window.crossOriginIsolated ? Math.max(1, Math.min(4, cores - 1)) : 1;
     const session = await ort.InferenceSession.create(MODEL_URL, {
       executionProviders: ["wasm"],
       graphOptimizationLevel: "all",
@@ -92,21 +119,7 @@ export async function detectWallLocally(
 
   const imageWidth = image.naturalWidth, imageHeight = image.naturalHeight;
 
-  // --- preprocess: stretch to 512², ImageNet-normalise, NCHW ---------------
-  const inputCanvas = document.createElement("canvas");
-  inputCanvas.width = MODEL_INPUT;
-  inputCanvas.height = MODEL_INPUT;
-  const inputCtx = inputCanvas.getContext("2d", { willReadFrequently: true });
-  if (!inputCtx) throw new WallDetectionUnavailable("2D canvas unavailable");
-  inputCtx.drawImage(image, 0, 0, MODEL_INPUT, MODEL_INPUT);
-  const rgba = inputCtx.getImageData(0, 0, MODEL_INPUT, MODEL_INPUT).data;
-  const plane = MODEL_INPUT * MODEL_INPUT;
-  const tensorData = new Float32Array(3 * plane);
-  for (let i = 0; i < plane; i++) {
-    for (let c = 0; c < 3; c++) {
-      tensorData[c * plane + i] = (rgba[i * 4 + c] / 255 - MEAN[c]) / STD[c];
-    }
-  }
+  const tensorData = toTensorData(image, MODEL_INPUT);
 
   // --- inference -------------------------------------------------------------
   let logits: Float32Array, gridW: number, gridH: number;
@@ -199,7 +212,7 @@ export async function detectWallLocally(
   const bottom = Math.hypot(corners[2].x - corners[3].x, corners[2].y - corners[3].y);
   const aspect = (top + bottom) / Math.max(1e-6, left + right);
 
-  return {
+  const detection: WallDetection = {
     corners,
     wallWidthMm: DEFAULT_WALL_HEIGHT_MM * aspect,
     wallHeightMm: DEFAULT_WALL_HEIGHT_MM,
@@ -216,4 +229,54 @@ export async function detectWallLocally(
       post: Math.round(performance.now() - inferredAt),
     },
   };
+  wallGrids.set(detection, { prob: chosenProb, width: gridW, height: gridH });
+  return detection;
+}
+
+/**
+ * Works out the detected wall's true proportions (width ÷ height) with a
+ * depth model, also run on-device. Slower than detection and only refines
+ * the layout, so the caller shows the wall first and applies this when it
+ * arrives. Resolves to null when the result should not be used. Only the
+ * ratio of the returned sizes is meaningful — see isUsableShape.
+ */
+export async function measureWallLocally(
+  image: HTMLImageElement,
+  detection: WallDetection,
+): Promise<WallScale | null> {
+  const grid = wallGrids.get(detection);
+  if (!grid) return null;
+  try {
+    const { ort } = (await warmUpLocalDetection()) as { ort: any };
+    depthSessionPromise ??= ort.InferenceSession.create(DEPTH_MODEL_URL, {
+      executionProviders: ["wasm"],
+      graphOptimizationLevel: "all",
+    });
+    const session = await depthSessionPromise;
+    const input = new ort.Tensor("float32", toTensorData(image, DEPTH_INPUT), [1, 3, DEPTH_INPUT, DEPTH_INPUT]);
+    const output = await session.run({ [session.inputNames[0]]: input });
+    const result = output[session.outputNames[0]];
+    const dims = result.dims as number[];
+    const scale = measureWall({
+      depth: result.data as Float32Array,
+      depthWidth: dims[dims.length - 1],
+      depthHeight: dims[dims.length - 2],
+      wallProb: grid.prob,
+      wallProbWidth: grid.width,
+      wallProbHeight: grid.height,
+      corners: detection.corners,
+      imageWidth: image.naturalWidth,
+      imageHeight: image.naturalHeight,
+      focalPx: defaultFocalPx(image.naturalWidth, image.naturalHeight),
+    });
+    if (!scale) return null;
+    const [tl, tr, br, bl] = detection.corners;
+    const outlineAspect =
+      (Math.hypot(tr.x - tl.x, tr.y - tl.y) + Math.hypot(br.x - bl.x, br.y - bl.y)) /
+      Math.max(1e-6, Math.hypot(bl.x - tl.x, bl.y - tl.y) + Math.hypot(br.x - tr.x, br.y - tr.y));
+    return isUsableShape(scale, outlineAspect) ? scale : null;
+  } catch {
+    depthSessionPromise = null;
+    return null;
+  }
 }

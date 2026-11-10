@@ -108,9 +108,10 @@ void main() {
 
   float grooveW = uSlatPitchMm - uSlatWidthMm;   // 22mm felt gap
   float grooveHalf = grooveW * 0.5;
-  // Shift so mod()'s wrap point lands mid-groove: the pattern is then
-  // [half groove | slat face | half groove] with no discontinuity at wrap.
-  float q = mod(across + grooveHalf, uSlatPitchMm);
+  // Each pitch is [half groove | slat face | half groove], starting at the
+  // edge of the run — so a panel run begins and ends on felt, like the
+  // real panels, never on a sliced slat.
+  float q = mod(across, uSlatPitchMm);
   float faceStart = grooveHalf;
   float faceEnd = grooveHalf + uSlatWidthMm;
 

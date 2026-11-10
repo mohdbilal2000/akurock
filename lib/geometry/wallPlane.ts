@@ -25,7 +25,17 @@ export interface WallPlane {
  * left/right edge vs top/bottom edge) gives the wall width in the same
  * units, which is what makes slat width and panel count physically correct.
  */
-export function buildWallPlane(corners: WallCorners, wallHeightMm: number): WallPlane {
+export function buildWallPlane(
+  corners: WallCorners,
+  wallHeightMm: number,
+  /**
+   * The wall's real width when it is known (measured from depth, or typed
+   * in). Without it the width comes from the corners' on-screen aspect,
+   * which is only right for a wall photographed straight on: a wall seen
+   * at an angle looks narrower than it is.
+   */
+  knownWidthMm?: number,
+): WallPlane {
   const [tl, tr, br, bl] = corners;
 
   const leftEdge = distance(tl, bl);
@@ -36,7 +46,7 @@ export function buildWallPlane(corners: WallCorners, wallHeightMm: number): Wall
   const avgVertical = (leftEdge + rightEdge) / 2;
   const avgHorizontal = (topEdge + bottomEdge) / 2;
   const pxPerMm = avgVertical / wallHeightMm;
-  const wallWidthMm = avgHorizontal / pxPerMm;
+  const wallWidthMm = knownWidthMm && knownWidthMm > 0 ? knownWidthMm : avgHorizontal / pxPerMm;
 
   const wallSpaceCorners: WallCorners = [
     { x: 0, y: 0 },

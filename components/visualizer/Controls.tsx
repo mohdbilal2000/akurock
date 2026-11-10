@@ -7,6 +7,8 @@ import { MAX_WALL_HEIGHT_MM, MIN_WALL_HEIGHT_MM } from "@/config/panels";
 interface ControlsProps {
   wallHeightMm: number;
   onWallHeightChange: (mm: number) => void;
+  wallWidthMm: number;
+  onWallWidthChange: (mm: number) => void;
   orientation: PanelOrientation;
   onOrientationChange: (orientation: PanelOrientation) => void;
 }
@@ -15,6 +17,8 @@ interface ControlsProps {
 export function Controls({
   wallHeightMm,
   onWallHeightChange,
+  wallWidthMm,
+  onWallWidthChange,
   orientation,
   onOrientationChange,
 }: ControlsProps) {
@@ -41,6 +45,40 @@ export function Controls({
         <p className="mt-1 text-xs text-neutral-400">
           {t.wallHeightHelp}
         </p>
+      </div>
+
+      <div className="flex items-center justify-between gap-3 text-sm">
+        <label htmlFor="wall-width" className="font-medium text-ink/70">
+          {t.wallWidth}
+        </label>
+        <span className="flex items-center gap-1.5 text-ink/60">
+          <input
+            id="wall-width"
+            type="number"
+            inputMode="decimal"
+            min={0.6}
+            max={15}
+            step={0.05}
+            // Keyed on the current value so a new measurement or height
+            // change shows through, while typing stays uncontrolled.
+            key={Math.round(wallWidthMm / 10)}
+            defaultValue={(wallWidthMm / 1000).toFixed(2)}
+            // Applied when the field is left or Enter is pressed — not per
+            // keystroke, which would re-layout the wall at "3" on the way
+            // to "3.5".
+            onBlur={(e) => {
+              const metres = Number(e.target.value);
+              if (metres >= 0.6 && metres <= 15 && Math.abs(metres * 1000 - wallWidthMm) > 5) {
+                onWallWidthChange(metres * 1000);
+              }
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") e.currentTarget.blur();
+            }}
+            className="w-20 rounded-md border border-line px-2 py-1 text-right text-ink"
+          />
+          m
+        </span>
       </div>
 
       <div>

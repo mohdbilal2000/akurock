@@ -3,6 +3,7 @@
 import { forwardRef, useEffect, useRef } from "react";
 import type { Mat3, Rect } from "@/lib/geometry/types";
 import { WallCompositor } from "@/lib/render/compositor";
+import { PANEL } from "@/config/panels";
 
 interface CompositorCanvasProps {
   imageUrl: string;
@@ -107,9 +108,9 @@ export const CompositorCanvas = forwardRef<HTMLCanvasElement, CompositorCanvasPr
             wallHeightMm,
             slatsVertical: isVertical,
             feltHex,
-            slatPitchMm: 64,
-            slatWidthMm: 42,
-            panelLengthMm: 2400,
+            slatPitchMm: PANEL.slatPitchMm,
+            slatWidthMm: PANEL.slatWidthMm,
+            panelLengthMm: PANEL.widthMm,
             stoneScaleMm: { width: 600, height: 2400 },
           });
         } catch (err) {

@@ -25,8 +25,12 @@ export const PANEL: PanelSpec = {
   widthMm: 2400,
   heightMm: 600,
   depthMm: 23,
-  slatPitchMm: 64,
-  slatWidthMm: 42,
+  // Nine slats across the 600 mm panel, so the pattern repeats exactly once
+  // per panel: every panel starts and ends mid-groove, panels butt together
+  // on the felt, and no slat is ever sliced at the edge of a run. (A free
+  // 64 mm pitch drifted against the panel width and cut the last slat.)
+  slatPitchMm: 600 / 9,
+  slatWidthMm: (600 / 9) * (42 / 64),
 };
 
 /**

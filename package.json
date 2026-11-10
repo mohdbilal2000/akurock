@@ -10,7 +10,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "analyze": "ANALYZE=true next build",
-    "invoice:build": "node scripts/build-invoice.mjs"
+    "invoice:build": "node scripts/build-invoice.mjs",
+    "seo:indexnow": "node scripts/indexnow.mjs"
   },
   "dependencies": {
     "next": "16.1.6",
