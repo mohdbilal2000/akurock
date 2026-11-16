@@ -189,12 +189,17 @@
   }
 
   @media print {
-    @page { size: A4; margin: 10mm; }
+    /* Zero page margin is what makes Chrome and Edge drop their own header
+       and footer (date, page title, the website address, page numbers).
+       The visible margin is padding on the sheet instead, repeated on every
+       page with box-decoration-break so page 2 is not flush to the edge. */
+    @page { size: A4; margin: 0; }
     html, body { background: #fff; }
     .no-print, .toolbar, .setup, .notice, .del, .add-row, .c-x, .overlay { display: none !important; }
     .charges-empty { display: none !important; }
-    .sheet { width: auto; min-height: 0; margin: 0; padding: 0; border: 0; box-shadow: none; }
+    .sheet { width: auto; min-height: 0; margin: 0; padding: 7mm 10mm; border: 0; box-shadow: none; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
     .sheet input, .sheet select, .sheet textarea { border-bottom: 0 !important; background: transparent !important; }
+    .sheet input:focus, .sheet select:focus, .sheet textarea:focus, .sheet :focus-visible { outline: none !important; box-shadow: none !important; }
     .sheet select { appearance: none; -webkit-appearance: none; }
     .missing { background: transparent !important; }
     input::placeholder, textarea::placeholder { color: transparent !important; }
@@ -970,7 +975,7 @@
     s_gstin: "08BSFPA0657M1ZO", s_contact: "", s_iec: "BSFPA0657M", lutArn: "AD081026005516D",
     bk_name: "Stone Art Installation", bk_acc: "37990375434", bk_ifsc: "SBIN0031503",
     bk_swift: "SBININBBJ45",
-    bk_bank: "State Bank of India, IBB Jaipur, Near Tri-murti Circle, Jaipur", bk_upi: "",
+    bk_bank: "State Bank of India, Malviya Nagar Industrial Area, Jaipur", bk_upi: "",
     prefix: "SAI"
   };
 
@@ -1753,7 +1758,16 @@
         var pdf = new JsPDF({ unit: "mm", format: "a4", orientation: "portrait", compress: true });
         var pageW = 210, pageH = 297;
         var pxPerMm = canvas.width / pageW, pagePx = Math.floor(pageH * pxPerMm);
-        // Long documents continue on the next A4 page rather than shrinking.
+        // A sheet only a few percent taller than one page (typically just the
+        // closing "E. & O.E." line) is scaled onto one page instead of
+        // leaving a nearly empty second page. Longer ones continue on the
+        // next A4 page rather than shrinking.
+        if (canvas.height > pagePx && canvas.height <= pagePx * 1.08) {
+          var fit = pagePx / canvas.height;
+          pdf.addImage(canvas.toDataURL("image/jpeg", 0.92), "JPEG", (pageW - pageW * fit) / 2, 0, pageW * fit, pageH);
+          pdf.setProperties({ title: $("doc-title").textContent + " " + $("inv_no").value, creator: "Invoices" });
+          return pdf;
+        }
         for (var y = 0, page = 0; y < canvas.height; y += pagePx, page++) {
           var h = Math.min(pagePx, canvas.height - y);
           var slice = document.createElement("canvas"); slice.width = canvas.width; slice.height = h;
@@ -1833,20 +1847,36 @@
     "dispatch", "port_discharge", "via", "pay_terms", "remark", "c_phone",
     "c_name", "c_addr", "c_gstin", "c_country", "c_taxid", "d_name", "d_addr", "currency", "fxRate", "copyType"];
 
-  // Details this firm corrected on 2 Nov 2026 (SWIFT code and branch). A PC
-  // that already pressed "Save my details" holds the old text; swap exactly
-  // those old values, and nothing else the owner may have typed.
+  // Bank text that was later corrected. The IFSC on the invoice
+  // is the Malviya Nagar Industrial Area branch, so that is the branch name
+  // that must print beside it. A PC that saved an older wording gets exactly
+  // that wording swapped, and nothing else the owner may have typed.
+  var BANK_NOW = "State Bank of India, Malviya Nagar Industrial Area, Jaipur";
   var SUPERSEDED = {
-    bk_swift: ["SBININBB851", "SBININBBJ58"],
-    bk_bank: ["State Bank of India, Malviya Nagar Ind. Area, Jaipur, Rajasthan 302017"]
+    bk_swift: { old: ["SBININBB851", "SBININBBJ58"], now: SELLER_DEFAULTS.bk_swift },
+    bk_bank: { old: [
+      "State Bank of India, Malviya Nagar Ind. Area, Jaipur, Rajasthan 302017",
+      "State Bank of India, IBB Jaipur, Near Tri-murti Circle, Jaipur",
+      "State Bank of India, Malyva Nagar Industrial Area, Jaipur"
+    ], now: BANK_NOW }
   };
+  function migrateSeller(o) {
+    var changed = false;
+    if (!o) return false;
+    Object.keys(SUPERSEDED).forEach(function (id) {
+      if (SUPERSEDED[id].now && SUPERSEDED[id].old.indexOf(o[id]) !== -1) { o[id] = SUPERSEDED[id].now; changed = true; }
+    });
+    return changed;
+  }
   function loadSeller() {
     var saved = load(SELLER_KEY) || {};
-    var changed = false;
-    Object.keys(SUPERSEDED).forEach(function (id) {
-      if (SUPERSEDED[id].indexOf(saved[id]) !== -1 && SELLER_DEFAULTS[id]) { saved[id] = SELLER_DEFAULTS[id]; changed = true; }
-    });
-    if (changed) store(SELLER_KEY, saved);
+    if (migrateSeller(saved)) store(SELLER_KEY, saved);
+    var prof = load("akurock-invoice-profiles");
+    if (prof && Array.isArray(prof.list)) {
+      var pc = false;
+      prof.list.forEach(function (x) { if (migrateSeller(x.seller)) pc = true; });
+      if (pc) store("akurock-invoice-profiles", prof);
+    }
     SELLER_FIELDS.forEach(function (id) { $(id).value = saved[id] != null ? saved[id] : (SELLER_DEFAULTS[id] || ""); });
   }
   /* ---------- business profiles (this computer only) ---------- */
