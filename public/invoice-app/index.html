@@ -1823,8 +1823,20 @@
     "dispatch", "port_discharge", "via", "pay_terms", "remark", "c_phone",
     "c_name", "c_addr", "c_gstin", "c_country", "c_taxid", "d_name", "d_addr", "currency", "fxRate", "copyType"];
 
+  // Details this firm corrected on 2 Nov 2026 (SWIFT code and branch). A PC
+  // that already pressed "Save my details" holds the old text; swap exactly
+  // those old values, and nothing else the owner may have typed.
+  var SUPERSEDED = {
+    bk_swift: ["SBININBB851", "SBININBBJ58"],
+    bk_bank: ["State Bank of India, Malviya Nagar Ind. Area, Jaipur, Rajasthan 302017"]
+  };
   function loadSeller() {
     var saved = load(SELLER_KEY) || {};
+    var changed = false;
+    Object.keys(SUPERSEDED).forEach(function (id) {
+      if (SUPERSEDED[id].indexOf(saved[id]) !== -1 && SELLER_DEFAULTS[id]) { saved[id] = SELLER_DEFAULTS[id]; changed = true; }
+    });
+    if (changed) store(SELLER_KEY, saved);
     SELLER_FIELDS.forEach(function (id) { $(id).value = saved[id] != null ? saved[id] : (SELLER_DEFAULTS[id] || ""); });
   }
   function saveSeller() {
