@@ -1937,6 +1937,22 @@
   });
 
   /* ---------- boot ---------- */
+  // One-time setup link: ...#setup=<base64url JSON {seller, stamp?}>. Fills in
+  // the firm's details (and stamp) on this computer. Everything after "#"
+  // stays in the browser and is never sent to the website, so the real
+  // details can be shared in a private chat without being on the public site.
+  if (/^#setup=/.test(location.hash)) {
+    try {
+      var raw = atob(location.hash.slice(7).replace(/-/g, "+").replace(/_/g, "/"));
+      var cfg = JSON.parse(decodeURIComponent(escape(raw)));
+      history.replaceState(null, "", location.pathname + location.search);
+      var cur = load(SELLER_KEY) || {};
+      SELLER_FIELDS.forEach(function (id) { if (cfg.seller && cfg.seller[id] != null) cur[id] = cfg.seller[id]; });
+      store(SELLER_KEY, cur);
+      if (cfg.stamp) saveStampFrom(cfg.stamp);
+      setTimeout(function () { alert("Your firm details" + (cfg.stamp ? " and stamp" : "") + " are saved on this computer."); }, 300);
+    } catch (e) { /* malformed link: ignore, the page opens normally */ }
+  }
   loadSeller();
   if (viewerMode) { body.innerHTML = ""; addRow(); openSharedDocument(); }
   else if (!restoreDraft()) freshInvoice();
