@@ -226,6 +226,15 @@
 </div>
 
 <section class="setup" aria-label="Invoice setup">
+  <div class="setup-row" id="row-business">
+    <span>Business</span>
+    <div class="inline">
+      <select id="profile-sel" aria-label="Business"></select>
+      <button type="button" class="add-row" id="profile-new" style="margin:0">+ Add business</button>
+      <button type="button" class="add-row" id="profile-del" style="margin:0">Delete</button>
+      <span class="hint">Pick the business that issues this document. Edit the details below, then press Save my details.</span>
+    </div>
+  </div>
   <div class="setup-row">
     <span>Customer is</span>
     <div class="seg" data-field="market">
@@ -1840,9 +1849,78 @@
     if (changed) store(SELLER_KEY, saved);
     SELLER_FIELDS.forEach(function (id) { $(id).value = saved[id] != null ? saved[id] : (SELLER_DEFAULTS[id] || ""); });
   }
+  /* ---------- business profiles (this computer only) ---------- */
+  var PROFILES_KEY = "akurock-invoice-profiles";
+  function getProfiles() {
+    var p = load(PROFILES_KEY);
+    if (!p || !Array.isArray(p.list)) p = { list: [], active: 0 };
+    if (p.active >= p.list.length) p.active = 0;
+    return p;
+  }
+  function readSellerInputs() {
+    var o = {};
+    SELLER_FIELDS.forEach(function (id) { o[id] = $(id).value; });
+    return o;
+  }
+  function writeSellerInputs(seller) {
+    SELLER_FIELDS.forEach(function (id) { $(id).value = seller[id] != null ? seller[id] : ""; });
+    grow($("s_addr"));
+  }
+  function renderProfiles() {
+    var p = getProfiles(), sel = $("profile-sel");
+    sel.innerHTML = p.list.length
+      ? p.list.map(function (x, i) { return '<option value="' + i + '">' + esc(x.name) + "</option>"; }).join("")
+      : '<option value="">— no business yet —</option>';
+    if (p.list.length) sel.value = String(p.active);
+    $("profile-del").hidden = p.list.length === 0;
+  }
+  function saveActiveProfile() {
+    var p = getProfiles(), seller = readSellerInputs();
+    if (!seller.s_legal.trim() && !seller.s_gstin.trim() && !seller.bk_acc.trim()) return; // nothing worth keeping
+    var name = seller.s_legal.trim() || "My business";
+    if (p.list.length === 0) { p.list.push({ name: name, seller: seller }); p.active = 0; }
+    else { p.list[p.active] = { name: name, seller: seller }; }
+    store(PROFILES_KEY, p);
+    store(SELLER_KEY, Object.assign(load(SELLER_KEY) || {}, seller));
+    renderProfiles();
+  }
+  function switchProfile(i) {
+    saveActiveProfile();
+    var p = getProfiles();
+    if (!p.list[i]) return;
+    p.active = i; store(PROFILES_KEY, p);
+    store(SELLER_KEY, Object.assign(load(SELLER_KEY) || {}, p.list[i].seller));
+    writeSellerInputs(p.list[i].seller);
+    renderProfiles();
+    render(); writeDraft();
+  }
+  $("profile-sel").addEventListener("change", function () { if (this.value !== "") switchProfile(+this.value); });
+  $("profile-new").addEventListener("click", function () {
+    var name = (prompt("Name of the new business (as it should print on invoices):") || "").trim();
+    if (!name) return;
+    saveActiveProfile();
+    var p = getProfiles(), seller = {};
+    SELLER_FIELDS.forEach(function (id) { seller[id] = ""; });
+    seller.s_legal = name; seller.bk_name = name;
+    p.list.push({ name: name, seller: seller }); p.active = p.list.length - 1;
+    store(PROFILES_KEY, p);
+    store(SELLER_KEY, Object.assign(load(SELLER_KEY) || {}, seller));
+    writeSellerInputs(seller); renderProfiles(); render(); writeDraft();
+    $("s_addr").focus();
+  });
+  $("profile-del").addEventListener("click", function () {
+    var p = getProfiles(); if (!p.list.length) return;
+    if (!confirm('Delete the business "' + p.list[p.active].name + '" from this computer? Invoices already saved in History are not affected.')) return;
+    p.list.splice(p.active, 1); p.active = 0; store(PROFILES_KEY, p);
+    if (p.list.length) { store(SELLER_KEY, Object.assign(load(SELLER_KEY) || {}, p.list[0].seller)); writeSellerInputs(p.list[0].seller); }
+    else { var blank = {}; SELLER_FIELDS.forEach(function (id) { blank[id] = ""; }); store(SELLER_KEY, blank); writeSellerInputs(blank); }
+    renderProfiles(); render(); writeDraft();
+  });
+
   function saveSeller() {
     var data = load(SELLER_KEY) || {};
     SELLER_FIELDS.forEach(function (id) { data[id] = $(id).value; });
+    saveActiveProfile();
     var ok = store(SELLER_KEY, data);
     $("btn-save").textContent = ok ? "Saved ✓" : "Could not save here";
     setTimeout(function () { $("btn-save").textContent = "Save my details"; }, 1600);
@@ -1950,11 +2028,20 @@
       var cur = load(SELLER_KEY) || {};
       SELLER_FIELDS.forEach(function (id) { if (cfg.seller && cfg.seller[id] != null) cur[id] = cfg.seller[id]; });
       store(SELLER_KEY, cur);
+      // Also list it as a business, replacing a profile of the same name.
+      var pr = getProfiles(), nm = (cur.s_legal || "My business").trim(), at = -1;
+      pr.list.forEach(function (x, i) { if (x.name === nm) at = i; });
+      if (at < 0) { pr.list.push({ name: nm, seller: cur }); at = pr.list.length - 1; } else { pr.list[at] = { name: nm, seller: cur }; }
+      pr.active = at; store(PROFILES_KEY, pr);
       if (cfg.stamp) saveStampFrom(cfg.stamp);
       setTimeout(function () { alert("Your firm details" + (cfg.stamp ? " and stamp" : "") + " are saved on this computer."); }, 300);
     } catch (e) { /* malformed link: ignore, the page opens normally */ }
   }
   loadSeller();
+  // First run after this feature exists: turn whatever is already on screen
+  // (saved details, or the built-in ones) into the first business.
+  if (!viewerMode && getProfiles().list.length === 0) saveActiveProfile();
+  renderProfiles();
   if (viewerMode) { body.innerHTML = ""; addRow(); openSharedDocument(); }
   else if (!restoreDraft()) freshInvoice();
   if (!$("fxRate").value) $("fxRate").value = "";
