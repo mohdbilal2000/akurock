@@ -188,7 +188,19 @@
     .sign { text-align: left; }
   }
 
+  /* Screen-side copy of what printing hides, used for a moment just before
+     printing to measure how tall the paper version will be. */
+  body.print-measure .sheet { padding: 7mm 10mm; border: 0; min-height: 0; box-shadow: none; }
+  body.print-measure .sheet .no-print, body.print-measure .sheet .notice, body.print-measure .sheet .del,
+  body.print-measure .sheet .add-row, body.print-measure .sheet .c-x, body.print-measure .sheet .charges-empty,
+  body.print-measure .sheet .empty-print, body.print-measure .sheet .meas.meas-empty,
+  body.print-measure .sheet input[type="date"] { display: none !important; }
+  body.print-measure .sheet .dateprint { display: inline !important; }
+  body.print-measure .sheet .dateprint.empty-print { display: none !important; }
+  body.print-measure .sheet .grid2.one-col-print { grid-template-columns: 1fr; }
+
   @media print {
+    body { zoom: var(--print-zoom, 1); }
     /* Zero page margin is what makes Chrome and Edge drop their own header
        and footer (date, page title, the website address, page numbers).
        The visible margin is padding on the sheet instead, repeated on every
@@ -1762,7 +1774,7 @@
         // closing "E. & O.E." line) is scaled onto one page instead of
         // leaving a nearly empty second page. Longer ones continue on the
         // next A4 page rather than shrinking.
-        if (canvas.height > pagePx && canvas.height <= pagePx * 1.08) {
+        if (canvas.height > pagePx && canvas.height <= pagePx * 1.25) {
           var fit = pagePx / canvas.height;
           pdf.addImage(canvas.toDataURL("image/jpeg", 0.92), "JPEG", (pageW - pageW * fit) / 2, 0, pageW * fit, pageH);
           pdf.setProperties({ title: $("doc-title").textContent + " " + $("inv_no").value, creator: "Invoices" });
@@ -2038,10 +2050,26 @@
 
   // Paper is wider than the screen column, so a textarea sized on screen
   // would keep a blank second line on paper. Re-measure as printing starts.
+  // A document a little taller than one A4 page (up to ~25 % over) is
+  // scaled down to fit one page, instead of printing a second page that
+  // holds only the last line or two. Longer documents print on as many
+  // pages as they need, at full size.
+  var FIT_ONE_PAGE = 1.25;
+  function printFitZoom() {
+    var sheet = document.querySelector(".sheet");
+    document.body.classList.add("print-measure");
+    Array.prototype.forEach.call(document.querySelectorAll("textarea"), grow);
+    var pxPerMm = sheet.offsetWidth / 210, heightMm = sheet.scrollHeight / pxPerMm;
+    document.body.classList.remove("print-measure");
+    var pageMm = 297 - 8; // slack: screen and paper layouts differ by a few mm
+    return heightMm > pageMm && heightMm <= pageMm * FIT_ONE_PAGE ? pageMm / heightMm : 1;
+  }
   window.addEventListener("beforeprint", function () {
     Array.prototype.forEach.call(document.querySelectorAll("textarea"), grow);
+    document.documentElement.style.setProperty("--print-zoom", String(printFitZoom()));
   });
   window.addEventListener("afterprint", function () {
+    document.documentElement.style.removeProperty("--print-zoom");
     Array.prototype.forEach.call(document.querySelectorAll("textarea"), grow);
   });
 
