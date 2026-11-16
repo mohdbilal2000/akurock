@@ -53,6 +53,8 @@ const INSTALL_SCRIPT = `<script>(function () {
     if (deferred) { deferred.prompt(); deferred.userChoice.then(function () { deferred = null; }); return; }
     var ua = navigator.userAgent;
     var msg = /iPhone|iPad/.test(ua) ? "On iPhone/iPad: open this page in Safari, tap Share, then 'Add to Home Screen'."
+      : /Macintosh/.test(ua) && /Safari\\//.test(ua) && !/Chrome|Chromium|Edg\\//.test(ua) ? "In Safari on Mac: File menu > Add to Dock."
+      : /Android/.test(ua) ? "On Android: tap the ⋮ menu in Chrome, then 'Add to Home screen' > Install."
       : /Firefox/.test(ua) ? "Firefox can't install apps. Open this page in Chrome or Microsoft Edge, then click Install app."
       : /Edg\\//.test(ua) ? "In Edge: click the ... menu (top right) > Apps > Install this site as an app."
       : "In Chrome: click the install icon at the right end of the address bar, or the ⋮ menu > Cast, save and share > Install page as app.";
@@ -60,17 +62,23 @@ const INSTALL_SCRIPT = `<script>(function () {
   });
 })();</script>`;
 
-export function buildAppHtml() {
+export function buildAppHtml(base = "/invoice-app", { prefilled = false } = {}) {
   const html = buildInvoiceHtml();
-  const blanked = html.replace(/var SELLER_DEFAULTS = \{[\s\S]*?\n  \};/, BLANK_SELLER);
-  if (blanked === html) throw new Error("SELLER_DEFAULTS block not found; refusing to publish real details");
-  return blanked
-    .replace("<title>", '<link rel="manifest" href="/invoice-app/manifest.webmanifest">\n<meta name="theme-color" content="#0d0d0d">\n<link rel="icon" href="/invoice-app/icon-192.png">\n<title>')
-    .replace("</body>", '<script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("/invoice-app/sw.js", { scope: "/invoice-app" }).catch(function () {});</script>\n' + INSTALL_SCRIPT + '\n</body>');
+  let page = html;
+  if (!prefilled) {
+    page = html.replace(/var SELLER_DEFAULTS = \{[\s\S]*?\n  \};/, BLANK_SELLER);
+    if (page === html) throw new Error("SELLER_DEFAULTS block not found; refusing to publish real details");
+  }
+  return page
+    .replace("<title>", `<link rel="manifest" href="${base}/manifest.webmanifest">\n<meta name="theme-color" content="#0d0d0d">\n<link rel="icon" href="${base}/icon-192.png">\n<link rel="apple-touch-icon" href="${base}/icon-192.png">\n<meta name="apple-mobile-web-app-capable" content="yes">\n<title>`)
+    .replace("</body>", `<script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("${base}/sw.js", { scope: "${base}" }).catch(function () {});</script>\n` + INSTALL_SCRIPT + "\n</body>");
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
   writeFileSync(path.join(root, "invoices/akurock-tax-invoice.html"), buildInvoiceHtml());
   writeFileSync(path.join(root, "public/invoice-app/index.html"), buildAppHtml());
+  // The firm's own app, served by app/(unlocalized)/invoices/route.ts only
+  // after the password: real details, its own manifest and service worker.
+  writeFileSync(path.join(root, "invoices/firm-app.html"), buildAppHtml("/invoices", { prefilled: true }));
   console.log("built invoices/akurock-tax-invoice.html and public/invoice-app/index.html");
 }

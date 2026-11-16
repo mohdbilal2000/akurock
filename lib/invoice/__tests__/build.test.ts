@@ -22,4 +22,12 @@ describe("built invoice sheet", () => {
   it("vendor libraries are inlined without raw HTML that could break the page", () => {
     expect(buildAppHtml()).not.toContain("pdfobjectnewwindow");
   });
+
+  it("the firm's password-protected app is in sync, pre-filled, and has no stamp in the file", () => {
+    const page = readFileSync(path.resolve(__dirname, "../../../invoices/firm-app.html"), "utf8");
+    expect(page === buildAppHtml("/invoices", { prefilled: true })).toBe(true);
+    expect(page).toContain("37990375434");
+    expect(page).toContain('var BUILTIN_STAMP = "";');
+    expect(page).toContain('"/invoices/sw.js"');
+  });
 });

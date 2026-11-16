@@ -7,6 +7,8 @@
 <link rel="manifest" href="/invoice-app/manifest.webmanifest">
 <meta name="theme-color" content="#0d0d0d">
 <link rel="icon" href="/invoice-app/icon-192.png">
+<link rel="apple-touch-icon" href="/invoice-app/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <title>Invoices — Stone Art Installation</title>
 <style>
   /* Source: invoices/invoice.template.html + lib/invoice/engine.js.
@@ -1488,7 +1490,7 @@
     history.replaceState(null, "", location.pathname + location.search);
     saveStampFrom("data:image/jpeg;base64," + b, function (ok) { if (ok) alert("Stamp saved on this computer. It will be on every document from now on."); });
   }
-  $("stamp-remove").addEventListener("click", function () { rawSet(STAMP_KEY, null); rawSet(STAMP_ORIG_KEY, null); renderStamp(); });
+  $("stamp-remove").addEventListener("click", function () { rawSet(STAMP_KEY, null); rawSet(STAMP_ORIG_KEY, null); rawSet("akurock-invoice-stamp-builtin", "removed"); renderStamp(); });
   $("stamp-style").value = rawGet(STAMP_STYLE_KEY) || "original";
   $("stamp-style").addEventListener("change", function () { rawSet(STAMP_STYLE_KEY, this.value); renderStamp(); });
   $("stamp-show").checked = rawGet(STAMP_SHOW_KEY) !== "0";
@@ -2094,6 +2096,15 @@
       setTimeout(function () { alert("Your firm details" + (cfg.stamp ? " and stamp" : "") + " are saved on this computer."); }, 300);
     } catch (e) { /* malformed link: ignore, the page opens normally */ }
   }
+  // Built-in stamp. Empty in every file in the repository; the password-
+  // protected /invoices page fills it in on the server, so the signature is
+  // never in a public file. Used only when this device has no stamp yet, and
+  // never again after someone presses Remove.
+  var BUILTIN_STAMP = "";
+  if (BUILTIN_STAMP && !rawGet(STAMP_ORIG_KEY) && !rawGet(STAMP_KEY) && rawGet("akurock-invoice-stamp-builtin") !== "removed") {
+    saveStampFrom(BUILTIN_STAMP);
+  }
+
   loadSeller();
   // First run after this feature exists: turn whatever is already on screen
   // (saved details, or the built-in ones) into the first business.
@@ -2121,6 +2132,8 @@
     if (deferred) { deferred.prompt(); deferred.userChoice.then(function () { deferred = null; }); return; }
     var ua = navigator.userAgent;
     var msg = /iPhone|iPad/.test(ua) ? "On iPhone/iPad: open this page in Safari, tap Share, then 'Add to Home Screen'."
+      : /Macintosh/.test(ua) && /Safari\//.test(ua) && !/Chrome|Chromium|Edg\//.test(ua) ? "In Safari on Mac: File menu > Add to Dock."
+      : /Android/.test(ua) ? "On Android: tap the ⋮ menu in Chrome, then 'Add to Home screen' > Install."
       : /Firefox/.test(ua) ? "Firefox can't install apps. Open this page in Chrome or Microsoft Edge, then click Install app."
       : /Edg\//.test(ua) ? "In Edge: click the ... menu (top right) > Apps > Install this site as an app."
       : "In Chrome: click the install icon at the right end of the address bar, or the ⋮ menu > Cast, save and share > Install page as app.";

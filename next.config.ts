@@ -25,6 +25,7 @@ const nextConfig: NextConfig = {
     '/api/data/mock-cms-data': ['./public/data/mock-cms-data.json'],
     '/admin/invoice': ['./invoices/akurock-tax-invoice.html'],
     '/invoice-demo': ['./invoices/akurock-tax-invoice.html'],
+    '/invoices': ['./invoices/firm-app.html', './invoices/stamp.enc'],
   },
 
   async redirects() {
@@ -157,6 +158,13 @@ const nextConfig: NextConfig = {
         source: '/invoice-app/sw.js',
         headers: [
           { key: 'Service-Worker-Allowed', value: '/invoice-app' },
+          { key: 'Cache-Control', value: 'no-cache' },
+        ],
+      },
+      {
+        source: '/invoices/sw.js',
+        headers: [
+          { key: 'Service-Worker-Allowed', value: '/invoices' },
           { key: 'Cache-Control', value: 'no-cache' },
         ],
       },

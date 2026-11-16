@@ -1489,7 +1489,7 @@
     history.replaceState(null, "", location.pathname + location.search);
     saveStampFrom("data:image/jpeg;base64," + b, function (ok) { if (ok) alert("Stamp saved on this computer. It will be on every document from now on."); });
   }
-  $("stamp-remove").addEventListener("click", function () { rawSet(STAMP_KEY, null); rawSet(STAMP_ORIG_KEY, null); renderStamp(); });
+  $("stamp-remove").addEventListener("click", function () { rawSet(STAMP_KEY, null); rawSet(STAMP_ORIG_KEY, null); rawSet("akurock-invoice-stamp-builtin", "removed"); renderStamp(); });
   $("stamp-style").value = rawGet(STAMP_STYLE_KEY) || "original";
   $("stamp-style").addEventListener("change", function () { rawSet(STAMP_STYLE_KEY, this.value); renderStamp(); });
   $("stamp-show").checked = rawGet(STAMP_SHOW_KEY) !== "0";
@@ -2095,6 +2095,15 @@
       setTimeout(function () { alert("Your firm details" + (cfg.stamp ? " and stamp" : "") + " are saved on this computer."); }, 300);
     } catch (e) { /* malformed link: ignore, the page opens normally */ }
   }
+  // Built-in stamp. Empty in every file in the repository; the password-
+  // protected /invoices page fills it in on the server, so the signature is
+  // never in a public file. Used only when this device has no stamp yet, and
+  // never again after someone presses Remove.
+  var BUILTIN_STAMP = "";
+  if (BUILTIN_STAMP && !rawGet(STAMP_ORIG_KEY) && !rawGet(STAMP_KEY) && rawGet("akurock-invoice-stamp-builtin") !== "removed") {
+    saveStampFrom(BUILTIN_STAMP);
+  }
+
   loadSeller();
   // First run after this feature exists: turn whatever is already on screen
   // (saved details, or the built-in ones) into the first business.
