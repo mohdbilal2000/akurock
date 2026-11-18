@@ -158,8 +158,11 @@
   body.viewer .dateprint.empty-print { display: none !important; }
   body.viewer .grid2.one-col-print { grid-template-columns: 1fr; }
   body.viewer .frozen { display: inline-block; padding: 1px 0; }
-  body.viewer .meas { flex-wrap: wrap; }
-  body.viewer .meas-out { white-space: normal; }
+  /* Measurement line under a description ("120 × 8×4 ft = 384 SQF"): on
+     paper it reads as one left-aligned line of text, not three boxes. */
+  body.viewer .meas { flex-wrap: wrap; gap: 0 4px; }
+  body.viewer .meas .frozen { display: inline !important; width: auto !important; text-align: left !important; padding: 0 !important; }
+  body.viewer .meas-out { white-space: normal; margin-left: 4px; }
   body.viewer .table-scroll { overflow: visible; }
   body.viewer .num.frozen, body.viewer .frozen.num { display: block; text-align: right; }
   body.viewer .missing { background: transparent !important; border-bottom-color: transparent !important; }
@@ -168,6 +171,7 @@
   .meas .f-pcs { width: 44px !important; }
   .meas .f-size { width: 96px !important; }
   .meas-out { white-space: nowrap; }
+  .meas .f-pcs { text-align: left; }
   .f-qty[readonly] { color: var(--ink); font-weight: 700; }
   .view-seg button { color: #fff; background: transparent; border-color: rgba(255,255,255,.4); }
   .view-seg button[aria-pressed="true"] { background: #fff; color: var(--ink); border-color: #fff; }
@@ -229,6 +233,7 @@
     .empty-print { display: none !important; }
     .meas.meas-empty { display: none !important; }
     .meas input::placeholder { color: transparent !important; }
+    .meas-out { margin-left: 4px; }
     .grid2.one-col-print { grid-template-columns: 1fr; }
     .sheet input[type="date"] { display: none !important; }
     .dateprint { display: inline !important; }
@@ -2134,7 +2139,10 @@
   // port name) would be cut off on paper; print a wrapping copy instead.
   function addPrintTwins() {
     Array.prototype.forEach.call(document.querySelectorAll('.sheet input:not([type="date"]):not([type="checkbox"])'), function (inp) {
-      if (!inp.value || inp.scrollWidth <= inp.clientWidth + 1) return;
+      // Measurement boxes always print as plain text so the line reads
+      // "12 × 8×4 ft = 384 SQF" with no gaps, whatever the browser.
+      var inMeas = !!inp.closest(".meas");
+      if (!inp.value || (!inMeas && inp.scrollWidth <= inp.clientWidth + 1)) return;
       var span = document.createElement("span");
       span.className = "print-twin"; span.textContent = inp.value;
       inp.classList.add("has-print-twin");
