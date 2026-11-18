@@ -112,6 +112,9 @@
   .totals > div + div { border-left: 1px solid var(--ink); }
   .tline { display: flex; justify-content: space-between; gap: 10px; padding: 2px 0; }
   .tline.grand { border-top: 1px solid var(--ink); margin-top: 4px; padding-top: 5px; font-size: 13px; font-weight: 700; }
+  .tline.adv { font-weight: 600; }
+  .tline .num { white-space: nowrap; }
+  .tline.grand + .tline.adv { border-top: 1px dashed var(--ink); margin-top: 6px; padding-top: 6px; }
   .tline.inr { color: var(--muted); }
   .words b { text-transform: uppercase; font-size: 10px; }
   .gap { height: 9px; }
@@ -199,8 +202,11 @@
   body.print-measure .sheet .dateprint.empty-print { display: none !important; }
   body.print-measure .sheet .grid2.one-col-print { grid-template-columns: 1fr; }
 
+  .print-twin { display: none; }
   @media print {
     body { zoom: var(--print-zoom, 1); }
+    .print-twin { display: inline; white-space: normal; overflow-wrap: anywhere; }
+    .has-print-twin { display: none !important; }
     /* Zero page margin is what makes Chrome and Edge drop their own header
        and footer (date, page title, the website address, page numbers).
        The visible margin is padding on the sheet instead, repeated on every
@@ -292,6 +298,19 @@
   <div class="setup-row" id="row-lut">
     <span>LUT ARN</span>
     <div class="inline"><input id="lutArn" size="22" placeholder="e.g. AD0804260012345"><span class="hint">Your Letter of Undertaking for this financial year.</span></div>
+  </div>
+  <div class="setup-row" id="row-advance">
+    <span>Advance payment</span>
+    <div class="inline">
+      <label><input id="advancePct" inputmode="numeric" size="3" aria-label="Advance percent"> % advance,</label>
+      <label>balance <select id="balanceWhen" aria-label="When the balance is due">
+        <option value="before dispatch">before dispatch</option>
+        <option value="on dispatch">on dispatch</option>
+        <option value="against shipping documents">against shipping documents</option>
+        <option value="on delivery">on delivery</option>
+      </select></label>
+      <span class="hint">Shown on the proforma with both amounts. 0 = no advance.</span>
+    </div>
   </div>
   <div class="setup-row">
     <span>New items measured in</span>
@@ -528,7 +547,7 @@
   };
 
   var view = "invoice";
-  var opts = { market: "domestic", docType: "tax", rateMode: "excl", exportMode: "lut", bosReason: "composition", unitDefault: "SQM" };
+  var opts = { market: "domestic", docType: "tax", rateMode: "excl", exportMode: "lut", bosReason: "composition", unitDefault: "SQM", advancePct: 50, balanceWhen: "before dispatch" };
 
   function store(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); return true; } catch (e) { return false; } }
   function load(key) { try { return JSON.parse(localStorage.getItem(key) || "null"); } catch (e) { return null; } }
@@ -559,6 +578,25 @@
       render();
     });
   });
+
+  /* ---------- advance payment (proforma) ---------- */
+  $("advancePct").addEventListener("input", function () {
+    var v = Math.round(Number(this.value));
+    if (this.value.trim() === "") v = 0;
+    if (!isFinite(v) || v < 0 || v > 100) return;
+    opts.advancePct = v; render();
+  });
+  // "input" fires before the page-wide re-render (which re-reads opts into
+  // this select), so the choice has to be stored on it, not only on "change".
+  ["input", "change"].forEach(function (ev) {
+    $("balanceWhen").addEventListener(ev, function () { opts.balanceWhen = this.value; });
+  });
+  // Terms text written by the tool; the owner's own wording is never replaced.
+  function autoPayTerms(pct, when) {
+    if (!pct) return "";
+    return pct >= 100 ? "100% advance" : pct + "% advance, " + (100 - pct) + "% " + when;
+  }
+  var lastAutoTerms = null;
 
   /* ---------- item rows ---------- */
   var body = $("items");
@@ -699,6 +737,7 @@
     setVisible("#row-export-mode", isExport && doc !== "proforma");
     setVisible("#row-currency", isExport);
     setVisible("#row-lut", isExport && opts.exportMode === "lut" && doc !== "proforma");
+    setVisible("#row-advance", doc === "proforma");
     setVisible("#row-bos", doc === "bos");
     setVisible(".export-only", isExport);
     setVisible(".domestic-only", !isExport);
@@ -873,6 +912,28 @@
       heads.forEach(function (hd) { box += line(hd, fmt(t.tax[hd])); });
       box += line("Round off", (res.roundOff < 0 ? "−" : res.roundOff > 0 ? "+" : "") + fmt(Math.abs(res.roundOff)));
       box += line(doc === "proforma" ? "Estimated total" : "Grand total", "₹" + res.payable.toLocaleString("en-IN") + ".00", "grand");
+    }
+    // Advance and balance on a proforma, in the document's own currency.
+    var pct = Number(opts.advancePct) || 0;
+    if (doc === "proforma" && pct > 0 && res.payable > 0) {
+      var money = function (v) { return isExport ? cur + " " + fmt(v, cur) : "₹" + fmt(v); };
+      var advance = Math.round(res.payable * pct) / 100;
+      var balance = Math.round((res.payable - advance) * 100) / 100;
+      if (pct >= 100) {
+        box += line("Payable in advance (100%)", money(res.payable), "adv");
+      } else {
+        box += line("Advance " + pct + "% (payable now)", money(advance), "adv");
+        box += line("Balance " + (100 - pct) + "% (" + esc(opts.balanceWhen) + ")", money(balance), "adv");
+      }
+    }
+    if (document.activeElement !== $("advancePct")) $("advancePct").value = String(pct);
+    $("balanceWhen").value = opts.balanceWhen || "before dispatch";
+    if (doc === "proforma") {
+      var terms = autoPayTerms(pct, opts.balanceWhen || "before dispatch"), cur_ = $("pay_terms").value.trim();
+      if (cur_ === "" || cur_ === lastAutoTerms || /^\d+% advance(, (balance )?\d+% [a-z ]+)?$/.test(cur_)) {
+        if (cur_ !== terms) $("pay_terms").value = terms;
+        lastAutoTerms = terms;
+      }
     }
     $("totals-box").innerHTML = box;
     $("words").textContent = res.words;
@@ -1600,11 +1661,28 @@
     var pageMm = 297 - 8; // slack: screen and paper layouts differ by a few mm
     return heightMm > pageMm && heightMm <= pageMm * FIT_ONE_PAGE ? pageMm / heightMm : 1;
   }
+  // A one-line field holding more text than fits (long payment terms, a long
+  // port name) would be cut off on paper; print a wrapping copy instead.
+  function addPrintTwins() {
+    Array.prototype.forEach.call(document.querySelectorAll('.sheet input:not([type="date"]):not([type="checkbox"])'), function (inp) {
+      if (!inp.value || inp.scrollWidth <= inp.clientWidth + 1) return;
+      var span = document.createElement("span");
+      span.className = "print-twin"; span.textContent = inp.value;
+      inp.classList.add("has-print-twin");
+      inp.insertAdjacentElement("afterend", span);
+    });
+  }
+  function removePrintTwins() {
+    Array.prototype.forEach.call(document.querySelectorAll(".print-twin"), function (el) { el.remove(); });
+    Array.prototype.forEach.call(document.querySelectorAll(".has-print-twin"), function (el) { el.classList.remove("has-print-twin"); });
+  }
   window.addEventListener("beforeprint", function () {
+    removePrintTwins(); addPrintTwins();
     Array.prototype.forEach.call(document.querySelectorAll("textarea"), grow);
     document.documentElement.style.setProperty("--print-zoom", String(printFitZoom()));
   });
   window.addEventListener("afterprint", function () {
+    removePrintTwins();
     document.documentElement.style.removeProperty("--print-zoom");
     Array.prototype.forEach.call(document.querySelectorAll("textarea"), grow);
   });
